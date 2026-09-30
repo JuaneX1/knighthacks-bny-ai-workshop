@@ -3,6 +3,7 @@ import RoundHistoryList from '../components/RoundHistoryList.jsx';
 import Timer from '../components/Timer.jsx';
 import LoadingScreen from '../components/LoadingScreen.jsx';
 import { PHASE_LABELS } from '../lib/format.js';
+import { TEAM_IDS } from '../../lib/keys.js';
 
 export default function ScoreboardPage() {
   const { data: board, loading } = useScoreboard();
@@ -32,9 +33,9 @@ export default function ScoreboardPage() {
         </div>
       ) : (
         <div className="mb-10 grid grid-cols-2 gap-6 text-center">
-          {Object.entries(board.teams || {}).map(([teamId, team]) => (
+          {TEAM_IDS.filter((teamId) => board.teams?.[teamId]).map((teamId) => (
             <div key={teamId} className="rounded-2xl border border-slate-700 bg-slate-900 p-6">
-              <p className="text-4xl font-bold">{team.name}</p>
+              <p className="text-4xl font-bold">{board.teams[teamId].name}</p>
             </div>
           ))}
         </div>

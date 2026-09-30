@@ -1,3 +1,5 @@
+import { TEAM_IDS } from '../../lib/keys.js';
+
 export default function RoundHistoryList({ rounds, teams }) {
   if (!rounds || rounds.length === 0) {
     return <p className="text-slate-400">No rounds played yet.</p>;
@@ -26,7 +28,9 @@ export default function RoundHistoryList({ rounds, teams }) {
 
           {round.vaults && (
             <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
-              {Object.entries(round.vaults).map(([teamId, vault]) => (
+              {TEAM_IDS.filter((teamId) => teamId in round.vaults).map((teamId) => {
+                const vault = round.vaults[teamId];
+                return (
                 <div key={teamId} className="rounded border border-slate-800 bg-slate-950 p-3 text-sm">
                   <p className="font-medium text-slate-100">{teams?.[teamId]?.name || teamId}</p>
                   {vault ? (
@@ -46,7 +50,8 @@ export default function RoundHistoryList({ rounds, teams }) {
                     <p className="text-slate-500">No vault submitted.</p>
                   )}
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
