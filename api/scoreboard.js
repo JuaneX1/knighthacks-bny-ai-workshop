@@ -32,11 +32,7 @@ export default withErrorHandling(async (req, res) => {
         ? {
             systemPrompt: vault.systemPrompt,
             jobDescription: vault.jobDescription,
-            filterMode: vault.filterMode,
-            filterRegexList: vault.filterRegexList,
             password: vault.password,
-            utilityPassed: vault.utilityPassed,
-            utilityScore: vault.utilityScore,
             crackedByOpponent: vault.crackedByOpponent,
           }
         : null;

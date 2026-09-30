@@ -7,7 +7,7 @@ import StatusBanner from '../components/StatusBanner.jsx';
 import VaultEditorForm from '../components/VaultEditorForm.jsx';
 import TestChatPanel from '../components/TestChatPanel.jsx';
 
-const BLANK_VAULT = { systemPrompt: '', jobDescription: '', filterMode: 'none', filterRegexList: [] };
+const BLANK_VAULT = { systemPrompt: '', jobDescription: '' };
 
 export default function DefendPage() {
   const { data: status, error: statusError } = useGameStatus();
@@ -30,8 +30,6 @@ export default function DefendPage() {
         setVault({
           systemPrompt: status.myVault.systemPrompt || '',
           jobDescription: status.myVault.jobDescription || '',
-          filterMode: status.myVault.filterMode || 'none',
-          filterRegexList: status.myVault.filterRegexList || [],
         });
       } else {
         setVault(BLANK_VAULT);

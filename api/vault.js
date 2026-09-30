@@ -31,8 +31,6 @@ export default withErrorHandling(async (req, res) => {
   await redis.hset(roundVaultKey(game.roundNumber, teamId), {
     systemPrompt: clean.systemPrompt,
     jobDescription: clean.jobDescription,
-    filterMode: clean.filterMode,
-    filterRegexList: clean.filterRegexList,
   });
 
   sendJson(res, 200, { ok: true });

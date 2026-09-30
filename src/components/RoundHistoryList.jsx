@@ -35,8 +35,7 @@ export default function RoundHistoryList({ rounds, teams }) {
                         Password: <span className="font-mono text-slate-200">{vault.password}</span>
                       </p>
                       <p className="mt-1 text-slate-400">
-                        Cracked: {vault.crackedByOpponent ? 'yes' : 'no'} · Utility check:{' '}
-                        {vault.utilityPassed ? 'passed' : 'failed'} ({vault.utilityScore}/5)
+                        Cracked: {vault.crackedByOpponent ? 'yes' : 'no'}
                       </p>
                       <p className="mt-2 whitespace-pre-wrap break-words text-slate-300">{vault.systemPrompt}</p>
                     </>

@@ -3,7 +3,6 @@ import { withErrorHandling, methodGuard, readJsonBody, sendJson, requireTeamSess
 import { ensurePhaseFresh } from './lib/stateMachine.js';
 import { validateVaultInput, validateAttackMessage } from './lib/validation.js';
 import { callChat, buildVaultSystemPrompt, LlmError, friendlyLlmMessage } from './lib/llm.js';
-import { applyFilter } from './lib/filter.js';
 
 const DUMMY_PASSWORD = 'sample-password';
 
@@ -25,8 +24,7 @@ export default withErrorHandling(async (req, res) => {
 
   try {
     const raw = await callChat({ systemPrompt, userMessage: message });
-    const filtered = await applyFilter(vault, raw, DUMMY_PASSWORD);
-    sendJson(res, 200, { reply: filtered });
+    sendJson(res, 200, { reply: raw });
   } catch (err) {
     if (err instanceof LlmError) {
       throw new HttpError(502, friendlyLlmMessage(err));

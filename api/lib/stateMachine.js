@@ -6,7 +6,6 @@ import {
   roundIterationsKey,
 } from './keys.js';
 import { generatePassword } from './words.js';
-import { runUtilityCheck } from './utilityCheck.js';
 
 const DEFAULT_DRAFT_SEC = 300;
 const DEFAULT_ATTACK_SEC = 300;
@@ -90,11 +89,7 @@ export async function getVault(redis, roundNumber, teamId) {
   return {
     systemPrompt: raw.systemPrompt || '',
     jobDescription: raw.jobDescription || '',
-    filterMode: raw.filterMode || 'none',
-    filterRegexList: Array.isArray(raw.filterRegexList) ? raw.filterRegexList : [],
     password: raw.password || '',
-    utilityPassed: raw.utilityPassed === true,
-    utilityScore: toNum(raw.utilityScore, 0),
     crackedByOpponent: raw.crackedByOpponent === true,
     crackedAtIteration: raw.crackedAtIteration ? toNum(raw.crackedAtIteration) : null,
   };
@@ -148,11 +143,7 @@ export async function startRound(redis, { draftDurationSec, attackDurationSec } 
     await redis.hset(roundVaultKey(roundNumber, teamId), {
       systemPrompt: '',
       jobDescription: '',
-      filterMode: 'none',
-      filterRegexList: [],
       password,
-      utilityPassed: false,
-      utilityScore: '0',
       crackedByOpponent: false,
       crackedAtIteration: '',
     });
@@ -174,7 +165,7 @@ export async function startRound(redis, { draftDurationSec, attackDurationSec } 
   return getGame(redis);
 }
 
-/** draft -> attack: runs the utility check on both vaults in parallel, locks them, starts the attack timer. */
+/** draft -> attack: locks the vaults and starts the attack timer. */
 export async function runDraftToAttack(redis) {
   const game = await getGame(redis);
   if (game.state !== 'draft') return false;
@@ -184,20 +175,6 @@ export async function runDraftToAttack(redis) {
   if (!gotLock) return false; // another request is already running this transition
 
   try {
-    const teamIds = await getTeamIds(redis);
-    const vaults = await Promise.all(teamIds.map((id) => getVault(redis, game.roundNumber, id)));
-
-    const results = await Promise.all(vaults.map((vault) => runUtilityCheck(vault, vault.password)));
-
-    await Promise.all(
-      teamIds.map((id, i) =>
-        redis.hset(roundVaultKey(game.roundNumber, id), {
-          utilityPassed: results[i].utilityPassed,
-          utilityScore: String(results[i].utilityScore),
-        }),
-      ),
-    );
-
     const now = Date.now();
     const attackEndsAt = now + game.attackDurationSec * 1000;
     const ok = await casUpdateGame(redis, 'draft', { state: 'attack', attackEndsAt: String(attackEndsAt) });
@@ -230,7 +207,7 @@ export async function runEvaluateRound(redis) {
     const crackedOpponent = {};
     for (const id of teamIds) {
       const opponentId = teamIds.find((x) => x !== id);
-      survived[id] = vaults[id].utilityPassed && !vaults[id].crackedByOpponent;
+      survived[id] = !vaults[id].crackedByOpponent;
       crackedOpponent[id] = vaults[opponentId].crackedByOpponent;
     }
 

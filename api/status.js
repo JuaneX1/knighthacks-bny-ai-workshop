@@ -20,10 +20,6 @@ export default withErrorHandling(async (req, res) => {
       myVault = {
         systemPrompt: vault.systemPrompt,
         jobDescription: vault.jobDescription,
-        filterMode: vault.filterMode,
-        filterRegexList: vault.filterRegexList,
-        utilityPassed: vault.utilityPassed,
-        utilityScore: vault.utilityScore,
         crackedByOpponent: vault.crackedByOpponent,
       };
     }

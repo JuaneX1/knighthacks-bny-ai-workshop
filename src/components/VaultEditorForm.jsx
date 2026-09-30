@@ -1,5 +1,3 @@
-import FilterEditor from './FilterEditor.jsx';
-
 const MAX_WORDS = 400;
 
 function wordCount(text) {
@@ -37,17 +35,10 @@ export default function VaultEditorForm({ vault, onChange, onSave, saving, disab
           rows={10}
           className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 font-mono text-sm text-slate-100 outline-none focus:border-indigo-500 disabled:opacity-50"
         />
-        <p className="mt-1 text-xs text-slate-500">
-          Use <code className="text-slate-400">{'{PASSWORD}'}</code> where the secret should be inserted. If omitted, it's prepended automatically.
+        <p className="mt-1 text-s text-slate-400">
+          The password has been auto-generated. Use <code className="text-slate-400">{'{PASSWORD}'}</code> where the secret should be inserted. If omitted, it's prepended automatically.
         </p>
       </div>
-
-      <FilterEditor
-        filterMode={vault.filterMode}
-        filterRegexList={vault.filterRegexList}
-        onChange={(f) => onChange({ ...vault, ...f })}
-        disabled={disabled}
-      />
 
       <button
         type="button"

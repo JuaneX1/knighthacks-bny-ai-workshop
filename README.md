@@ -6,7 +6,7 @@ Every round, **both teams simultaneously**:
 1. **Draft (5 min)** — write a system prompt / rules for their own vault chatbot, which hides a secret password.
 2. **Attack (5 min)** — get 3 attempts against the *opponent's* vault: each attempt is one chat prompt plus an optional one password guess.
 
-A team **wins the whole game** the instant it cracks the opponent's password while its own vault survives (uncracked, and passes an automatic "is it still useful?" check). Anything else is a draw, and the admin starts a new round. Designed for exactly 3 concurrent devices: one per team, plus one admin device that runs the room. Joining from a new device invalidates a team's previous session, so only one device per team can be active at a time.
+A team **wins the whole game** the instant it cracks the opponent's password while its own vault survives uncracked. Anything else is a draw, and the admin starts a new round. Designed for exactly 3 concurrent devices: one per team, plus one admin device that runs the room. Joining from a new device invalidates a team's previous session, so only one device per team can be active at a time.
 
 ## Stack
 
