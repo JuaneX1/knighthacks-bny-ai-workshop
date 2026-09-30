@@ -1,4 +1,4 @@
-# Prompt Injection Workshop
+# Prompt Injection Workshop - KnightHacks
 
 A live, two-team prompt-injection capture-the-flag game for a hackathon workshop.
 
