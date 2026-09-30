@@ -1,4 +1,4 @@
-# Prompt Injection CTF
+# Prompt Injection Workshop
 
 A live, two-team prompt-injection capture-the-flag game for a hackathon workshop.
 
