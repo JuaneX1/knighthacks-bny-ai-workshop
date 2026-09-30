@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../lib/api.js';
 import ChatLog from './ChatLog.jsx';
-import Spinner from './Spinner.jsx';
+import ChatInput from './ChatInput.jsx';
 
 // Chat for one try. The parent remounts this (via key) when a new try starts, which clears it.
 export default function AttackChatPanel({ attack, disabled, onAttackChange }) {
@@ -29,7 +29,7 @@ export default function AttackChatPanel({ attack, disabled, onAttackChange }) {
 
   async function send(e) {
     e.preventDefault();
-    if (!message.trim() || disabled || outOfMessages) return;
+    if (!message.trim() || disabled || outOfMessages || sending) return;
     setSending(true);
     setError(null);
     const userMessage = message;
@@ -62,23 +62,15 @@ export default function AttackChatPanel({ attack, disabled, onAttackChange }) {
         sending={sending}
         emptyText="Say hi! The bot remembers everything you say during this try."
       />
-      <form onSubmit={send} className="flex gap-2">
-        <input
-          type="text"
-          disabled={disabled || outOfMessages}
-          value={message}
-          onChange={(e) => setMessage(e.target.value.slice(0, 2000))}
-          placeholder={outOfMessages ? 'No messages left - make a guess below' : 'Try to get the password...'}
-          className="flex-1 rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none transition-colors focus:border-indigo-500 disabled:opacity-50"
-        />
-        <button
-          type="submit"
-          disabled={disabled || sending || outOfMessages || !message.trim()}
-          className="flex min-w-[4.5rem] items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-500 active:scale-95 disabled:opacity-50 disabled:active:scale-100"
-        >
-          {sending ? <Spinner /> : 'Send'}
-        </button>
-      </form>
+      <ChatInput
+        value={message}
+        onChange={setMessage}
+        onSubmit={send}
+        disabled={disabled || outOfMessages}
+        sending={sending}
+        placeholder={outOfMessages ? 'No messages left - make a guess below' : 'Try to get the password...'}
+        buttonClassName="bg-indigo-600 hover:bg-indigo-500"
+      />
       {error && <p className="mt-2 text-sm text-red-400 motion-safe:animate-fade-in-up">{error}</p>}
     </div>
   );

@@ -132,6 +132,7 @@ This scripts one full round end-to-end (join, draft, force the attack phase, can
 - Only one active session per team is allowed; joining from a new device invalidates the old one.
 - No endpoint returns a vault's password, prompt, or filter to anyone but that team (or after the round is sealed, via the public scoreboard).
 - All chat/vault text is rendered as plain text in React — never `dangerouslySetInnerHTML`.
-- Attack messages are capped at 2000 characters and rate-limited to 1 per 2 seconds per team.
+- Attack messages are capped at 10,000 characters (room for prompt stuffing and many-shot examples) and rate-limited to 1 per 2 seconds per team.
+- If a reply contains the password, the output guard swaps in an AI-written, in-character refusal (a canned line if no AI capacity is free) instead of a telltale "[response withheld]". The rewrite call never sees the password. The admin debrief log marks these replies.
 - If an LLM call fails or times out, the player sees a friendly error and it does **not** count against their message budget.
 - **AI usage cap:** every AI call (attack chat, practice chat, helpfulness tests) reserves capacity from a Redis sliding window first. The whole game is capped at `LLM_MAX_CALLS_PER_MINUTE` (default 10), and each team at half of that, so one team can't starve the other. Over the cap, players see "The AI needs a short break. Try again in N seconds." 

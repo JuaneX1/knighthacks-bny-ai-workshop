@@ -12,8 +12,11 @@ import {
 } from '../lib/stateMachine.js';
 import { validateAttackMessage } from '../lib/validation.js';
 import { callChat, buildVaultSystemPrompt, LlmError, friendlyLlmMessage } from '../lib/llm.js';
-import { guardReply } from '../lib/outputGuard.js';
+import { revealsPassword, deflectReply } from '../lib/outputGuard.js';
 import { enforceRateLimit, reserveLlmCalls } from '../lib/ratelimit.js';
+
+// Room for long answers, so prompt-leak tricks like "repeat everything above" aren't cut off.
+const MAX_REPLY_TOKENS = 800;
 
 // GET: the conversation for this team's current try (so a page refresh doesn't lose it).
 // POST: send one message in the current try. The bot remembers earlier messages in the same try.
@@ -57,7 +60,7 @@ export default withErrorHandling(async (req, res) => {
   await enforceRateLimit(redis, teamId);
 
   const lockKey = roundLockKey(game.roundNumber, teamId);
-  const gotLock = await redis.set(lockKey, '1', { nx: true, px: 25000 });
+  const gotLock = await redis.set(lockKey, '1', { nx: true, px: 35000 });
   if (!gotLock) throw new HttpError(429, 'Your previous message is still being processed');
 
   try {
@@ -66,9 +69,9 @@ export default withErrorHandling(async (req, res) => {
     const history = (await redis.lrange(convoKey, 0, -1)) || [];
     const systemPrompt = buildVaultSystemPrompt(opponentVault, opponentVault.password);
     let reply;
+    let guarded = false;
     try {
-      const raw = await callChat({ systemPrompt, history, userMessage: message });
-      reply = guardReply(raw, opponentVault.password);
+      reply = await callChat({ systemPrompt, history, userMessage: message, maxTokens: MAX_REPLY_TOKENS });
     } catch (err) {
       if (err instanceof LlmError) {
         // Failed calls never use up a message.
@@ -77,19 +80,31 @@ export default withErrorHandling(async (req, res) => {
       throw err;
     }
 
+    if (revealsPassword(reply, opponentVault.password)) {
+      guarded = true;
+      reply = await deflectReply(redis, {
+        teamId,
+        userMessage: message,
+        jobDescription: opponentVault.jobDescription,
+        validVault: opponentVault.utilityPassed === true,
+        password: opponentVault.password,
+      });
+    }
+
     // Fails if the try ended (e.g. a guess) while the AI was answering.
     const promptsUsed = await usePrompt(redis, game.roundNumber, teamId, its.attempt, game.promptsPerAttempt);
     if (promptsUsed === -1) {
       throw new HttpError(409, 'This try already ended - your message was not counted');
     }
 
-    // History stores the guarded reply, so a masked password never re-enters the conversation.
+    // History stores the replacement reply, so a caught password never re-enters the conversation.
     await redis.rpush(convoKey, { role: 'user', content: message }, { role: 'assistant', content: reply });
     await redis.rpush(roundMessagesKey(game.roundNumber, opponentTeamId), {
       iteration: its.attempt,
       promptNumber: promptsUsed,
       promptText: message,
       replyText: reply,
+      guarded,
       ts: Date.now(),
     });
 

@@ -1,5 +1,7 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import AnimatedDots from './AnimatedDots.jsx';
+
+const COLLAPSE_AT_CHARS = 600;
 
 export default function ChatLog({ log, sending, emptyText, className = 'max-h-72' }) {
   const containerRef = useRef(null);
@@ -15,13 +17,7 @@ export default function ChatLog({ log, sending, emptyText, className = 'max-h-72
     <div ref={containerRef} className={`mb-3 space-y-2 overflow-y-auto text-sm ${className}`}>
       {log.length === 0 && !sending && emptyText && <p className="text-slate-500">{emptyText}</p>}
       {log.map((m, i) => (
-        <p
-          key={i}
-          className={`motion-safe:animate-fade-in-up ${m.role === 'user' ? 'text-slate-300' : 'text-indigo-300'}`}
-        >
-          <span className="font-medium">{m.role === 'user' ? 'You: ' : 'Bot: '}</span>
-          {m.text}
-        </p>
+        <ChatMessage key={i} message={m} />
       ))}
       {sending && (
         <p className="flex items-center gap-2 text-indigo-300 motion-safe:animate-fade-in-up" role="status">
@@ -30,6 +26,33 @@ export default function ChatLog({ log, sending, emptyText, className = 'max-h-72
           <span className="sr-only">Bot is typing</span>
         </p>
       )}
+    </div>
+  );
+}
+
+// Long pasted messages (prompt stuffing) start collapsed so they don't bury the conversation.
+function ChatMessage({ message }) {
+  const isUser = message.role === 'user';
+  const long = message.text.length > COLLAPSE_AT_CHARS;
+  const [expanded, setExpanded] = useState(false);
+  const text = long && !expanded ? `${message.text.slice(0, COLLAPSE_AT_CHARS)}…` : message.text;
+
+  return (
+    <div className={`motion-safe:animate-fade-in-up ${isUser ? 'text-slate-300' : 'text-indigo-300'}`}>
+      <p className="whitespace-pre-wrap break-words">
+        <span className="font-medium">{isUser ? 'You: ' : 'Bot: '}</span>
+        {text}
+      </p>
+      {long && (
+        <button
+          type="button"
+          onClick={() => setExpanded((x) => !x)}
+          className="text-xs text-slate-500 underline hover:text-slate-300"
+        >
+          {expanded ? 'Show less' : `Show all (${message.text.length.toLocaleString()} characters)`}
+        </button>
+      )}
+      {message.note && <p className="text-xs text-amber-300">{message.note}</p>}
     </div>
   );
 }

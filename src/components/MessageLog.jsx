@@ -32,9 +32,15 @@ export default function MessageLog({ log, teams }) {
                   <div key={i} className="mt-2 border-t border-slate-800 pt-2">
                     <p className="text-slate-400">
                       Try {m.iteration}
-                      {m.promptNumber ? `, msg ${m.promptNumber}` : ''}: {m.promptText}
+                      {m.promptNumber ? `, msg ${m.promptNumber}` : ''}:{' '}
+                      <span className="whitespace-pre-wrap break-words">{m.promptText}</span>
                     </p>
-                    <p className="text-indigo-300">reply: {m.replyText}</p>
+                    <p className="whitespace-pre-wrap break-words text-indigo-300">reply: {m.replyText}</p>
+                    {m.guarded && (
+                      <p className="text-xs text-amber-300">
+                        The bot said the password here - the guard caught it and swapped in an in-character reply.
+                      </p>
+                    )}
                   </div>
                 ))}
                 <p className="mt-3 font-medium text-slate-200">Guesses made (by this team):</p>
