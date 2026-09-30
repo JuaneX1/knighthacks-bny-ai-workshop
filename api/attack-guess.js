@@ -1,7 +1,7 @@
-import { getRedis } from './lib/redis.js';
-import { roundVaultKey, roundGuessesKey } from './lib/keys.js';
-import { withErrorHandling, methodGuard, readJsonBody, sendJson, requireTeamSession, HttpError } from './lib/http.js';
-import { ensurePhaseFresh, getOpponentTeamId, getVault, incrementGuessUsed } from './lib/stateMachine.js';
+import { getRedis } from '../lib/redis.js';
+import { roundVaultKey, roundGuessesKey } from '../lib/keys.js';
+import { withErrorHandling, methodGuard, readJsonBody, sendJson, requireTeamSession, HttpError } from '../lib/http.js';
+import { ensurePhaseFresh, getOpponentTeamId, getVault, incrementGuessUsed } from '../lib/stateMachine.js';
 
 export default withErrorHandling(async (req, res) => {
   methodGuard(req, ['POST']);

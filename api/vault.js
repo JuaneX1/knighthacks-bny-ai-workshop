@@ -1,8 +1,8 @@
-import { getRedis } from './lib/redis.js';
-import { roundVaultKey } from './lib/keys.js';
-import { withErrorHandling, methodGuard, readJsonBody, sendJson, requireTeamSession, HttpError } from './lib/http.js';
-import { ensurePhaseFresh, getVault } from './lib/stateMachine.js';
-import { validateVaultInput } from './lib/validation.js';
+import { getRedis } from '../lib/redis.js';
+import { roundVaultKey } from '../lib/keys.js';
+import { withErrorHandling, methodGuard, readJsonBody, sendJson, requireTeamSession, HttpError } from '../lib/http.js';
+import { ensurePhaseFresh, getVault } from '../lib/stateMachine.js';
+import { validateVaultInput } from '../lib/validation.js';
 
 export default withErrorHandling(async (req, res) => {
   methodGuard(req, ['GET', 'PUT']);

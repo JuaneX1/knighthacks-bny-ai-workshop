@@ -1,9 +1,9 @@
-import { getRedis } from './lib/redis.js';
-import { withErrorHandling, methodGuard, readJsonBody, sendJson, requireTeamSession, HttpError } from './lib/http.js';
-import { ensurePhaseFresh } from './lib/stateMachine.js';
-import { validateVaultInput, validateAttackMessage } from './lib/validation.js';
-import { callChat, buildVaultSystemPrompt, LlmError, friendlyLlmMessage } from './lib/llm.js';
-import { guardReply } from './lib/outputGuard.js';
+import { getRedis } from '../lib/redis.js';
+import { withErrorHandling, methodGuard, readJsonBody, sendJson, requireTeamSession, HttpError } from '../lib/http.js';
+import { ensurePhaseFresh } from '../lib/stateMachine.js';
+import { validateVaultInput, validateAttackMessage } from '../lib/validation.js';
+import { callChat, buildVaultSystemPrompt, LlmError, friendlyLlmMessage } from '../lib/llm.js';
+import { guardReply } from '../lib/outputGuard.js';
 
 const DUMMY_PASSWORD = 'sample-password';
 

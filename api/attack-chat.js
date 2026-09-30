@@ -1,11 +1,11 @@
-import { getRedis } from './lib/redis.js';
-import { roundLockKey, roundMessagesKey } from './lib/keys.js';
-import { withErrorHandling, methodGuard, readJsonBody, sendJson, requireTeamSession, HttpError } from './lib/http.js';
-import { ensurePhaseFresh, getOpponentTeamId, getVault, getIterations, incrementChatUsed } from './lib/stateMachine.js';
-import { validateAttackMessage } from './lib/validation.js';
-import { callChat, buildVaultSystemPrompt, LlmError, friendlyLlmMessage } from './lib/llm.js';
-import { guardReply } from './lib/outputGuard.js';
-import { enforceRateLimit } from './lib/ratelimit.js';
+import { getRedis } from '../lib/redis.js';
+import { roundLockKey, roundMessagesKey } from '../lib/keys.js';
+import { withErrorHandling, methodGuard, readJsonBody, sendJson, requireTeamSession, HttpError } from '../lib/http.js';
+import { ensurePhaseFresh, getOpponentTeamId, getVault, getIterations, incrementChatUsed } from '../lib/stateMachine.js';
+import { validateAttackMessage } from '../lib/validation.js';
+import { callChat, buildVaultSystemPrompt, LlmError, friendlyLlmMessage } from '../lib/llm.js';
+import { guardReply } from '../lib/outputGuard.js';
+import { enforceRateLimit } from '../lib/ratelimit.js';
 
 export default withErrorHandling(async (req, res) => {
   methodGuard(req, ['POST']);

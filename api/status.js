@@ -1,6 +1,6 @@
-import { getRedis } from './lib/redis.js';
-import { withErrorHandling, methodGuard, sendJson, requireTeamSession } from './lib/http.js';
-import { ensurePhaseFresh, getVault, getIterations, getOpponentTeamId } from './lib/stateMachine.js';
+import { getRedis } from '../lib/redis.js';
+import { withErrorHandling, methodGuard, sendJson, requireTeamSession } from '../lib/http.js';
+import { ensurePhaseFresh, getVault, getIterations, getOpponentTeamId } from '../lib/stateMachine.js';
 
 export default withErrorHandling(async (req, res) => {
   methodGuard(req, ['GET']);
