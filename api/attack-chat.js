@@ -4,6 +4,7 @@ import { withErrorHandling, methodGuard, readJsonBody, sendJson, requireTeamSess
 import { ensurePhaseFresh, getOpponentTeamId, getVault, getIterations, incrementChatUsed } from './lib/stateMachine.js';
 import { validateAttackMessage } from './lib/validation.js';
 import { callChat, buildVaultSystemPrompt, LlmError, friendlyLlmMessage } from './lib/llm.js';
+import { guardReply } from './lib/outputGuard.js';
 import { enforceRateLimit } from './lib/ratelimit.js';
 
 export default withErrorHandling(async (req, res) => {
@@ -43,7 +44,8 @@ export default withErrorHandling(async (req, res) => {
     const systemPrompt = buildVaultSystemPrompt(opponentVault, opponentVault.password);
     let reply;
     try {
-      reply = await callChat({ systemPrompt, userMessage: message });
+      const raw = await callChat({ systemPrompt, userMessage: message });
+      reply = guardReply(raw, opponentVault.password);
     } catch (err) {
       if (err instanceof LlmError) {
         // Failed calls never consume an attempt.
