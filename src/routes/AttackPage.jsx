@@ -20,6 +20,7 @@ export default function AttackPage() {
   useEffect(() => {
     if (!status) return;
     if (status.state === 'draft') navigate('/defend');
+    if (['round_ended', 'game_ended'].includes(status.state)) navigate('/waiting');
     if (status.roundNumber && status.roundNumber !== loadedRound) {
       setLoadedRound(status.roundNumber);
       setIterations(status.myIterations);

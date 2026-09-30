@@ -22,6 +22,19 @@ export default withErrorHandling(async (req, res) => {
     if (!t.teamId || !t.name || !t.joinCode) {
       throw new HttpError(400, 'Each team needs teamId, name, and joinCode');
     }
+  }
+
+  // Replace the whole team set rather than merging, so renaming a teamId or
+  // joinCode doesn't leave the old entries behind as orphaned "teams".
+  const existingRaw = await redis.hgetall(teamsKey());
+  const existing = Object.entries(existingRaw || {}).map(([teamId, info]) => ({ teamId, ...info }));
+
+  await redis.del(teamsKey());
+  for (const t of existing) {
+    if (t.joinCode) await redis.del(joinCodeKey(t.joinCode));
+  }
+
+  for (const t of teams) {
     await redis.hset(teamsKey(), { [t.teamId]: JSON.stringify({ name: t.name, joinCode: t.joinCode }) });
     await redis.set(joinCodeKey(t.joinCode), t.teamId);
   }
