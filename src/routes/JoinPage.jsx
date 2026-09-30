@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api.js';
 import StatusBanner from '../components/StatusBanner.jsx';
+import Spinner from '../components/Spinner.jsx';
 
 export default function JoinPage() {
   const [joinCode, setJoinCode] = useState('');
@@ -43,9 +44,15 @@ export default function JoinPage() {
         <button
           type="submit"
           disabled={submitting || !joinCode.trim()}
-          className="w-full rounded-lg bg-indigo-600 px-4 py-3 font-semibold text-white transition hover:bg-indigo-500 disabled:opacity-50"
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-3 font-semibold text-white transition hover:bg-indigo-500 active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100"
         >
-          {submitting ? 'Joining...' : 'Join'}
+          {submitting ? (
+            <>
+              <Spinner /> Joining
+            </>
+          ) : (
+            'Join'
+          )}
         </button>
       </form>
 

@@ -22,7 +22,9 @@ function listApiFiles(dir, base = '') {
     if (entry.isDirectory()) {
       files = files.concat(listApiFiles(full, rel));
     } else if (entry.name.endsWith('.js')) {
-      files.push({ file: full, route: `/api/${rel.replace(/\.js$/, '')}` });
+      // Mirror Vercel's [param] dynamic-segment convention using Express's :param syntax.
+      const routeSegment = rel.replace(/\.js$/, '').replace(/\[([^\]]+)\]/g, ':$1');
+      files.push({ file: full, route: `/api/${routeSegment}` });
     }
   }
   return files;
@@ -47,6 +49,16 @@ async function main() {
       continue;
     }
     app.all(route, (req, res) => {
+      // Vercel exposes dynamic path segments (e.g. [action]) via req.query, not req.params -
+      // mirror that here so handler code doesn't need to care which environment it's running in.
+      // Express 5's req.query is a getter that recomputes fresh from the URL on every read, so a
+      // plain Object.assign(req.query, ...) would mutate a throwaway object; override it with an
+      // own property instead, which shadows the prototype getter for the rest of this request.
+      Object.defineProperty(req, 'query', {
+        value: { ...req.query, ...req.params },
+        writable: true,
+        configurable: true,
+      });
       Promise.resolve(handler(req, res)).catch((err) => {
         console.error(`Unhandled error in ${route}:`, err);
         if (!res.headersSent) res.status(500).json({ error: 'Internal server error' });

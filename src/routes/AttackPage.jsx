@@ -3,12 +3,20 @@ import { useNavigate } from 'react-router-dom';
 import { useGameStatus } from '../hooks/useGameStatus.js';
 import Timer from '../components/Timer.jsx';
 import StatusBanner from '../components/StatusBanner.jsx';
+import LoadingScreen from '../components/LoadingScreen.jsx';
+import AttemptPips from '../components/AttemptPips.jsx';
 import AttackChatPanel from '../components/AttackChatPanel.jsx';
 import GuessBox from '../components/GuessBox.jsx';
 
+// Progress only moves forward within a round, so whichever snapshot is further along is newest.
+// This keeps a slightly stale status poll from undoing a result we just got back.
+function progress(a) {
+  return a.done ? Infinity : a.attempt * 1000 + a.promptsUsed;
+}
+
 export default function AttackPage() {
   const { data: status, error: statusError } = useGameStatus();
-  const [iterations, setIterations] = useState(null);
+  const [localAttack, setLocalAttack] = useState(null);
   const [cracked, setCracked] = useState(false);
   const [loadedRound, setLoadedRound] = useState(null);
   const navigate = useNavigate();
@@ -23,19 +31,19 @@ export default function AttackPage() {
     if (['round_ended', 'game_ended'].includes(status.state)) navigate('/waiting');
     if (status.roundNumber && status.roundNumber !== loadedRound) {
       setLoadedRound(status.roundNumber);
-      setIterations(status.myIterations);
+      setLocalAttack(null);
       setCracked(Boolean(status.iCrackedOpponent));
     } else if (status.iCrackedOpponent) {
       setCracked(true);
     }
   }, [status, loadedRound, navigate]);
 
-  if (!status) return <div className="p-8 text-slate-400">Loading...</div>;
+  if (!status) return <LoadingScreen label="Loading round" />;
 
   if (status.state === 'lobby') {
     return (
       <Centered>
-        <StatusBanner>Waiting for the admin to start the first round.</StatusBanner>
+        <StatusBanner waiting>Waiting for the admin to start the first round</StatusBanner>
       </Centered>
     );
   }
@@ -44,51 +52,65 @@ export default function AttackPage() {
     return (
       <Centered>
         <StatusBanner>
-          Attack phase isn't active right now (currently: {status.state}).{' '}
-          <a href="/waiting" className="underline">Go to waiting screen</a>
+          The Attack phase isn't on right now.{' '}
+          <a href="/waiting" className="underline">
+            Go to the waiting screen
+          </a>
         </StatusBanner>
       </Centered>
     );
   }
 
-  const its = iterations || status.myIterations;
-  const exhausted = its.chatUsed >= 3;
+  const attack =
+    localAttack && progress(localAttack) > progress(status.myAttack) ? localAttack : status.myAttack;
+  const triesUsed = attack.done ? attack.attemptsTotal : attack.attempt - 1;
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-8">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Attack the opponent's vault - Round {status.roundNumber}</h1>
+      <div className="mb-2 flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Round {status.roundNumber}: Break their bot</h1>
         <Timer endsAt={status.phaseEndsAt} className="text-xl" />
       </div>
+      <p className="mb-4 text-slate-400">
+        Chat with the other team's bot and trick it into telling you the password. When you think you know it, guess! You
+        get {attack.attemptsTotal} tries. Each try is up to {attack.promptsPerAttempt} messages and 1 guess.
+      </p>
 
-      {cracked && (
-        <div className="mb-4">
-          <StatusBanner tone="good">You cracked it! Waiting for the round to resolve.</StatusBanner>
+      {!attack.done && !cracked && (
+        <div className="mb-4 flex items-center gap-3 text-sm text-slate-300">
+          <AttemptPips used={triesUsed} total={attack.attemptsTotal} />
+          <span>
+            Try {attack.attempt} of {attack.attemptsTotal}
+          </span>
         </div>
       )}
 
-      {!cracked && exhausted && (
-        <div className="mb-4">
-          <StatusBanner>You've used all 3 attempts. Waiting for the round to resolve.</StatusBanner>
-        </div>
-      )}
+      <div className="mb-4 space-y-2">
+        {status.opponentFailedCheck && !cracked && (
+          <StatusBanner tone="good">
+            Their bot failed the helpfulness test, so it already counts as broken. If your own bot stays safe, you win!
+          </StatusBanner>
+        )}
+        {cracked && (
+          <StatusBanner tone="good" waiting className="text-base font-medium">
+            You cracked it! Waiting for the round to end
+          </StatusBanner>
+        )}
+        {!cracked && attack.done && (
+          <StatusBanner waiting>You've used all your tries. Waiting for the round to end</StatusBanner>
+        )}
+      </div>
 
       <div className="space-y-4">
-        <AttackChatPanel
-          chatUsed={its.chatUsed}
-          chatRemaining={its.chatRemaining}
-          disabled={cracked}
-          onChatUsedChange={(chatUsed, chatRemaining) =>
-            setIterations((prev) => ({ ...prev, chatUsed, chatRemaining }))
-          }
-        />
+        {!attack.done && !cracked && (
+          <AttackChatPanel key={attack.attempt} attack={attack} disabled={cracked} onAttackChange={setLocalAttack} />
+        )}
         <GuessBox
-          chatUsed={its.chatUsed}
-          guessUsed={its.guessUsed}
-          guessRemaining={its.guessRemaining}
+          attack={attack}
           disabled={cracked}
+          cracked={cracked}
           onGuessResult={(result) => {
-            setIterations((prev) => ({ ...prev, guessUsed: result.guessUsed, guessRemaining: result.guessRemaining }));
+            setLocalAttack(result.attack);
             if (result.correct) setCracked(true);
           }}
         />

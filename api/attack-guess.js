@@ -1,8 +1,17 @@
-import { getRedis } from './lib/redis.js';
-import { roundVaultKey, roundGuessesKey } from './lib/keys.js';
-import { withErrorHandling, methodGuard, readJsonBody, sendJson, requireTeamSession, HttpError } from './lib/http.js';
-import { ensurePhaseFresh, getOpponentTeamId, getVault, incrementGuessUsed } from './lib/stateMachine.js';
+import { getRedis } from '../lib/redis.js';
+import { roundVaultKey, roundGuessesKey } from '../lib/keys.js';
+import { withErrorHandling, methodGuard, readJsonBody, sendJson, requireTeamSession, HttpError } from '../lib/http.js';
+import {
+  ensurePhaseFresh,
+  getOpponentTeamId,
+  getVault,
+  getIterations,
+  endAttempt,
+  describeIterations,
+} from '../lib/stateMachine.js';
 
+// Ends the current try. Body { guess } makes a password guess; { giveUp: true } starts a fresh
+// chat without guessing. Either way the next try begins with an empty conversation.
 export default withErrorHandling(async (req, res) => {
   methodGuard(req, ['POST']);
   const { teamId } = await requireTeamSession(req);
@@ -20,22 +29,28 @@ export default withErrorHandling(async (req, res) => {
   if (!opponentVault) throw new HttpError(409, 'Opponent vault not ready');
 
   const body = await readJsonBody(req);
+  const giveUp = body.giveUp === true;
   const guess = String(body.guess || '').trim();
-  if (!guess) throw new HttpError(400, 'guess is required');
+  if (!giveUp && !guess) throw new HttpError(400, 'guess is required');
 
   if (opponentVault.crackedByOpponent) {
     throw new HttpError(409, 'You already cracked it - waiting for the round to resolve');
   }
 
-  const newGuessUsed = await incrementGuessUsed(redis, game.roundNumber, teamId);
-  if (newGuessUsed === -1) {
-    throw new HttpError(409, 'You must send an attack prompt before guessing for that attempt, or you are out of guesses');
+  const endedAttempt = await endAttempt(redis, game.roundNumber, teamId, { isGuess: !giveUp });
+  if (endedAttempt === -1) {
+    throw new HttpError(409, 'Send the bot at least one message in this try first');
+  }
+
+  const attack = describeIterations(await getIterations(redis, game.roundNumber, teamId), game.promptsPerAttempt);
+  if (giveUp) {
+    return sendJson(res, 200, { correct: false, gaveUp: true, attack });
   }
 
   const correct = guess.toLowerCase() === opponentVault.password.toLowerCase();
 
   await redis.rpush(roundGuessesKey(game.roundNumber, teamId), {
-    iteration: newGuessUsed,
+    iteration: endedAttempt,
     guess,
     correct,
     ts: Date.now(),
@@ -44,13 +59,9 @@ export default withErrorHandling(async (req, res) => {
   if (correct) {
     await redis.hset(roundVaultKey(game.roundNumber, opponentTeamId), {
       crackedByOpponent: true,
-      crackedAtIteration: String(newGuessUsed),
+      crackedAtIteration: String(endedAttempt),
     });
   }
 
-  sendJson(res, 200, {
-    correct,
-    guessUsed: newGuessUsed,
-    guessRemaining: Math.max(0, 3 - newGuessUsed),
-  });
+  sendJson(res, 200, { correct, attack });
 });

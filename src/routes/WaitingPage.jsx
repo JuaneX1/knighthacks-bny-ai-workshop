@@ -5,6 +5,8 @@ import { useScoreboard } from '../hooks/useScoreboard.js';
 import Timer from '../components/Timer.jsx';
 import StatusBanner from '../components/StatusBanner.jsx';
 import RoundHistoryList from '../components/RoundHistoryList.jsx';
+import RoundHistorySkeleton from '../components/RoundHistorySkeleton.jsx';
+import Spinner from '../components/Spinner.jsx';
 import { PHASE_LABELS } from '../lib/format.js';
 
 export default function WaitingPage() {
@@ -23,13 +25,32 @@ export default function WaitingPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-10">
-      <h1 className="mb-2 text-3xl font-bold">
-        {status ? PHASE_LABELS[status.state] : 'Loading...'}
+      <h1 className="mb-2 flex items-center gap-3 text-3xl font-bold">
+        {status ? (
+          <span key={status.state} className="motion-safe:animate-fade-in-up">
+            {PHASE_LABELS[status.state]}
+          </span>
+        ) : (
+          <>
+            <Spinner className="h-7 w-7 text-indigo-400" />
+            <span className="text-slate-400">Loading</span>
+          </>
+        )}
       </h1>
       {status?.phaseEndsAt && (
         <p className="mb-6 text-xl">
           Time remaining: <Timer endsAt={status.phaseEndsAt} />
         </p>
+      )}
+
+      {(status?.state === 'lobby' || status?.state === 'round_ended') && (
+        <div className="mb-6">
+          <StatusBanner waiting>
+            {status.state === 'lobby'
+              ? 'Waiting for the admin to start the first round'
+              : 'Waiting for the admin to start the next round'}
+          </StatusBanner>
+        </div>
       )}
 
       {status?.state === 'game_ended' && (
@@ -45,7 +66,7 @@ export default function WaitingPage() {
       )}
 
       <h2 className="mb-3 text-xl font-semibold">Round history</h2>
-      {board ? <RoundHistoryList rounds={board.rounds} teams={board.teams} /> : <p>Loading scoreboard...</p>}
+      {board ? <RoundHistoryList rounds={board.rounds} teams={board.teams} /> : <RoundHistorySkeleton />}
     </div>
   );
 }

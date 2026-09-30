@@ -1,7 +1,7 @@
-import { getRedis } from './lib/redis.js';
-import { joinCodeKey } from './lib/keys.js';
-import { signSessionToken, buildSessionCookie, activateNewSession } from './lib/session.js';
-import { withErrorHandling, methodGuard, readJsonBody, sendJson, HttpError } from './lib/http.js';
+import { getRedis } from '../lib/redis.js';
+import { joinCodeKey } from '../lib/keys.js';
+import { signSessionToken, buildSessionCookie, activateNewSession } from '../lib/session.js';
+import { withErrorHandling, methodGuard, readJsonBody, sendJson, HttpError } from '../lib/http.js';
 
 export default withErrorHandling(async (req, res) => {
   methodGuard(req, ['POST']);

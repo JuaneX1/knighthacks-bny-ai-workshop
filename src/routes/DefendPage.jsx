@@ -4,14 +4,24 @@ import { useGameStatus } from '../hooks/useGameStatus.js';
 import { api } from '../lib/api.js';
 import Timer from '../components/Timer.jsx';
 import StatusBanner from '../components/StatusBanner.jsx';
+import LoadingScreen from '../components/LoadingScreen.jsx';
 import VaultEditorForm from '../components/VaultEditorForm.jsx';
+import HelpfulnessResult from '../components/HelpfulnessResult.jsx';
 import TestChatPanel from '../components/TestChatPanel.jsx';
 
 const BLANK_VAULT = { systemPrompt: '', jobDescription: '' };
 
+function vaultFields(v) {
+  return { systemPrompt: v?.systemPrompt || '', jobDescription: v?.jobDescription || '' };
+}
+
 export default function DefendPage() {
   const { data: status, error: statusError } = useGameStatus();
   const [vault, setVault] = useState(BLANK_VAULT);
+  const [savedVault, setSavedVault] = useState(BLANK_VAULT);
+  // The result from our own last "Save & test", so it shows instantly instead of on the next poll.
+  const [recentCheck, setRecentCheck] = useState(undefined);
+  const [carriedOver, setCarriedOver] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState(null);
   const [loadedRound, setLoadedRound] = useState(null);
@@ -25,24 +35,22 @@ export default function DefendPage() {
     if (!status) return;
     if (status.state === 'attack') navigate('/attack');
     if (status.roundNumber && status.roundNumber !== loadedRound) {
+      const fields = vaultFields(status.myVault);
       setLoadedRound(status.roundNumber);
-      if (status.myVault) {
-        setVault({
-          systemPrompt: status.myVault.systemPrompt || '',
-          jobDescription: status.myVault.jobDescription || '',
-        });
-      } else {
-        setVault(BLANK_VAULT);
-      }
+      setVault(fields);
+      setSavedVault(fields);
+      setRecentCheck(undefined);
+      setSaveMsg(null);
+      setCarriedOver(status.roundNumber > 1 && Boolean(fields.systemPrompt || fields.jobDescription));
     }
   }, [status, loadedRound, navigate]);
 
-  if (!status) return <div className="p-8 text-slate-400">Loading...</div>;
+  if (!status) return <LoadingScreen label="Loading round" />;
 
   if (status.state === 'lobby') {
     return (
       <Centered>
-        <StatusBanner>Waiting for the admin to start the first round.</StatusBanner>
+        <StatusBanner waiting>Waiting for the admin to start the first round</StatusBanner>
       </Centered>
     );
   }
@@ -51,21 +59,34 @@ export default function DefendPage() {
     return (
       <Centered>
         <StatusBanner>
-          Draft phase isn't active right now (currently: {status.state}).{' '}
-          <a href="/waiting" className="underline">Go to waiting screen</a>
+          The Defend phase isn't on right now.{' '}
+          <a href="/waiting" className="underline">
+            Go to the waiting screen
+          </a>
         </StatusBanner>
       </Centered>
     );
   }
 
+  const unsaved =
+    vault.systemPrompt !== savedVault.systemPrompt || vault.jobDescription !== savedVault.jobDescription;
+  const check = recentCheck !== undefined ? recentCheck : status.myVault?.check || null;
+
   async function handleSave() {
     setSaving(true);
     setSaveMsg(null);
+    const toSave = { ...vault };
     try {
-      await api.saveVault(vault);
-      setSaveMsg({ tone: 'good', text: 'Vault saved.' });
+      const result = await api.saveAndTestVault(toSave);
+      setSavedVault(toSave);
+      setRecentCheck(result.check || null);
     } catch (err) {
-      setSaveMsg({ tone: 'bad', text: err.message });
+      // The server saves before testing, so "Saved..." errors mean only the test didn't run.
+      if (err.message.startsWith('Saved')) {
+        setSavedVault(toSave);
+        setRecentCheck(null);
+      }
+      setSaveMsg({ id: Date.now(), tone: err.message.startsWith('Saved') ? 'warn' : 'bad', text: err.message });
     } finally {
       setSaving(false);
     }
@@ -73,18 +94,31 @@ export default function DefendPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-8">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Defend your vault - Round {status.roundNumber}</h1>
+      <div className="mb-2 flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Round {status.roundNumber}: Build your bot</h1>
         <Timer endsAt={status.phaseEndsAt} className="text-xl" />
       </div>
+      <p className="mb-6 text-slate-400">
+        The other team will chat with your bot and try to trick it into saying the password. Keep the password safe, but
+        your bot still has to do its job. A bot that refuses to help anyone fails the test and counts as broken.
+      </p>
+
+      {carriedOver && (
+        <div className="mb-4">
+          <StatusBanner>We kept your bot from last round. Change it, or keep it as is.</StatusBanner>
+        </div>
+      )}
 
       <VaultEditorForm vault={vault} onChange={setVault} onSave={handleSave} saving={saving} disabled={false} />
 
-      {saveMsg && (
-        <div className="mt-4">
-          <StatusBanner tone={saveMsg.tone}>{saveMsg.text}</StatusBanner>
-        </div>
-      )}
+      <div className="mt-4 space-y-2">
+        {saveMsg && (
+          <StatusBanner key={saveMsg.id} tone={saveMsg.tone}>
+            {saveMsg.text}
+          </StatusBanner>
+        )}
+        {!saving && <HelpfulnessResult check={check} unsaved={unsaved} />}
+      </div>
 
       <div className="mt-6">
         <TestChatPanel vault={vault} disabled={false} />

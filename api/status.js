@@ -1,6 +1,13 @@
-import { getRedis } from './lib/redis.js';
-import { withErrorHandling, methodGuard, sendJson, requireTeamSession } from './lib/http.js';
-import { ensurePhaseFresh, getVault, getIterations, getOpponentTeamId } from './lib/stateMachine.js';
+import { getRedis } from '../lib/redis.js';
+import { withErrorHandling, methodGuard, sendJson, requireTeamSession } from '../lib/http.js';
+import {
+  ensurePhaseFresh,
+  getVault,
+  getIterations,
+  getOpponentTeamId,
+  describeIterations,
+} from '../lib/stateMachine.js';
+import { getCachedUtility } from '../lib/utilityCheck.js';
 
 export default withErrorHandling(async (req, res) => {
   methodGuard(req, ['GET']);
@@ -11,29 +18,32 @@ export default withErrorHandling(async (req, res) => {
   const opponentTeamId = await getOpponentTeamId(redis, teamId);
 
   let myVault = null;
-  let myIterations = { chatUsed: 0, chatRemaining: 3, guessUsed: 0, guessRemaining: 3 };
+  let myAttack = describeIterations({ attempt: 1, promptsUsed: 0, guessUsed: 0 }, game.promptsPerAttempt);
   let iCrackedOpponent = false;
+  let opponentFailedCheck = false;
 
   if (game.roundNumber > 0) {
     const vault = await getVault(redis, game.roundNumber, teamId);
     if (vault) {
+      // During the draft phase, show the test result for the saved text (null = not tested yet).
+      // Once the attack phase starts, the locked-in result is what counts.
+      const check =
+        vault.utilityPassed === null
+          ? await getCachedUtility(redis, vault)
+          : { passed: vault.utilityPassed, reason: vault.utilityReason };
       myVault = {
         systemPrompt: vault.systemPrompt,
         jobDescription: vault.jobDescription,
         crackedByOpponent: vault.crackedByOpponent,
+        check,
       };
     }
-    const its = await getIterations(redis, game.roundNumber, teamId);
-    myIterations = {
-      chatUsed: its.chatUsed,
-      chatRemaining: Math.max(0, 3 - its.chatUsed),
-      guessUsed: its.guessUsed,
-      guessRemaining: Math.max(0, 3 - its.guessUsed),
-    };
+    myAttack = describeIterations(await getIterations(redis, game.roundNumber, teamId), game.promptsPerAttempt);
 
     if (opponentTeamId) {
       const opponentVault = await getVault(redis, game.roundNumber, opponentTeamId);
       iCrackedOpponent = Boolean(opponentVault?.crackedByOpponent);
+      opponentFailedCheck = opponentVault?.utilityPassed === false;
     }
   }
 
@@ -48,7 +58,8 @@ export default withErrorHandling(async (req, res) => {
     finalResult: game.finalResult,
     amIWinner: game.winnerTeamId ? game.winnerTeamId === teamId : null,
     myVault,
-    myIterations,
+    myAttack,
     iCrackedOpponent,
+    opponentFailedCheck,
   });
 });

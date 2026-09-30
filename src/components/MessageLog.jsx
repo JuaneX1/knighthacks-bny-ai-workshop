@@ -17,6 +17,12 @@ export default function MessageLog({ log, teams }) {
                 {t.vault && (
                   <>
                     <p className="mt-1 font-mono text-xs text-slate-400">password: {t.vault.password}</p>
+                    {t.vault.utilityPassed !== null && (
+                      <p className={`mt-1 text-xs ${t.vault.utilityPassed ? 'text-emerald-400' : 'text-red-400'}`}>
+                        helpfulness test: {t.vault.utilityPassed ? 'passed' : 'failed'}
+                        {t.vault.utilityReason ? ` - ${t.vault.utilityReason}` : ''}
+                      </p>
+                    )}
                     <p className="mt-1 whitespace-pre-wrap text-slate-300">{t.vault.systemPrompt}</p>
                   </>
                 )}
@@ -24,15 +30,24 @@ export default function MessageLog({ log, teams }) {
                 {t.messages.length === 0 && <p className="text-slate-500">None</p>}
                 {t.messages.map((m, i) => (
                   <div key={i} className="mt-2 border-t border-slate-800 pt-2">
-                    <p className="text-slate-400">#{m.iteration} prompt: {m.promptText}</p>
-                    <p className="text-indigo-300">reply: {m.replyText}</p>
+                    <p className="text-slate-400">
+                      Try {m.iteration}
+                      {m.promptNumber ? `, msg ${m.promptNumber}` : ''}:{' '}
+                      <span className="whitespace-pre-wrap break-words">{m.promptText}</span>
+                    </p>
+                    <p className="whitespace-pre-wrap break-words text-indigo-300">reply: {m.replyText}</p>
+                    {m.guarded && (
+                      <p className="text-xs text-amber-300">
+                        The bot said the password here - the guard caught it and swapped in an in-character reply.
+                      </p>
+                    )}
                   </div>
                 ))}
                 <p className="mt-3 font-medium text-slate-200">Guesses made (by this team):</p>
                 {t.guesses.length === 0 && <p className="text-slate-500">None</p>}
                 {t.guesses.map((g, i) => (
                   <p key={i} className={g.correct ? 'text-emerald-400' : 'text-slate-400'}>
-                    #{g.iteration}: {g.guess} {g.correct ? '(correct)' : ''}
+                    Try {g.iteration}: {g.guess} {g.correct ? '(correct)' : ''}
                   </p>
                 ))}
               </div>

@@ -1,7 +1,7 @@
-import { getRedis } from './lib/redis.js';
-import { roundKey, teamsKey } from './lib/keys.js';
-import { withErrorHandling, methodGuard, sendJson } from './lib/http.js';
-import { ensurePhaseFresh, getVault, getTeamIds } from './lib/stateMachine.js';
+import { getRedis } from '../lib/redis.js';
+import { roundKey, teamsKey } from '../lib/keys.js';
+import { withErrorHandling, methodGuard, sendJson } from '../lib/http.js';
+import { ensurePhaseFresh, getVault, getTeamIds } from '../lib/stateMachine.js';
 
 const SEALED_STATES = ['round_ended', 'game_ended'];
 
@@ -34,6 +34,8 @@ export default withErrorHandling(async (req, res) => {
             jobDescription: vault.jobDescription,
             password: vault.password,
             crackedByOpponent: vault.crackedByOpponent,
+            utilityPassed: vault.utilityPassed,
+            utilityReason: vault.utilityReason,
           }
         : null;
     }

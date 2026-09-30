@@ -30,9 +30,12 @@ export const api = {
   status: () => request('/status'),
   getVault: () => request('/vault'),
   saveVault: (vault) => request('/vault', { method: 'PUT', body: vault }),
+  saveAndTestVault: (vault) => request('/vault', { method: 'POST', body: vault }),
   testChat: (payload) => request('/vault-test-chat', { method: 'POST', body: payload }),
+  attackConversation: () => request('/attack-chat'),
   attackChat: (message) => request('/attack-chat', { method: 'POST', body: { message } }),
   attackGuess: (guess) => request('/attack-guess', { method: 'POST', body: { guess } }),
+  attackGiveUp: () => request('/attack-guess', { method: 'POST', body: { giveUp: true } }),
   scoreboard: () => request('/scoreboard'),
 
   admin: {
