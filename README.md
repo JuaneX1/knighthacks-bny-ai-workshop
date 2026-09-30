@@ -3,10 +3,10 @@
 A live, two-team prompt-injection capture-the-flag game for a hackathon workshop.
 
 Every round, **both teams simultaneously**:
-1. **Draft (5 min)** — write a system prompt / rules for their own vault chatbot, which hides a secret password.
-2. **Attack (5 min)** — get 3 attempts against the *opponent's* vault: each attempt is one chat prompt plus an optional one password guess.
+1. **Draft (5 min)** — write a system prompt / rules for their own vault chatbot, which hides a secret password, then "Save & test" it so it passes a helpfulness test.
+2. **Attack (10 min)** — get 3 tries against the *opponent's* vault: each try is a conversation of up to 8 messages (the bot remembers the conversation) that ends with one password guess.
 
-A team **wins the whole game** the instant it cracks the opponent's password while its own vault survives uncracked. Anything else is a draw, and the admin starts a new round. Designed for exactly 3 concurrent devices: one per team, plus one admin device that runs the room. Joining from a new device invalidates a team's previous session, so only one device per team can be active at a time.
+A team **wins the whole game** when the opponent's vault breaks (cracked, or failed the helpfulness test) while its own vault holds up. Anything else is a draw, and the admin starts a new round. Designed for exactly 3 concurrent devices: one per team, plus one admin device that runs the room. Joining from a new device invalidates a team's previous session, so only one device per team can be active at a time.
 
 ## Stack
 
@@ -23,7 +23,7 @@ A team **wins the whole game** the instant it cracks the opponent's password whi
 /scripts        seed.js (demo data) and simulate.js (end-to-end dry run)
 ```
 
-See the plan/comments in `api/lib/stateMachine.js` for the full round/phase state machine.
+See the plan/comments in `lib/stateMachine.js` for the full round/phase state machine.
 
 ## Local development
 
@@ -53,6 +53,7 @@ cp .env.example .env
 | `UPSTASH_REDIS_REST_URL` | From your Upstash Redis database dashboard |
 | `UPSTASH_REDIS_REST_TOKEN` | From your Upstash Redis database dashboard |
 | `LLM_API_KEY` | Google AI Studio API key |
+| `LLM_MAX_CALLS_PER_MINUTE` | Optional, default `10`. Hard cap on AI calls per minute across the whole game (each team gets half). |
 | `LLM_MODEL` | e.g. `gemini-flash-lite-latest` (fast and currently available; Google's dated model names churn quickly, so check `GET https://generativelanguage.googleapis.com/v1beta/openai/models` with your key if this one ever 404s) |
 | `SESSION_SECRET` | Any long random string (used to sign team session cookies) |
 | `ADMIN_TOKEN` | Any long random string (the admin's login token) |
@@ -117,10 +118,11 @@ This scripts one full round end-to-end (join, draft, force the attack phase, can
 
 ## Gameplay rules reference
 
-- **Draft phase (5 min, default):** system prompt (max 400 words), job description (free text — teams choose their own theme), optional output filter (regex list or a second LLM call that blocks replies revealing the password).
-- **Utility check (automatic, at the end of draft):** the server generates 5 questions fitting the team's own job description, answers them through the vault, and grades each as on-topic/helpful. Passing requires 4/5. Defenders see pass/fail + score, never the questions.
-- **Attack phase (5 min, default):** each team gets 3 attempts against the *opponent's* vault. One attempt = one single-turn chat message (no conversation history) plus an optional one password guess tied to that attempt. The phase ends at the timer, or once both teams have used all 3 attempts — whichever comes first.
-- **Winning:** a team wins outright the moment it has cracked the opponent's password **and** its own vault survived (uncracked + utility check passed). Anything else is a draw, and the admin starts a new round.
+- **Teams:** always exactly 2, with fixed internal ids (`team-alpha`, `team-bravo`). The admin can rename them and change join codes at any time; saving replaces the team list rather than adding to it.
+- **Draft phase (5 min, default):** system prompt (max 400 words) and a job description (required to test). Each team's last saved vault is carried into the next round automatically (stored under `ctf:defense:<teamId>`, which survives an admin reset).
+- **Helpfulness test (stops "impenetrable" vaults):** "Save & test" asks the vault 2 ordinary questions about its own job and has one grading call decide PASS/FAIL - 3 AI calls total. Results are cached by the vault's exact text, so re-testing unchanged text (or an unchanged vault carried into a new round) is free. Teams can test once every 30 seconds. When the attack phase starts, each vault's result is locked in with no AI calls; a vault that was never tested, or failed, **counts as broken**. A fixed platform preamble also tells every vault to genuinely help with its job.
+- **Attack phase (10 min, default):** each team gets 3 tries against the *opponent's* vault. A try is a conversation of up to 8 messages (admin-configurable, "Messages per try") where the bot remembers earlier messages, and it ends with one password guess (or "start a fresh chat" to give it up). The phase ends at the timer, or once both teams are out of tries or have cracked the opponent.
+- **Winning:** a team wins outright when the opponent's vault is broken (cracked or failed the helpfulness test) **and** its own vault is not. Anything else is a draw, and the admin starts a new round.
 - **If the workshop runs out of time:** the admin can declare a manual winner or draw from the Admin panel to end the game.
 
 ## Security notes
@@ -131,4 +133,5 @@ This scripts one full round end-to-end (join, draft, force the attack phase, can
 - No endpoint returns a vault's password, prompt, or filter to anyone but that team (or after the round is sealed, via the public scoreboard).
 - All chat/vault text is rendered as plain text in React — never `dangerouslySetInnerHTML`.
 - Attack messages are capped at 2000 characters and rate-limited to 1 per 2 seconds per team.
-- If an LLM call fails or times out, the player sees a friendly error and it does **not** count against their attempt budget.
+- If an LLM call fails or times out, the player sees a friendly error and it does **not** count against their message budget.
+- **AI usage cap:** every AI call (attack chat, practice chat, helpfulness tests) reserves capacity from a Redis sliding window first. The whole game is capped at `LLM_MAX_CALLS_PER_MINUTE` (default 10), and each team at half of that, so one team can't starve the other. Over the cap, players see "The AI needs a short break. Try again in N seconds." 

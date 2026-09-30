@@ -4,12 +4,13 @@ import { ensurePhaseFresh } from '../lib/stateMachine.js';
 import { validateVaultInput, validateAttackMessage } from '../lib/validation.js';
 import { callChat, buildVaultSystemPrompt, LlmError, friendlyLlmMessage } from '../lib/llm.js';
 import { guardReply } from '../lib/outputGuard.js';
+import { reserveLlmCalls } from '../lib/ratelimit.js';
 
 const DUMMY_PASSWORD = 'sample-password';
 
 export default withErrorHandling(async (req, res) => {
   methodGuard(req, ['POST']);
-  await requireTeamSession(req);
+  const { teamId } = await requireTeamSession(req);
   const redis = getRedis();
   const game = await ensurePhaseFresh(redis);
 
@@ -20,6 +21,8 @@ export default withErrorHandling(async (req, res) => {
   const body = await readJsonBody(req);
   const vault = validateVaultInput(body);
   const message = validateAttackMessage(body);
+
+  await reserveLlmCalls(redis, teamId, 1);
 
   const systemPrompt = buildVaultSystemPrompt(vault, DUMMY_PASSWORD);
 

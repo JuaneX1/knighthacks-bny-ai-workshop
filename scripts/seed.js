@@ -30,6 +30,9 @@ async function main() {
     );
   }
 
+  // Replace (never append to) the team list, dropping any stale join codes.
+  const staleCodeKeys = await redis.keys('ctf:joincode:*');
+  await redis.del('ctf:teams', ...staleCodeKeys);
   for (const t of TEAMS) {
     await redis.hset('ctf:teams', { [t.teamId]: JSON.stringify({ name: t.name, joinCode: t.joinCode }) });
     await redis.set(`ctf:joincode:${t.joinCode.toLowerCase()}`, t.teamId);

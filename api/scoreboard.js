@@ -34,6 +34,8 @@ export default withErrorHandling(async (req, res) => {
             jobDescription: vault.jobDescription,
             password: vault.password,
             crackedByOpponent: vault.crackedByOpponent,
+            utilityPassed: vault.utilityPassed,
+            utilityReason: vault.utilityReason,
           }
         : null;
     }

@@ -37,6 +37,9 @@ export default function RoundHistoryList({ rounds, teams }) {
                       <p className="mt-1 text-slate-400">
                         Cracked: {vault.crackedByOpponent ? 'yes' : 'no'}
                       </p>
+                      {vault.utilityPassed === false && (
+                        <p className="mt-1 text-red-300">Failed the helpfulness test (counts as broken)</p>
+                      )}
                       <p className="mt-2 whitespace-pre-wrap break-words text-slate-300">{vault.systemPrompt}</p>
                     </>
                   ) : (

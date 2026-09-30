@@ -1,13 +1,14 @@
 import { useScoreboard } from '../hooks/useScoreboard.js';
 import RoundHistoryList from '../components/RoundHistoryList.jsx';
 import Timer from '../components/Timer.jsx';
+import LoadingScreen from '../components/LoadingScreen.jsx';
 import { PHASE_LABELS } from '../lib/format.js';
 
 export default function ScoreboardPage() {
   const { data: board, loading } = useScoreboard();
 
   if (loading || !board) {
-    return <div className="p-16 text-center text-4xl text-slate-400">Loading scoreboard...</div>;
+    return <LoadingScreen label="Loading scoreboard" large />;
   }
 
   return (

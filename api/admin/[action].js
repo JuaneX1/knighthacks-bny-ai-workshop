@@ -1,7 +1,24 @@
 import { getRedis } from '../../lib/redis.js';
-import { gameKey, teamsKey, joinCodeKey, roundKey, roundMessagesKey, roundGuessesKey } from '../../lib/keys.js';
+import {
+  gameKey,
+  teamsKey,
+  joinCodeKey,
+  joinCodePattern,
+  TEAM_IDS,
+  roundKey,
+  roundMessagesKey,
+  roundGuessesKey,
+} from '../../lib/keys.js';
 import { withErrorHandling, methodGuard, readJsonBody, sendJson, requireAdmin, HttpError } from '../../lib/http.js';
-import { getGame, getTeamIds, getVault, startRound, runDraftToAttack, runEvaluateRound } from '../../lib/stateMachine.js';
+import {
+  getGame,
+  getTeamIds,
+  getVault,
+  startRound,
+  runDraftToAttack,
+  runEvaluateRound,
+  MAX_PROMPTS_PER_ATTEMPT,
+} from '../../lib/stateMachine.js';
 
 // Every admin action used to be its own file under /api/admin. Consolidated into one
 // dynamic route (Vercel's [action].js path-segment convention) so it counts as a single
@@ -14,24 +31,43 @@ async function handleTeams(req, res) {
   const redis = getRedis();
 
   if (req.method === 'GET') {
-    const raw = await redis.hgetall(teamsKey());
-    const teams = Object.entries(raw || {}).map(([teamId, info]) => ({ teamId, ...info }));
+    const raw = (await redis.hgetall(teamsKey())) || {};
+    const teams = TEAM_IDS.filter((teamId) => raw[teamId]).map((teamId) => ({ teamId, ...raw[teamId] }));
     return sendJson(res, 200, { teams });
   }
 
   const body = await readJsonBody(req);
   const teams = Array.isArray(body.teams) ? body.teams : [];
-  if (teams.length === 0) throw new HttpError(400, 'teams array is required');
+  if (teams.length !== TEAM_IDS.length) {
+    throw new HttpError(400, `Exactly ${TEAM_IDS.length} teams are required`);
+  }
 
-  for (const t of teams) {
-    if (!t.teamId || !t.name || !t.joinCode) {
-      throw new HttpError(400, 'Each team needs teamId, name, and joinCode');
-    }
-    await redis.hset(teamsKey(), { [t.teamId]: JSON.stringify({ name: t.name, joinCode: t.joinCode }) });
+  // Team ids are fixed by position - only names and join codes are editable. Saving replaces
+  // the whole team list instead of adding to it, so edits can never create a third team.
+  const cleaned = teams.map((t, i) => ({
+    teamId: TEAM_IDS[i],
+    name: String(t.name || '').trim(),
+    joinCode: String(t.joinCode || '').trim(),
+  }));
+  if (cleaned.some((t) => !t.name || !t.joinCode)) {
+    throw new HttpError(400, 'Each team needs a name and a join code');
+  }
+  if (cleaned[0].joinCode.toLowerCase() === cleaned[1].joinCode.toLowerCase()) {
+    throw new HttpError(400, 'The two teams need different join codes');
+  }
+
+  // Also drops any stale join codes (including ones left by older duplicate saves).
+  const staleCodeKeys = await redis.keys(joinCodePattern());
+  await redis.del(teamsKey(), ...staleCodeKeys);
+  await redis.hset(
+    teamsKey(),
+    Object.fromEntries(cleaned.map((t) => [t.teamId, JSON.stringify({ name: t.name, joinCode: t.joinCode })])),
+  );
+  for (const t of cleaned) {
     await redis.set(joinCodeKey(t.joinCode), t.teamId);
   }
 
-  sendJson(res, 200, { ok: true });
+  sendJson(res, 200, { ok: true, teams: cleaned });
 }
 
 async function handleRoundStart(req, res) {
@@ -43,6 +79,7 @@ async function handleRoundStart(req, res) {
     const game = await startRound(redis, {
       draftDurationSec: body.draftDurationSec,
       attackDurationSec: body.attackDurationSec,
+      promptsPerAttempt: body.promptsPerAttempt,
     });
     sendJson(res, 200, { ok: true, game });
   } catch (err) {
@@ -88,7 +125,13 @@ async function handleTimer(req, res) {
   const fields = {};
   if (body.draftDurationSec) fields.draftDurationSec = String(body.draftDurationSec);
   if (body.attackDurationSec) fields.attackDurationSec = String(body.attackDurationSec);
-  if (Object.keys(fields).length === 0) throw new HttpError(400, 'Provide draftDurationSec and/or attackDurationSec');
+  if (body.promptsPerAttempt) {
+    const prompts = Math.round(Number(body.promptsPerAttempt) || 0);
+    fields.promptsPerAttempt = String(Math.min(MAX_PROMPTS_PER_ATTEMPT, Math.max(1, prompts)));
+  }
+  if (Object.keys(fields).length === 0) {
+    throw new HttpError(400, 'Provide draftDurationSec, attackDurationSec and/or promptsPerAttempt');
+  }
 
   await redis.hset(gameKey(), fields);
 

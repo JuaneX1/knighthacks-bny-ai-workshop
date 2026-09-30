@@ -12,10 +12,10 @@ export default function AdminPage() {
   const [verified, setVerified] = useState(false);
   const [message, setMessage] = useState(null);
   const [teamsForm, setTeamsForm] = useState([
-    { teamId: 'team-alpha', name: 'Team Alpha', joinCode: 'ALPHA' },
-    { teamId: 'team-bravo', name: 'Team Bravo', joinCode: 'BRAVO' },
+    { name: 'Team Alpha', joinCode: 'ALPHA' },
+    { name: 'Team Bravo', joinCode: 'BRAVO' },
   ]);
-  const [durations, setDurations] = useState({ draftDurationSec: 300, attackDurationSec: 300 });
+  const [durations, setDurations] = useState({ draftDurationSec: 300, attackDurationSec: 600, promptsPerAttempt: 8 });
   const [log, setLog] = useState(null);
   const { data: board } = useScoreboard({ enabled: verified });
 
@@ -23,7 +23,10 @@ export default function AdminPage() {
     if (!adminToken) return;
     api.admin
       .listTeams(adminToken)
-      .then(() => setVerified(true))
+      .then(({ teams }) => {
+        setVerified(true);
+        if (teams.length === 2) setTeamsForm(teams.map(({ name, joinCode }) => ({ name, joinCode })));
+      })
       .catch(() => setVerified(false));
   }, [adminToken]);
 
@@ -98,13 +101,8 @@ export default function AdminPage() {
       <Section title="Teams">
         <div className="space-y-2">
           {teamsForm.map((t, i) => (
-            <div key={i} className="flex gap-2">
-              <input
-                value={t.teamId}
-                onChange={(e) => updateTeam(i, 'teamId', e.target.value)}
-                placeholder="teamId"
-                className="w-32 rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm"
-              />
+            <div key={i} className="flex items-center gap-2">
+              <span className="w-16 text-sm text-slate-400">Team {i + 1}</span>
               <input
                 value={t.name}
                 onChange={(e) => updateTeam(i, 'name', e.target.value)}
@@ -120,7 +118,12 @@ export default function AdminPage() {
             </div>
           ))}
         </div>
-        <Button onClick={act(() => api.admin.setTeams(teamsForm, adminToken))}>Save teams</Button>
+        <p className="mt-2 text-xs text-slate-500">
+          There are always exactly 2 teams. Renaming or changing a join code is safe at any time.
+        </p>
+        <div className="mt-3">
+          <Button onClick={act(() => api.admin.setTeams(teamsForm, adminToken))}>Save teams</Button>
+        </div>
       </Section>
 
       <Section title="Round control">
@@ -143,12 +146,23 @@ export default function AdminPage() {
               className="ml-2 w-20 rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm"
             />
           </label>
+          <label className="text-sm text-slate-400">
+            Messages per try
+            <input
+              type="number"
+              min={1}
+              max={20}
+              value={durations.promptsPerAttempt}
+              onChange={(e) => setDurations((d) => ({ ...d, promptsPerAttempt: Number(e.target.value) }))}
+              className="ml-2 w-16 rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm"
+            />
+          </label>
         </div>
         <div className="mt-3 flex flex-wrap gap-2">
           <Button onClick={act(() => api.admin.roundStart(durations, adminToken))}>Start next round</Button>
           <Button onClick={act(() => api.admin.phaseAttack(adminToken))}>Force attack phase now</Button>
           <Button onClick={act(() => api.admin.phaseEnd(adminToken))}>Force end attack phase now</Button>
-          <Button onClick={act(() => api.admin.timer(durations, adminToken))}>Update default durations</Button>
+          <Button onClick={act(() => api.admin.timer(durations, adminToken))}>Update default settings</Button>
         </div>
         {(board?.state === 'draft' || board?.state === 'attack') && (
           <p className="mt-2 text-sm text-slate-400">
