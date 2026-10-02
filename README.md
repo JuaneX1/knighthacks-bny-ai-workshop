@@ -66,7 +66,7 @@ When running via `vercel dev`, also link the project (`vercel link`) and run `ve
 npm run seed
 ```
 
-This creates 2 demo teams (`Team Alpha` / join code `ALPHA`, `Team Bravo` / join code `BRAVO`) and a deliberately weak practice vault. Re-running is safe.
+This creates 2 demo teams (`Team Alpha` / join code `ALPHA`, `Team Bravo` / join code `BRAVO`). Re-running is safe.
 
 ### 5. Run the dev server
 
@@ -135,4 +135,4 @@ This scripts one full round end-to-end (join, draft, force the attack phase, can
 - Attack messages are capped at 10,000 characters (room for prompt stuffing and many-shot examples) and rate-limited to 1 per 2 seconds per team.
 - If a reply contains the password, the output guard swaps in an AI-written, in-character refusal (a canned line if no AI capacity is free) instead of a telltale "[response withheld]". The rewrite call never sees the password. The admin debrief log marks these replies.
 - If an LLM call fails or times out, the player sees a friendly error and it does **not** count against their message budget.
-- **AI usage cap:** every AI call (attack chat, practice chat, helpfulness tests) reserves capacity from a Redis sliding window first. The whole game is capped at `LLM_MAX_CALLS_PER_MINUTE` (default 10), and each team at half of that, so one team can't starve the other. Over the cap, players see "The AI needs a short break. Try again in N seconds." 
+- **AI usage cap:** every AI call (attack chat, helpfulness tests) reserves capacity from a Redis sliding window first. The whole game is capped at `LLM_MAX_CALLS_PER_MINUTE` (default 10), and each team at half of that, so one team can't starve the other. Over the cap, players see "The AI needs a short break. Try again in N seconds." 
