@@ -4,5 +4,6 @@ dist
 .env.local
 .vercel
 *.log
+.playwright-mcp
 
 .vercel

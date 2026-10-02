@@ -53,7 +53,7 @@ cp .env.example .env
 | `UPSTASH_REDIS_REST_URL` | From your Upstash Redis database dashboard |
 | `UPSTASH_REDIS_REST_TOKEN` | From your Upstash Redis database dashboard |
 | `LLM_API_KEY` | Google AI Studio API key |
-| `LLM_MAX_CALLS_PER_MINUTE` | Optional, default `10`. Hard cap on AI calls per minute across the whole game (each team gets half). |
+| `LLM_MAX_CALLS_PER_MINUTE` | Optional, default `10`. Hard cap on AI calls per 15-second window across the whole game (each team gets half). |
 | `LLM_MODEL` | e.g. `gemini-flash-lite-latest` (fast and currently available; Google's dated model names churn quickly, so check `GET https://generativelanguage.googleapis.com/v1beta/openai/models` with your key if this one ever 404s) |
 | `SESSION_SECRET` | Any long random string (used to sign team session cookies) |
 | `ADMIN_TOKEN` | Any long random string (the admin's login token) |
@@ -135,4 +135,4 @@ This scripts one full round end-to-end (join, draft, force the attack phase, can
 - Attack messages are capped at 10,000 characters (room for prompt stuffing and many-shot examples) and rate-limited to 1 per 2 seconds per team.
 - There is no platform-level output filter during the attack phase - if a defender's prompt lets the bot say the password, the attacker sees it. Protecting the password is entirely the defending team's job, not a safety net the game provides. (The draft-phase "Save & test" tool is different: it checks replies against a dummy password and tells the defender privately if their own prompt would leak it, so they can fix it before the round starts.)
 - If an LLM call fails or times out, the player sees a friendly error and it does **not** count against their message budget.
-- **AI usage cap:** every AI call (attack chat, helpfulness tests) reserves capacity from a Redis sliding window first. The whole game is capped at `LLM_MAX_CALLS_PER_MINUTE` (default 10), and each team at half of that, so one team can't starve the other. Over the cap, players see "The AI needs a short break. Try again in N seconds." 
+- **AI usage cap:** every AI call (attack chat, practice chat, helpfulness tests) reserves capacity from a Redis sliding window first. The whole game is capped at `LLM_MAX_CALLS_PER_MINUTE` calls per 15-second window (default 10), and each team at half of that, so one team can't starve the other. Over the cap, players see "The AI needs a short break. Try again in N seconds."

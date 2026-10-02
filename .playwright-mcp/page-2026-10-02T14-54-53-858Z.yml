@@ -1,4 +1,0 @@
-- generic [ref=e2]:
-  - button "Switch to dark mode" [ref=e3] [cursor=pointer]
-  - status [ref=e6]:
-    - generic [ref=e10]: Loading scoreboard
