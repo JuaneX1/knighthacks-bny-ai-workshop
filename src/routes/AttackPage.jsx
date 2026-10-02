@@ -6,6 +6,7 @@ import StatusBanner from '../components/StatusBanner.jsx';
 import LoadingScreen from '../components/LoadingScreen.jsx';
 import AttemptPips from '../components/AttemptPips.jsx';
 import AttackChatPanel from '../components/AttackChatPanel.jsx';
+import AttackHintsPanel from '../components/AttackHintsPanel.jsx';
 import GuessBox from '../components/GuessBox.jsx';
 
 // Progress only moves forward within a round, so whichever snapshot is further along is newest.
@@ -103,7 +104,10 @@ export default function AttackPage() {
 
       <div className="space-y-4">
         {!attack.done && !cracked && (
-          <AttackChatPanel key={attack.attempt} attack={attack} disabled={cracked} onAttackChange={setLocalAttack} />
+          <>
+            <AttackHintsPanel />
+            <AttackChatPanel key={attack.attempt} attack={attack} disabled={cracked} onAttackChange={setLocalAttack} />
+          </>
         )}
         <GuessBox
           attack={attack}
