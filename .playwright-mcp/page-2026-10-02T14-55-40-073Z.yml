@@ -1,0 +1,7 @@
+- generic [ref=f1e2]:
+  - button "Switch to dark mode" [ref=f1e3] [cursor=pointer]
+  - generic [ref=f1e6]:
+    - heading "Admin login" [level=1] [ref=f1e7]
+    - generic [ref=f1e8]:
+      - textbox "Admin token" [ref=f1e9]
+      - button "Enter" [ref=f1e10] [cursor=pointer]

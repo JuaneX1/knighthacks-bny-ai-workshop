@@ -25,15 +25,15 @@ export default function WaitingPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-10">
-      <h1 className="mb-2 flex items-center gap-3 text-3xl font-bold">
+      <h1 className="heading-glow mb-2 flex items-center gap-3 text-3xl font-bold">
         {status ? (
           <span key={status.state} className="motion-safe:animate-fade-in-up">
             {PHASE_LABELS[status.state]}
           </span>
         ) : (
           <>
-            <Spinner className="h-7 w-7 text-indigo-400" />
-            <span className="text-slate-400">Loading</span>
+            <Spinner className="h-7 w-7 text-brand-blue" />
+            <span className="text-brand-blue/50">Loading</span>
           </>
         )}
       </h1>
@@ -65,7 +65,7 @@ export default function WaitingPage() {
         </div>
       )}
 
-      <h2 className="mb-3 text-xl font-semibold">Round history</h2>
+      <h2 className="mb-3 text-xl font-semibold text-ink">Round history</h2>
       {board ? <RoundHistoryList rounds={board.rounds} teams={board.teams} /> : <RoundHistorySkeleton />}
     </div>
   );

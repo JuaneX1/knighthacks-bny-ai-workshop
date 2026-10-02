@@ -60,13 +60,13 @@ export default function GuessBox({ attack, disabled, cracked, onGuessResult }) {
 
   return (
     <div
-      className={`rounded-lg border bg-slate-900 p-4 transition-colors duration-500 ${
-        cracked ? 'border-emerald-500 motion-safe:animate-glow-good' : 'border-slate-700'
+      className={`rounded-lg border bg-panel p-4 transition-colors duration-500 ${
+        cracked ? 'border-brand-success motion-safe:animate-glow-good' : 'border-brand-blue/30'
       }`}
     >
-      <h3 className="mb-1 font-semibold">{cracked ? 'You cracked it!' : 'Guess the password'}</h3>
+      <h3 className="mb-1 font-semibold text-ink">{cracked ? 'You cracked it!' : 'Guess the password'}</h3>
       {!cracked && (
-        <p className="mb-2 text-sm text-slate-400">
+        <p className="mb-2 text-sm text-brand-blue/50">
           {isLastTry ? 'This is your last try.' : 'Guessing ends this try. Right or wrong, your next try starts with a fresh chat.'}
         </p>
       )}
@@ -81,14 +81,14 @@ export default function GuessBox({ attack, disabled, cracked, onGuessResult }) {
           value={guess}
           onChange={(e) => setGuess(e.target.value)}
           placeholder={!disabled && !attack.done && !attack.canGuess ? 'Send the bot a message first' : 'e.g. copper-lantern'}
-          className={`flex-1 rounded-lg border bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none transition-colors focus:border-indigo-500 disabled:opacity-50 ${
-            shaking ? 'border-red-500' : 'border-slate-700'
+          className={`flex-1 rounded-lg border bg-well px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-brand-blue disabled:opacity-50 ${
+            shaking ? 'border-brand-error' : 'border-brand-blue/30'
           }`}
         />
         <button
           type="submit"
           disabled={!canGuess || submitting || !guess.trim()}
-          className="flex min-w-[4.5rem] items-center justify-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-500 active:scale-95 disabled:opacity-50 disabled:active:scale-100"
+          className="flex min-w-[4.5rem] items-center justify-center rounded-lg bg-brand-success/90 px-4 py-2 text-sm font-medium text-btn-ink transition hover:bg-brand-success hover:shadow-[0_0_14px_rgb(var(--color-success)/0.55)] active:scale-95 disabled:opacity-50 disabled:active:scale-100"
         >
           {submitting ? <Spinner /> : 'Guess'}
         </button>
@@ -98,13 +98,13 @@ export default function GuessBox({ attack, disabled, cracked, onGuessResult }) {
           {notice.text}
         </p>
       )}
-      {error && <p className="mt-2 text-sm text-red-400 motion-safe:animate-fade-in-up">{error}</p>}
+      {error && <p className="mt-2 text-sm text-brand-error motion-safe:animate-fade-in-up">{error}</p>}
       {canGuess && !isLastTry && (
         <button
           type="button"
           onClick={giveUp}
           disabled={submitting}
-          className="mt-3 text-xs text-slate-500 underline hover:text-slate-300 disabled:opacity-50"
+          className="mt-3 text-xs text-brand-blue/40 underline hover:text-brand-blue/80 disabled:opacity-50"
         >
           Stuck? Start a fresh chat without guessing (uses this try)
         </button>

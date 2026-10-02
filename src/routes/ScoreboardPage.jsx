@@ -14,19 +14,19 @@ export default function ScoreboardPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-8 py-10">
-      <h1 className="mb-2 text-5xl font-black tracking-tight">Prompt Injection CTF</h1>
-      <p className="mb-8 flex items-baseline gap-4 text-3xl font-semibold text-indigo-300">
+      <h1 className="heading-glow mb-2 text-5xl font-black tracking-tight">&gt; Prompt Injection CTF_</h1>
+      <p className="mb-8 flex items-baseline gap-4 text-3xl font-semibold text-brand-blue">
         {PHASE_LABELS[board.state]}
         {board.phaseEndsAt && <Timer endsAt={board.phaseEndsAt} className="text-3xl" />}
       </p>
 
       {board.state === 'game_ended' ? (
-        <div className="mb-10 rounded-2xl border border-emerald-700 bg-emerald-900/30 p-8 text-center">
-          <p className="text-2xl text-emerald-200">
+        <div className="mb-10 rounded-2xl border border-brand-success/50 bg-brand-success/10 p-8 text-center motion-safe:animate-glow-good">
+          <p className="text-2xl text-brand-success/90">
             {board.finalResult === 'draw' ? 'Final result: Draw' : 'Winner'}
           </p>
           {board.finalResult !== 'draw' && (
-            <p className="mt-2 text-6xl font-black text-emerald-100">
+            <p className="mt-2 text-6xl font-black text-brand-success">
               {board.teams?.[board.winnerTeamId]?.name || board.winnerTeamId}
             </p>
           )}
@@ -34,8 +34,8 @@ export default function ScoreboardPage() {
       ) : (
         <div className="mb-10 grid grid-cols-2 gap-6 text-center">
           {TEAM_IDS.filter((teamId) => board.teams?.[teamId]).map((teamId) => (
-            <div key={teamId} className="rounded-2xl border border-slate-700 bg-slate-900 p-6">
-              <p className="text-4xl font-bold">{board.teams[teamId].name}</p>
+            <div key={teamId} className="ui-panel p-6">
+              <p className="text-4xl font-bold text-ink">{board.teams[teamId].name}</p>
             </div>
           ))}
         </div>

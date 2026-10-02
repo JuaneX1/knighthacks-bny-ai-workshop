@@ -38,20 +38,20 @@ export default function ChatInput({ value, onChange, onSubmit, disabled, sending
           onChange={(e) => onChange(e.target.value.slice(0, MAX_MESSAGE_CHARS))}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className="flex-1 resize-none rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none transition-colors focus:border-indigo-500 disabled:opacity-50"
+          className="ui-input flex-1 resize-none text-sm disabled:opacity-50"
         />
         <button
           type="submit"
           disabled={disabled || sending || !value.trim()}
-          className={`flex min-w-[4.5rem] items-center justify-center rounded-lg px-4 py-2 text-sm font-medium text-white transition active:scale-95 disabled:opacity-50 disabled:active:scale-100 ${buttonClassName}`}
+          className={`flex min-w-[4.5rem] items-center justify-center rounded-lg px-4 py-2 text-sm font-medium transition active:scale-95 disabled:opacity-50 disabled:active:scale-100 ${buttonClassName}`}
         >
           {sending ? <Spinner /> : 'Send'}
         </button>
       </div>
-      <p className="mt-1 flex justify-between text-xs text-slate-500">
+      <p className="mt-1 flex justify-between text-xs text-brand-blue/40">
         <span>Enter to send, Shift+Enter for a new line</span>
         {nearLimit && (
-          <span className={value.length >= MAX_MESSAGE_CHARS ? 'text-red-400' : 'text-amber-300'}>
+          <span className={value.length >= MAX_MESSAGE_CHARS ? 'text-brand-error' : 'text-amber-300'}>
             {value.length.toLocaleString()} / {MAX_MESSAGE_CHARS.toLocaleString()} characters
           </span>
         )}

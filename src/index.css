@@ -1,7 +1,109 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --color-void: 4 36 60; /* BNY Dark Blue #04243C */
+  --color-panel: 10 56 86; /* lighter navy card surface */
+  --color-well: 2 20 34; /* recessed/nested surface, darker than panel */
+  --color-ink: 234 246 248; /* near-white, cool tint */
+  --color-btn-ink: 4 36 60; /* dark text on bright buttons */
+
+  --color-blue: 43 156 174; /* BNY Blue #2B9CAE */
+  --color-success: 58 181 140; /* teal-green derived from BNY Blue */
+  --color-error: 214 82 99; /* muted crimson, readable on dark navy */
+  --color-warn: 224 165 69; /* warm amber */
+
+  --overlay-scale: 1;
+}
+
+:root[data-theme='light'] {
+  --color-void: 244 248 249; /* near-white, cool tint */
+  --color-panel: 255 255 255;
+  --color-well: 233 240 242; /* light recessed surface */
+  --color-ink: 4 36 60; /* BNY Dark Blue as body text */
+  --color-btn-ink: 244 248 249; /* near-white text on deeper buttons */
+
+  --color-blue: 31 122 140; /* deepened for contrast on white */
+  --color-success: 31 143 99;
+  --color-error: 142 43 59;
+  --color-warn: 179 122 31;
+
+  --overlay-scale: 0.4;
+}
+
 body {
   min-height: 100vh;
+  background-color: rgb(var(--color-void));
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  position: relative;
+  transition: background-color 200ms ease;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgb(var(--color-blue) / calc(0.035 * var(--overlay-scale))) 0px,
+    rgb(var(--color-blue) / calc(0.035 * var(--overlay-scale))) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  background-size: 100% 4px;
+  animation: scan 8s linear infinite;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background-image: radial-gradient(
+      circle at 15% 10%,
+      rgb(var(--color-blue) / calc(0.08 * var(--overlay-scale))),
+      transparent 45%
+    ),
+    radial-gradient(circle at 85% 90%, rgb(var(--color-success) / calc(0.08 * var(--overlay-scale))), transparent 45%);
+}
+
+@layer components {
+  .ui-panel {
+    @apply rounded-lg border border-brand-blue/25 bg-panel/80 shadow-[0_0_24px_-10px_rgb(var(--color-blue)/0.35)];
+  }
+
+  .ui-input {
+    @apply rounded-lg border border-brand-blue/30 bg-well px-3 py-2 text-ink outline-none transition-all duration-200 focus:border-brand-blue focus:shadow-[0_0_14px_rgb(var(--color-blue)/0.45)];
+  }
+
+  .ui-btn {
+    @apply flex items-center justify-center gap-2 rounded-lg px-4 py-3 font-semibold tracking-wide transition active:scale-[0.98] disabled:opacity-40 disabled:active:scale-100;
+  }
+
+  .btn-primary {
+    @apply ui-btn bg-brand-blue/90 text-btn-ink hover:bg-brand-blue hover:shadow-[0_0_18px_rgb(var(--color-blue)/0.6)];
+  }
+
+  .btn-success {
+    @apply ui-btn bg-brand-success/90 text-btn-ink hover:bg-brand-success hover:shadow-[0_0_18px_rgb(var(--color-success)/0.6)];
+  }
+
+  .btn-danger {
+    @apply ui-btn bg-brand-error/80 text-btn-ink hover:bg-brand-error hover:shadow-[0_0_18px_rgb(var(--color-error)/0.6)];
+  }
+
+  .btn-neutral {
+    @apply ui-btn border border-brand-blue/30 bg-panel text-ink hover:border-brand-blue/60 hover:bg-panel/60;
+  }
+
+  .heading-glow {
+    @apply tracking-wide text-ink motion-safe:animate-flicker-in;
+    text-shadow: 0 0 12px rgb(var(--color-blue) / 0.35);
+  }
 }

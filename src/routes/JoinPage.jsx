@@ -29,8 +29,8 @@ export default function JoinPage() {
 
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6">
-      <h1 className="mb-2 text-3xl font-bold">Prompt Injection CTF</h1>
-      <p className="mb-6 text-slate-400">Enter your team's join code to get started.</p>
+      <h1 className="heading-glow mb-2 text-3xl font-bold">&gt; Prompt Injection CTF_</h1>
+      <p className="mb-6 text-brand-blue/50">Enter your team's join code to get started.</p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
@@ -39,12 +39,12 @@ export default function JoinPage() {
           onChange={(e) => setJoinCode(e.target.value)}
           placeholder="Join code"
           autoFocus
-          className="w-full rounded-lg border border-slate-700 bg-slate-900 px-4 py-3 text-lg uppercase tracking-widest text-slate-100 outline-none focus:border-indigo-500"
+          className="ui-input w-full px-4 py-3 text-lg uppercase tracking-widest"
         />
         <button
           type="submit"
           disabled={submitting || !joinCode.trim()}
-          className="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-3 font-semibold text-white transition hover:bg-indigo-500 active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100"
+          className="btn-primary w-full"
         >
           {submitting ? (
             <>
@@ -62,8 +62,8 @@ export default function JoinPage() {
         </div>
       )}
 
-      <p className="mt-8 text-center text-sm text-slate-500">
-        Just here to watch? <a href="/scoreboard" className="text-indigo-400 hover:underline">View the scoreboard</a>
+      <p className="mt-8 text-center text-sm text-brand-blue/40">
+        Just here to watch? <a href="/scoreboard" className="text-brand-blue hover:underline">View the scoreboard</a>
       </p>
     </div>
   );

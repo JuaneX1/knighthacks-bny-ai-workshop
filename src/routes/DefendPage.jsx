@@ -60,7 +60,7 @@ export default function DefendPage() {
       <Centered>
         <StatusBanner>
           The Defend phase isn't on right now.{' '}
-          <a href="/waiting" className="underline">
+          <a href="/waiting" className="text-brand-blue underline">
             Go to the waiting screen
           </a>
         </StatusBanner>
@@ -95,10 +95,10 @@ export default function DefendPage() {
   return (
     <div className="mx-auto max-w-2xl px-6 py-8">
       <div className="mb-2 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Round {status.roundNumber}: Build your bot</h1>
+        <h1 className="heading-glow text-2xl font-bold">Round {status.roundNumber}: Build your bot</h1>
         <Timer endsAt={status.phaseEndsAt} className="text-xl" />
       </div>
-      <p className="mb-6 text-slate-400">
+      <p className="mb-6 text-brand-blue/50">
         The other team will chat with your bot and try to trick it into saying the password. Keep the password safe, but
         your bot still has to do its job. A bot that refuses to help anyone fails the test and counts as broken.
       </p>

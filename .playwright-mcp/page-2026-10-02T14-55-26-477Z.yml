@@ -1,0 +1,13 @@
+- generic [ref=e2]:
+  - button "Switch to dark mode" [active] [ref=e25] [cursor=pointer]
+  - generic [ref=e11]:
+    - heading "> Prompt Injection CTF_" [level=1] [ref=e12]
+    - paragraph [ref=e13]:
+      - text: Attack phase
+      - generic [ref=e14]: 4:40
+    - generic [ref=e15]:
+      - paragraph [ref=e17]: Team Alpha
+      - paragraph [ref=e19]: Team Bravo
+    - generic [ref=e22]:
+      - heading "Round 1" [level=3] [ref=e23]
+      - generic [ref=e24]: In progress

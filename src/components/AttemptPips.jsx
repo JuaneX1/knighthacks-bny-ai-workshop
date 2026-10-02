@@ -9,7 +9,7 @@ export default function AttemptPips({ used, total = 3 }) {
           <span
             key={justUsed ? `${i}-used` : i}
             className={`h-3 w-3 rounded-full border transition-colors duration-300 ${
-              isUsed ? 'border-slate-600 bg-slate-700' : 'border-indigo-400 bg-indigo-500'
+              isUsed ? 'border-brand-blue/20 bg-panel' : 'border-brand-blue bg-brand-blue shadow-[0_0_8px_rgb(var(--color-blue)/0.7)]'
             } ${justUsed ? 'motion-safe:animate-pop' : ''}`}
           />
         );

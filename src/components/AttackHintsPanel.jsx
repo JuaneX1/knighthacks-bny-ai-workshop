@@ -43,21 +43,21 @@ export default function AttackHintsPanel() {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="rounded-lg border border-slate-700 bg-slate-900">
+    <div className="ui-panel">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-semibold text-slate-200"
+        className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-semibold text-ink/90"
         aria-expanded={open}
       >
         Stuck? A few things worth trying
-        <span className="text-slate-400">{open ? '-' : '+'}</span>
+        <span className="text-brand-blue/50">{open ? '-' : '+'}</span>
       </button>
       {open && (
-        <ul className="space-y-3 border-t border-slate-700 px-4 py-3 text-sm text-slate-300">
+        <ul className="space-y-3 border-t border-brand-blue/20 px-4 py-3 text-sm text-ink/70">
           {TECHNIQUES.map((technique) => (
             <li key={technique.name}>
-              <span className="font-medium text-slate-200">{technique.name}.</span> {technique.tip}
+              <span className="font-medium text-brand-blue">{technique.name}.</span> {technique.tip}
             </li>
           ))}
         </ul>

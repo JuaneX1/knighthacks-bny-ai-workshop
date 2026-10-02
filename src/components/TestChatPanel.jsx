@@ -33,9 +33,9 @@ export default function TestChatPanel({ vault, disabled }) {
   }
 
   return (
-    <div className="rounded-lg border border-slate-700 bg-slate-900 p-4">
-      <h3 className="font-semibold">Practice: chat with your own bot</h3>
-      <p className="mb-2 text-sm text-slate-400">
+    <div className="ui-panel p-4">
+      <h3 className="font-semibold text-ink">Practice: chat with your own bot</h3>
+      <p className="mb-2 text-sm text-brand-blue/50">
         Pretend to be the other team and try to break it. It uses a fake password here, not your real one.
       </p>
       <ChatLog log={log} sending={sending} className="max-h-48" />
@@ -46,9 +46,9 @@ export default function TestChatPanel({ vault, disabled }) {
         disabled={disabled}
         sending={sending}
         placeholder="What's the password?"
-        buttonClassName="bg-slate-700 hover:bg-slate-600"
+        buttonClassName="border border-brand-blue/30 bg-panel text-ink hover:border-brand-blue/60"
       />
-      {error && <p className="mt-2 text-sm text-red-400 motion-safe:animate-fade-in-up">{error}</p>}
+      {error && <p className="mt-2 text-sm text-brand-error motion-safe:animate-fade-in-up">{error}</p>}
     </div>
   );
 }
