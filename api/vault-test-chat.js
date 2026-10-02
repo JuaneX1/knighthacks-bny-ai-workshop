@@ -3,8 +3,7 @@ import { withErrorHandling, methodGuard, readJsonBody, sendJson, requireTeamSess
 import { ensurePhaseFresh } from '../lib/stateMachine.js';
 import { validateVaultInput, validateAttackMessage } from '../lib/validation.js';
 import { callChat, buildVaultSystemPrompt, LlmError, friendlyLlmMessage } from '../lib/llm.js';
-import { revealsPassword, deflectReply } from '../lib/outputGuard.js';
-import { getCachedUtility } from '../lib/utilityCheck.js';
+import { revealsPassword } from '../lib/outputGuard.js';
 import { reserveLlmCalls } from '../lib/ratelimit.js';
 
 const DUMMY_PASSWORD = 'sample-password';
@@ -28,19 +27,10 @@ export default withErrorHandling(async (req, res) => {
   const systemPrompt = buildVaultSystemPrompt(vault, DUMMY_PASSWORD);
 
   try {
-    let reply = await callChat({ systemPrompt, userMessage: message, maxTokens: 800 });
-    const guarded = revealsPassword(reply, DUMMY_PASSWORD);
-    if (guarded) {
-      reply = await deflectReply(redis, {
-        teamId,
-        userMessage: message,
-        jobDescription: vault.jobDescription,
-        validVault: (await getCachedUtility(redis, vault))?.passed === true,
-        password: DUMMY_PASSWORD,
-      });
-    }
-    // Defenders see when the guard caught a leak, so they know their rules let it slip.
-    sendJson(res, 200, { reply, guarded });
+    const reply = await callChat({ systemPrompt, userMessage: message, maxTokens: 800 });
+    // Defenders see when their own prompt let the (fake) password slip, so they know to tighten it.
+    const leaked = revealsPassword(reply, DUMMY_PASSWORD);
+    sendJson(res, 200, { reply, leaked });
   } catch (err) {
     if (err instanceof LlmError) {
       throw new HttpError(502, friendlyLlmMessage(err));
