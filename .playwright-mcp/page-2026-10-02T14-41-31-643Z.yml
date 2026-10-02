@@ -1,5 +1,0 @@
-- generic [ref=f2e3]:
-  - heading "Admin login" [level=1] [ref=f2e4]
-  - generic [ref=f2e5]:
-    - textbox "Admin token" [ref=f2e6]
-    - button "Enter" [ref=f2e7] [cursor=pointer]
