@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api.js';
 import StatusBanner from '../components/StatusBanner.jsx';
 import Spinner from '../components/Spinner.jsx';
+import BrandEmblem from '../components/icons/BrandEmblem.jsx';
 
 export default function JoinPage() {
   const [joinCode, setJoinCode] = useState('');
@@ -29,7 +30,11 @@ export default function JoinPage() {
 
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6">
-      <h1 className="heading-glow mb-2 text-3xl font-bold">&gt; Prompt Injection CTF_</h1>
+      <div className="mb-2 flex items-center gap-3">
+        <BrandEmblem className="h-10 w-10" />
+        <h1 className="heading-glow text-3xl font-bold">Prompt Wars</h1>
+      </div>
+      <p className="mb-1 text-sm uppercase tracking-widest text-brand-blue/60">Attack and Defend AI Chatbots</p>
       <p className="mb-6 text-brand-blue/50">Enter your team's join code to get started.</p>
 
       <form onSubmit={handleSubmit} className="space-y-4">

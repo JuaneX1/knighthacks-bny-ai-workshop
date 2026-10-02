@@ -2,6 +2,7 @@ import { useScoreboard } from '../hooks/useScoreboard.js';
 import RoundHistoryList from '../components/RoundHistoryList.jsx';
 import Timer from '../components/Timer.jsx';
 import LoadingScreen from '../components/LoadingScreen.jsx';
+import BrandEmblem from '../components/icons/BrandEmblem.jsx';
 import { PHASE_LABELS } from '../lib/format.js';
 import { TEAM_IDS } from '../../lib/keys.js';
 
@@ -14,7 +15,13 @@ export default function ScoreboardPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-8 py-10">
-      <h1 className="heading-glow mb-2 text-5xl font-black tracking-tight">&gt; Prompt Injection CTF_</h1>
+      <div className="mb-2 flex items-center gap-4">
+        <BrandEmblem className="h-16 w-16" />
+        <div>
+          <h1 className="heading-glow text-5xl font-black tracking-tight">Prompt Wars</h1>
+          <p className="text-sm uppercase tracking-widest text-brand-blue/60">Attack and Defend AI Chatbots</p>
+        </div>
+      </div>
       <p className="mb-8 flex items-baseline gap-4 text-3xl font-semibold text-brand-blue">
         {PHASE_LABELS[board.state]}
         {board.phaseEndsAt && <Timer endsAt={board.phaseEndsAt} className="text-3xl" />}

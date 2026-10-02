@@ -8,6 +8,7 @@ import LoadingScreen from '../components/LoadingScreen.jsx';
 import VaultEditorForm from '../components/VaultEditorForm.jsx';
 import HelpfulnessResult from '../components/HelpfulnessResult.jsx';
 import TestChatPanel from '../components/TestChatPanel.jsx';
+import ShieldIcon from '../components/icons/ShieldIcon.jsx';
 
 const BLANK_VAULT = { systemPrompt: '', jobDescription: '' };
 
@@ -95,7 +96,10 @@ export default function DefendPage() {
   return (
     <div className="mx-auto max-w-2xl px-6 py-8">
       <div className="mb-2 flex items-center justify-between">
-        <h1 className="heading-glow text-2xl font-bold">Round {status.roundNumber}: Build your bot</h1>
+        <h1 className="heading-glow flex items-center gap-2 text-2xl font-bold">
+          <ShieldIcon className="h-6 w-6 text-brand-blue drop-shadow-[0_0_6px_rgb(var(--color-blue)/0.6)]" />
+          Round {status.roundNumber}: Build your bot
+        </h1>
         <Timer endsAt={status.phaseEndsAt} className="text-xl" />
       </div>
       <p className="mb-6 text-brand-blue/50">
