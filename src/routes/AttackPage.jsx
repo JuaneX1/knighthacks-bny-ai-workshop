@@ -6,6 +6,7 @@ import StatusBanner from '../components/StatusBanner.jsx';
 import LoadingScreen from '../components/LoadingScreen.jsx';
 import AttemptPips from '../components/AttemptPips.jsx';
 import AttackChatPanel from '../components/AttackChatPanel.jsx';
+import AttackHintsPanel from '../components/AttackHintsPanel.jsx';
 import GuessBox from '../components/GuessBox.jsx';
 
 // Progress only moves forward within a round, so whichever snapshot is further along is newest.
@@ -53,7 +54,7 @@ export default function AttackPage() {
       <Centered>
         <StatusBanner>
           The Attack phase isn't on right now.{' '}
-          <a href="/waiting" className="underline">
+          <a href="/waiting" className="text-brand-blue underline">
             Go to the waiting screen
           </a>
         </StatusBanner>
@@ -68,16 +69,16 @@ export default function AttackPage() {
   return (
     <div className="mx-auto max-w-2xl px-6 py-8">
       <div className="mb-2 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Round {status.roundNumber}: Break their bot</h1>
+        <h1 className="heading-glow text-2xl font-bold">Round {status.roundNumber}: Break their bot</h1>
         <Timer endsAt={status.phaseEndsAt} className="text-xl" />
       </div>
-      <p className="mb-4 text-slate-400">
+      <p className="mb-4 text-brand-blue/50">
         Chat with the other team's bot and trick it into telling you the password. When you think you know it, guess! You
         get {attack.attemptsTotal} tries. Each try is up to {attack.promptsPerAttempt} messages and 1 guess.
       </p>
 
       {!attack.done && !cracked && (
-        <div className="mb-4 flex items-center gap-3 text-sm text-slate-300">
+        <div className="mb-4 flex items-center gap-3 text-sm text-ink/70">
           <AttemptPips used={triesUsed} total={attack.attemptsTotal} />
           <span>
             Try {attack.attempt} of {attack.attemptsTotal}
@@ -103,7 +104,10 @@ export default function AttackPage() {
 
       <div className="space-y-4">
         {!attack.done && !cracked && (
-          <AttackChatPanel key={attack.attempt} attack={attack} disabled={cracked} onAttackChange={setLocalAttack} />
+          <>
+            <AttackHintsPanel />
+            <AttackChatPanel key={attack.attempt} attack={attack} disabled={cracked} onAttackChange={setLocalAttack} />
+          </>
         )}
         <GuessBox
           attack={attack}

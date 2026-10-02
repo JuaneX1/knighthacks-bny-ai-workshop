@@ -60,20 +60,20 @@ export default function AdminPage() {
   if (!verified) {
     return (
       <div className="mx-auto max-w-sm px-6 py-16">
-        <h1 className="mb-4 text-2xl font-bold">Admin login</h1>
+        <h1 className="heading-glow mb-4 text-2xl font-bold">Admin login</h1>
         <form onSubmit={handleTokenSubmit} className="space-y-3">
           <input
             type="password"
             value={tokenInput}
             onChange={(e) => setTokenInput(e.target.value)}
             placeholder="Admin token"
-            className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-indigo-500"
+            className="ui-input w-full"
           />
-          <button type="submit" className="w-full rounded-lg bg-indigo-600 px-4 py-2 font-semibold text-white hover:bg-indigo-500">
+          <button type="submit" className="btn-primary w-full">
             Enter
           </button>
         </form>
-        {adminToken && <p className="mt-3 text-sm text-red-400">Invalid token, try again.</p>}
+        {adminToken && <p className="mt-3 text-sm text-brand-error">Invalid token, try again.</p>}
       </div>
     );
   }
@@ -83,11 +83,11 @@ export default function AdminPage() {
   return (
     <div className="mx-auto max-w-4xl px-6 py-8">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Admin</h1>
+        <h1 className="heading-glow text-2xl font-bold">Admin</h1>
         <div className="text-right">
-          <p className="text-lg font-semibold">{board ? PHASE_LABELS[board.state] : '...'}</p>
+          <p className="text-lg font-semibold text-brand-blue">{board ? PHASE_LABELS[board.state] : '...'}</p>
           {board?.rounds?.[0] && board.state !== 'lobby' && board.state !== 'game_ended' && (
-            <p className="text-sm text-slate-400">Round {board.roundNumber}</p>
+            <p className="text-sm text-brand-blue/50">Round {board.roundNumber}</p>
           )}
         </div>
       </div>
@@ -102,23 +102,23 @@ export default function AdminPage() {
         <div className="space-y-2">
           {teamsForm.map((t, i) => (
             <div key={i} className="flex items-center gap-2">
-              <span className="w-16 text-sm text-slate-400">Team {i + 1}</span>
+              <span className="w-16 text-sm text-brand-blue/50">Team {i + 1}</span>
               <input
                 value={t.name}
                 onChange={(e) => updateTeam(i, 'name', e.target.value)}
                 placeholder="Display name"
-                className="flex-1 rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm"
+                className="ui-input flex-1 py-1 text-sm"
               />
               <input
                 value={t.joinCode}
                 onChange={(e) => updateTeam(i, 'joinCode', e.target.value)}
                 placeholder="Join code"
-                className="w-32 rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm"
+                className="ui-input w-32 py-1 text-sm"
               />
             </div>
           ))}
         </div>
-        <p className="mt-2 text-xs text-slate-500">
+        <p className="mt-2 text-xs text-brand-blue/40">
           There are always exactly 2 teams. Renaming or changing a join code is safe at any time.
         </p>
         <div className="mt-3">
@@ -128,25 +128,25 @@ export default function AdminPage() {
 
       <Section title="Round control">
         <div className="flex flex-wrap items-center gap-3">
-          <label className="text-sm text-slate-400">
+          <label className="text-sm text-brand-blue/50">
             Draft sec
             <input
               type="number"
               value={durations.draftDurationSec}
               onChange={(e) => setDurations((d) => ({ ...d, draftDurationSec: Number(e.target.value) }))}
-              className="ml-2 w-20 rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm"
+              className="ui-input ml-2 w-20 py-1 text-sm"
             />
           </label>
-          <label className="text-sm text-slate-400">
+          <label className="text-sm text-brand-blue/50">
             Attack sec
             <input
               type="number"
               value={durations.attackDurationSec}
               onChange={(e) => setDurations((d) => ({ ...d, attackDurationSec: Number(e.target.value) }))}
-              className="ml-2 w-20 rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm"
+              className="ui-input ml-2 w-20 py-1 text-sm"
             />
           </label>
-          <label className="text-sm text-slate-400">
+          <label className="text-sm text-brand-blue/50">
             Messages per try
             <input
               type="number"
@@ -154,7 +154,7 @@ export default function AdminPage() {
               max={20}
               value={durations.promptsPerAttempt}
               onChange={(e) => setDurations((d) => ({ ...d, promptsPerAttempt: Number(e.target.value) }))}
-              className="ml-2 w-16 rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm"
+              className="ui-input ml-2 w-16 py-1 text-sm"
             />
           </label>
         </div>
@@ -165,7 +165,7 @@ export default function AdminPage() {
           <Button onClick={act(() => api.admin.timer(durations, adminToken))}>Update default settings</Button>
         </div>
         {(board?.state === 'draft' || board?.state === 'attack') && (
-          <p className="mt-2 text-sm text-slate-400">
+          <p className="mt-2 text-sm text-brand-blue/50">
             Time remaining: <Timer endsAt={board.phaseEndsAt} />
           </p>
         )}
@@ -210,8 +210,8 @@ export default function AdminPage() {
 
 function Section({ title, children }) {
   return (
-    <div className="mb-8 rounded-lg border border-slate-700 bg-slate-900 p-4">
-      <h2 className="mb-3 text-lg font-semibold">{title}</h2>
+    <div className="ui-panel mb-8 p-4">
+      <h2 className="mb-3 text-lg font-semibold text-ink">{title}</h2>
       {children}
     </div>
   );
@@ -219,14 +219,14 @@ function Section({ title, children }) {
 
 function Button({ children, onClick, tone = 'default' }) {
   const tones = {
-    default: 'bg-slate-700 hover:bg-slate-600',
-    bad: 'bg-red-800 hover:bg-red-700',
+    default: 'border border-brand-blue/30 bg-panel text-ink hover:border-brand-blue/60 hover:bg-panel/60',
+    bad: 'bg-brand-error/80 text-btn-ink hover:bg-brand-error hover:shadow-[0_0_14px_rgb(var(--color-error)/0.55)]',
   };
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`rounded px-3 py-2 text-sm font-medium text-white transition ${tones[tone]}`}
+      className={`rounded px-3 py-2 text-sm font-medium transition ${tones[tone]}`}
     >
       {children}
     </button>

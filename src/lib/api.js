@@ -28,8 +28,6 @@ async function request(path, { method = 'GET', body, adminToken } = {}) {
 export const api = {
   join: (joinCode) => request('/join', { method: 'POST', body: { joinCode } }),
   status: () => request('/status'),
-  getVault: () => request('/vault'),
-  saveVault: (vault) => request('/vault', { method: 'PUT', body: vault }),
   saveAndTestVault: (vault) => request('/vault', { method: 'POST', body: vault }),
   testChat: (payload) => request('/vault-test-chat', { method: 'POST', body: payload }),
   attackConversation: () => request('/attack-chat'),

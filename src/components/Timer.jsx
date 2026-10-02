@@ -12,7 +12,7 @@ export default function Timer({ endsAt, className = '' }) {
   const overdue = endsAt && now >= endsAt;
 
   return (
-    <span className={`font-mono tabular-nums ${overdue ? 'text-red-400' : ''} ${className}`}>
+    <span className={`font-mono tabular-nums ${overdue ? 'text-brand-error' : 'text-brand-blue'} ${className}`}>
       {overdue ? 'Overdue' : formatCountdown(endsAt, now)}
     </span>
   );

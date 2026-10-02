@@ -1,4 +1,4 @@
-# Prompt Injection Workshop
+# Prompt Injection Workshop - KnightHacks
 
 A live, two-team prompt-injection capture-the-flag game for a hackathon workshop.
 
@@ -66,7 +66,7 @@ When running via `vercel dev`, also link the project (`vercel link`) and run `ve
 npm run seed
 ```
 
-This creates 2 demo teams (`Team Alpha` / join code `ALPHA`, `Team Bravo` / join code `BRAVO`) and a deliberately weak practice vault. Re-running is safe.
+This creates 2 demo teams (`Team Alpha` / join code `ALPHA`, `Team Bravo` / join code `BRAVO`). Re-running is safe.
 
 ### 5. Run the dev server
 
@@ -133,6 +133,6 @@ This scripts one full round end-to-end (join, draft, force the attack phase, can
 - No endpoint returns a vault's password, prompt, or filter to anyone but that team (or after the round is sealed, via the public scoreboard).
 - All chat/vault text is rendered as plain text in React — never `dangerouslySetInnerHTML`.
 - Attack messages are capped at 10,000 characters (room for prompt stuffing and many-shot examples) and rate-limited to 1 per 2 seconds per team.
-- If a reply contains the password, the output guard swaps in an AI-written, in-character refusal (a canned line if no AI capacity is free) instead of a telltale "[response withheld]". The rewrite call never sees the password. The admin debrief log marks these replies.
+- There is no platform-level output filter during the attack phase - if a defender's prompt lets the bot say the password, the attacker sees it. Protecting the password is entirely the defending team's job, not a safety net the game provides. (The draft-phase "Save & test" tool is different: it checks replies against a dummy password and tells the defender privately if their own prompt would leak it, so they can fix it before the round starts.)
 - If an LLM call fails or times out, the player sees a friendly error and it does **not** count against their message budget.
-- **AI usage cap:** every AI call (attack chat, practice chat, helpfulness tests) reserves capacity from a Redis sliding window first. The whole game is capped at `LLM_MAX_CALLS_PER_MINUTE` calls per 15-second window (default 10), and each team at half of that, so one team can't starve the other. Over the cap, players see "The AI needs a short break. Try again in N seconds." 
+- **AI usage cap:** every AI call (attack chat, practice chat, helpfulness tests) reserves capacity from a Redis sliding window first. The whole game is capped at `LLM_MAX_CALLS_PER_MINUTE` calls per 15-second window (default 10), and each team at half of that, so one team can't starve the other. Over the cap, players see "The AI needs a short break. Try again in N seconds."
