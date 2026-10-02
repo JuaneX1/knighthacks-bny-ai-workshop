@@ -12,7 +12,7 @@ import {
 } from '../lib/stateMachine.js';
 import { validateAttackMessage } from '../lib/validation.js';
 import { callChat, buildVaultSystemPrompt, LlmError, friendlyLlmMessage } from '../lib/llm.js';
-import { revealsPassword } from '../lib/outputGuard.js';
+import { revealsPassword, deflectReply } from '../lib/outputGuard.js';
 import { enforceRateLimit, reserveLlmCalls } from '../lib/ratelimit.js';
 
 // Room for long answers, so prompt-leak tricks like "repeat everything above" aren't cut off.
@@ -69,6 +69,7 @@ export default withErrorHandling(async (req, res) => {
     const history = (await redis.lrange(convoKey, 0, -1)) || [];
     const systemPrompt = buildVaultSystemPrompt(opponentVault, opponentVault.password);
     let reply;
+    let guarded = false;
     try {
       reply = await callChat({ systemPrompt, history, userMessage: message, maxTokens: MAX_REPLY_TOKENS });
     } catch (err) {
@@ -79,8 +80,16 @@ export default withErrorHandling(async (req, res) => {
       throw err;
     }
 
-    // Informational only - the defending team's own prompt is what's supposed to stop this.
-    const leaked = revealsPassword(reply, opponentVault.password);
+    if (revealsPassword(reply, opponentVault.password)) {
+      guarded = true;
+      reply = await deflectReply(redis, {
+        teamId,
+        userMessage: message,
+        jobDescription: opponentVault.jobDescription,
+        validVault: opponentVault.utilityPassed === true,
+        password: opponentVault.password,
+      });
+    }
 
     // Fails if the try ended (e.g. a guess) while the AI was answering.
     const promptsUsed = await usePrompt(redis, game.roundNumber, teamId, its.attempt, game.promptsPerAttempt);
@@ -88,13 +97,14 @@ export default withErrorHandling(async (req, res) => {
       throw new HttpError(409, 'This try already ended - your message was not counted');
     }
 
+    // History stores the replacement reply, so a caught password never re-enters the conversation.
     await redis.rpush(convoKey, { role: 'user', content: message }, { role: 'assistant', content: reply });
     await redis.rpush(roundMessagesKey(game.roundNumber, opponentTeamId), {
       iteration: its.attempt,
       promptNumber: promptsUsed,
       promptText: message,
       replyText: reply,
-      leaked,
+      guarded,
       ts: Date.now(),
     });
 

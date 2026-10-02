@@ -36,7 +36,11 @@ export default function MessageLog({ log, teams }) {
                       <span className="whitespace-pre-wrap break-words">{m.promptText}</span>
                     </p>
                     <p className="whitespace-pre-wrap break-words text-indigo-300">reply: {m.replyText}</p>
-                    {m.leaked && <p className="text-xs text-amber-300">The bot leaked the password here.</p>}
+                    {m.guarded && (
+                      <p className="text-xs text-amber-300">
+                        The bot said the password here - the guard caught it and swapped in an in-character reply.
+                      </p>
+                    )}
                   </div>
                 ))}
                 <p className="mt-3 font-medium text-slate-200">Guesses made (by this team):</p>
