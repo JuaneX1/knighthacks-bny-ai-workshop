@@ -53,7 +53,7 @@ cp .env.example .env
 | `UPSTASH_REDIS_REST_URL` | From your Upstash Redis database dashboard |
 | `UPSTASH_REDIS_REST_TOKEN` | From your Upstash Redis database dashboard |
 | `LLM_API_KEY` | Google AI Studio API key |
-| `LLM_MAX_CALLS_PER_MINUTE` | Optional, default `10`. Hard cap on AI calls per minute across the whole game (each team gets half). |
+| `LLM_MAX_CALLS_PER_MINUTE` | Optional, default `10`. Hard cap on AI calls per 15-second window across the whole game (each team gets half). |
 | `LLM_MODEL` | e.g. `gemini-flash-lite-latest` (fast and currently available; Google's dated model names churn quickly, so check `GET https://generativelanguage.googleapis.com/v1beta/openai/models` with your key if this one ever 404s) |
 | `SESSION_SECRET` | Any long random string (used to sign team session cookies) |
 | `ADMIN_TOKEN` | Any long random string (the admin's login token) |
@@ -135,4 +135,4 @@ This scripts one full round end-to-end (join, draft, force the attack phase, can
 - Attack messages are capped at 10,000 characters (room for prompt stuffing and many-shot examples) and rate-limited to 1 per 2 seconds per team.
 - If a reply contains the password, the output guard swaps in an AI-written, in-character refusal (a canned line if no AI capacity is free) instead of a telltale "[response withheld]". The rewrite call never sees the password. The admin debrief log marks these replies.
 - If an LLM call fails or times out, the player sees a friendly error and it does **not** count against their message budget.
-- **AI usage cap:** every AI call (attack chat, practice chat, helpfulness tests) reserves capacity from a Redis sliding window first. The whole game is capped at `LLM_MAX_CALLS_PER_MINUTE` (default 10), and each team at half of that, so one team can't starve the other. Over the cap, players see "The AI needs a short break. Try again in N seconds." 
+- **AI usage cap:** every AI call (attack chat, practice chat, helpfulness tests) reserves capacity from a Redis sliding window first. The whole game is capped at `LLM_MAX_CALLS_PER_MINUTE` calls per 15-second window (default 10), and each team at half of that, so one team can't starve the other. Over the cap, players see "The AI needs a short break. Try again in N seconds." 
