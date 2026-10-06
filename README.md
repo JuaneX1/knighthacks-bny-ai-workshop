@@ -108,6 +108,12 @@ npm run simulate -- --base-url http://localhost:3000
 
 This scripts one full round end-to-end (join, draft, force the attack phase, canned injection attempts, guesses) against your local server and exits non-zero if anything unexpected happens — a quick smoke test that the whole pipeline (auth, Redis, Gemini calls, filters, scoring) works before the real event.
 
+## Workshop slides
+
+The slide deck is one self-contained file, `public/slides/index.html`, served at `/slides/index.html` on the same site as the app. Arrow keys (or a clicker's PageUp/PageDown) move through it.
+
+To edit the text, run `npm run dev:web`, open `http://localhost:5173/slides/index.html`, and press **Shift+E** (or add `?edit` to the URL). Click any text to change it, then **Save to file**: the dev server writes the change straight into `public/slides/index.html`, so commit it like any other file. **Download** gives you the same file if the dev server isn't running (for example on the deployed site). Layout and animation changes still happen in the HTML by hand.
+
 ## Deploying to Vercel
 
 1. Push this repo to GitHub (or your git host of choice).
