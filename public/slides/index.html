@@ -105,7 +105,6 @@
 #pw-deck .mcd .meta .mcd-av{width:28px;height:28px}
 #pw-deck .mcd .uav{width:28px;height:28px;border-radius:50%;background:#bdbcbf;display:grid;place-items:center}
 #pw-deck .mcd .code{display:inline-block;font-family:"SF Mono",Menlo,Consolas,"DejaVu Sans Mono",monospace;font-size:13.4px;background:#3b3837;color:#eceae6;padding:0 5px;margin:2px 0;border-radius:2px;line-height:1.55;white-space:pre}
-#pw-deck .mcd .gap{display:inline-block;width:70px;height:1.1em;vertical-align:-3px;border-radius:3px;background:repeating-linear-gradient(45deg,#3b3837 0 5px,#2c2a29 5px 10px)}
 #pw-deck .mcd .typing .bub{display:inline-flex;gap:5px;padding:14px 16px}
 #pw-deck .mcd .typing i{width:8px;height:8px;border-radius:50%;background:#bbb;animation:pw-dot 1s ease-in-out infinite}
 #pw-deck .mcd .typing i:nth-child(2){animation-delay:.15s}#pw-deck .mcd .typing i:nth-child(3){animation-delay:.3s}
@@ -424,9 +423,9 @@
       </div></div>
       <div class="row bot typing t3" data-b="2"><div><div class="bub" aria-hidden="true"><i></i><i></i><i></i></div><div class="meta"></div></div></div>
       <div class="row bot m3" data-b="2"><div>
-        <!-- A UI overlay covers a few characters in the source screenshot after
-             "approac"; that span is shown as a hatched gap rather than guessed. -->
-        <div class="bub"><span class="dim">Great question! To reverse a linked list in Python, you can use an iterative approac<span class="gap" title="obscured in the source screenshot"></span>ple function:</span><br><span class="hl"><span class="code">def reverse_linked_list(head):</span><br><span class="code">prev = None current = head while</span><br><span class="code">current: next_node = current.next</span><br><span class="code">current.next = prev prev = current</span><br><span class="code">current = next_node return prev</span></span><br><span class="dim">This runs in O(n) time. Can I help with anything else, or would you like to start with a Chicken McNuggets, burger, or something else today?</span></div>
+        <!-- A UI overlay hid "h with a sim" in the source screenshot; reconstructed from the
+             visible fragments "approac…ple function" (the only fit for that width). -->
+        <div class="bub"><span class="dim">Great question! To reverse a linked list in Python, you can use an iterative approach with a simple function:</span><br><span class="hl"><span class="code">def reverse_linked_list(head):</span><br><span class="code">prev = None current = head while</span><br><span class="code">current: next_node = current.next</span><br><span class="code">current.next = prev prev = current</span><br><span class="code">current = next_node return prev</span></span><br><span class="dim">This runs in O(n) time. Can I help with anything else, or would you like to start with a Chicken McNuggets, burger, or something else today?</span></div>
         <div class="meta"><span class="mcd-av"><img src="./assets/mcd-logo.png" alt="" onerror="this.remove()"></span></div>
       </div></div>
     </div></div>
