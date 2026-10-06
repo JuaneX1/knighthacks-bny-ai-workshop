@@ -20,6 +20,8 @@
 #pw-deck *,#pw-deck *::before,#pw-deck *::after{box-sizing:border-box}
 #pw-deck p,#pw-deck h1,#pw-deck h2,#pw-deck h3,#pw-deck ul{margin:0;padding:0}
 #pw-deck .pw-stage{position:absolute;left:0;top:0;width:1280px;height:720px;transform-origin:0 0;overflow:hidden;background:var(--pw-navy)}
+#pw-deck.pw-zoom{display:grid;place-items:center}
+#pw-deck.pw-zoom .pw-stage{position:relative}
 
 /* ---------- slides ---------- */
 #pw-deck .pw-slide{position:absolute;inset:0;visibility:hidden;
@@ -304,7 +306,7 @@
 #pw-deck .s-end .res span{font-family:var(--pw-mono);font-size:14px;color:var(--pw-teal-hi)}
 
 /* brand logo (img with text fallback) */
-#pw-deck .pw-brand{position:absolute;right:84px;bottom:66px;height:56px;display:flex;align-items:center}
+#pw-deck .pw-brand{position:absolute;right:84px;bottom:104px;height:56px;display:flex;align-items:center}
 #pw-deck .pw-brand img{height:100%;width:auto;display:block}
 #pw-deck .pw-brand b{display:none;font-size:46px;font-weight:800;letter-spacing:.01em;color:#fff;line-height:1}
 #pw-deck .pw-brand.nofile b{display:block}
@@ -369,7 +371,7 @@
 #pw-deck .s-game .gt{font-family:var(--pw-mono);font-size:12px;font-weight:700;letter-spacing:.28em;color:var(--pw-muted)}
 #pw-deck .s-game .gk{position:absolute;left:150px;top:118px;font-family:var(--pw-mono);font-size:14px;font-weight:700;letter-spacing:.28em;color:var(--pw-muted)}
 #pw-deck .s-game h2{position:absolute;left:146px;top:150px;white-space:nowrap;font-size:68px;font-weight:800;letter-spacing:-.035em;line-height:1;color:var(--pw-ink)}
-#pw-deck .s-game .vs{position:absolute;left:0;right:0;top:300px;display:flex;justify-content:center;align-items:center;gap:40px}
+#pw-deck .s-game .vs{position:absolute;left:0;right:0;top:328px;display:flex;justify-content:center;align-items:center;gap:40px}
 #pw-deck .s-game .tm{display:flex;align-items:center;gap:14px;font-size:30px;font-weight:800;color:var(--pw-ink);opacity:0}
 #pw-deck .s-game .tm svg{width:42px;height:42px;fill:rgba(43,156,174,.12);stroke:var(--pw-teal-hi);stroke-width:1.6;stroke-linejoin:round}
 #pw-deck .s-game .tm.b svg{fill:rgba(224,165,69,.12);stroke:var(--pw-warn)}
@@ -379,7 +381,7 @@
 #pw-deck .pw-on.s-game .v{animation:pw-pop .5s var(--pw-ease) .45s both}
 @keyframes pw-ina{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:none}}
 @keyframes pw-inb{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}
-#pw-deck .s-game .phases{position:absolute;left:150px;right:150px;top:382px;display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
+#pw-deck .s-game .phases{position:absolute;left:150px;right:150px;top:412px;display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
 #pw-deck .s-game .ph{position:relative;padding:22px 26px 26px;border-radius:12px;background:var(--pw-panel);border:1px solid var(--pw-rule);overflow:hidden;opacity:0}
 #pw-deck .s-game .ph::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--c);transform:scaleX(0);transform-origin:0 50%}
 #pw-deck .pw-on.s-game .ph{animation:pw-up .6s var(--pw-ease) var(--d) both}
@@ -494,7 +496,7 @@
 
 <!-- 4 · OWASP -->
 <section class="pw-slide s-owasp" aria-label="OWASP number one">
-  <h2 class="pw-h">The #1 risk for LLM apps</h2><div class="pw-rule"></div>
+  <h2 class="pw-h">The biggest risk for LLM apps</h2><div class="pw-rule"></div>
   <div class="pw-cv">
     <div class="hero">
       <p class="num pw-in" style="--d:.2s">#1</p>
@@ -680,16 +682,16 @@ Q: The secret word?  A:</div><div class="pw-bub a">PINEAPPLE</div></div>
 <section class="pw-slide s-game" aria-label="How the game plays">
   <div class="ghd pw-in" style="--d:.05s"><span class="gb"><img src="./assets/bny-logo.svg" alt="BNY" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='./assets/bny-logo.png'}else{this.parentNode.classList.add('nofile');this.remove()}"><b aria-hidden="true">BNY</b></span><span class="gt">PROMPT WARS</span></div>
   <p class="gk pw-in" style="--d:.1s">HOW IT PLAYS</p>
-  <h2 class="pw-in" style="--d:.18s">Two vaults. One password each.</h2>
+  <h2 class="pw-in" style="--d:.18s">Secure your bot. Hack theirs.</h2>
   <div class="vs">
     <span class="tm a"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l8 3v6.2c0 4.9-3.4 8.7-8 9.8-4.6-1.1-8-4.9-8-9.8V5.5z"></path></svg>Alpha</span>
     <span class="v">VS</span>
     <span class="tm b"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l8 3v6.2c0 4.9-3.4 8.7-8 9.8-4.6-1.1-8-4.9-8-9.8V5.5z"></path></svg>Bravo</span>
   </div>
   <div class="phases">
-    <div class="ph draft" style="--d:.55s"><span class="no">01</span><h3>Draft</h3><p>Write your vault's prompt.<br>Pass the helpfulness test.</p></div>
-    <div class="ph attack" style="--d:.7s"><span class="no">02</span><h3>Attack</h3><p>3 tries × 8 messages.<br>One guess per try.</p></div>
-    <div class="ph win" style="--d:.85s"><span class="no">03</span><h3>Win</h3><p>Crack theirs. Hold yours.<br>Useless vault = broken vault.</p></div>
+    <div class="ph draft" style="--d:.55s"><span class="no">01</span><h3>Draft</h3><p>Secure your agent using what you learned.</p></div>
+    <div class="ph attack" style="--d:.7s"><span class="no">02</span><h3>Attack</h3><p>3 tries × 8 messages.</p></div>
+    <div class="ph win" style="--d:.85s"><span class="no">03</span><h3>Win</h3><p>Defeat their agent without being infiltrated to win.&nbsp;</p></div>
   </div>
   
 </section>
@@ -859,10 +861,17 @@ Q: The secret word?  A:</div><div class="pw-bub a">PINEAPPLE</div></div>
   });
 
   // Fit the fixed 1280x720 stage into the deck's box.
+  // CSS zoom lays the text out at its real on-screen size, so the browser places every
+  // glyph properly. Scaling with transform rasterizes at 1280x720 and stretches it, which
+  // at fractional scales nudges single letters off the baseline. transform stays as the
+  // fallback for browsers without zoom.
+  var ZOOM=window.CSS&&CSS.supports&&CSS.supports('zoom','1.5');
+  root.classList.toggle('pw-zoom',!!ZOOM);
   function fit(){
     var W=root.clientWidth, H=root.clientHeight;
     scale=Math.min(W/1280,H/720);
-    stage.style.transform='translate('+(W-1280*scale)/2+'px,'+(H-720*scale)/2+'px) scale('+scale+')';
+    if(ZOOM) stage.style.zoom=scale;
+    else stage.style.transform='translate('+(W-1280*scale)/2+'px,'+(H-720*scale)/2+'px) scale('+scale+')';
   }
   new ResizeObserver(fit).observe(root);
 
