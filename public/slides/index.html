@@ -188,21 +188,10 @@
 #pw-deck .tq-ex .spell{font-family:var(--pw-mono);font-size:22px;letter-spacing:.3em;color:var(--pw-bad)}
 
 /* ---------- prompting foundations ---------- */
-#pw-deck .col2{display:grid;grid-template-columns:1fr 1fr;gap:40px;position:absolute;inset:0}
 #pw-deck .ex{display:flex;flex-direction:column;gap:10px;padding:16px 18px;border-radius:12px;background:var(--pw-navy-2);border:1px solid var(--pw-rule)}
 #pw-deck .ex .q{font-family:var(--pw-mono);font-size:16px;color:var(--pw-text)}
 #pw-deck .ex .q em{font-style:normal;color:var(--pw-muted)}
 #pw-deck .ex.tgt{border-color:var(--pw-teal)}
-#pw-deck .stk{display:flex;flex-direction:column;gap:12px}
-#pw-deck .think{display:flex;flex-direction:column;gap:8px}
-#pw-deck .think li{list-style:none;font-family:var(--pw-mono);font-size:17px;padding:8px 14px;border-left:3px solid var(--pw-teal);background:rgba(43,156,174,.08);color:var(--pw-text)}
-#pw-deck .pw-on .think li{animation:pw-up .45s var(--pw-ease) both;animation-delay:calc(var(--i)*.35s + .6s)}
-#pw-deck .strike{position:relative;transition:color .4s}
-#pw-deck .strike::after{content:"";position:absolute;left:-4px;right:-4px;top:52%;height:3px;background:var(--pw-bad);transform:scaleX(0);transform-origin:0 50%;transition:transform .5s var(--pw-ease)}
-#pw-deck .s-cot.k1 .strike{color:var(--pw-muted)} #pw-deck .s-cot.k1 .strike::after{transform:none}
-#pw-deck .brain{position:relative;border-radius:16px;padding:18px 20px;border:1.5px dashed rgba(95,208,223,.5);background:rgba(43,156,174,.07)}
-#pw-deck .brain .spin{display:inline-block;width:14px;height:14px;border-radius:50%;border:2px solid var(--pw-teal-hi);border-right-color:transparent;animation:pw-spin 1s linear infinite;vertical-align:-2px;margin-right:8px}
-@keyframes pw-spin{to{transform:rotate(360deg)}}
 
 /* overprompting */
 #pw-deck .op{position:absolute;left:0;top:0;width:560px;height:470px;padding:20px;overflow:hidden}
@@ -561,29 +550,7 @@ Q: The secret word?  A:</div><div class="pw-bub a">PINEAPPLE</div></div>
   <p>Get good at prompting first. Then start defending.</p>
 </section>
 
-<!-- 10 · CoT → post-CoT -->
-<section class="pw-slide s-cot" aria-label="Chain of thought">
-  <h2 class="pw-h">Chain of thought → the post-CoT era</h2><div class="pw-rule"></div>
-  <div class="pw-cv"><div class="col2">
-    <div class="stk">
-      <span class="pw-tag">Classic prompt trick</span>
-      <div class="ex"><p class="q">A bat and ball cost $1.10. The bat costs $1 more than the ball. Ball price? <span class="strike pw-t">Let's think step by step.</span></p></div>
-      <ul class="think">
-        <li style="--i:0">ball = x, bat = x + 1</li>
-        <li style="--i:1">x + (x + 1) = 1.10</li>
-        <li style="--i:2">2x = 0.10 → x = 0.05</li>
-        <li style="--i:3">Answer: $0.05 ✓</li>
-      </ul>
-    </div>
-    <div class="stk" data-b="1">
-      <span class="pw-tag">Today: reasoning models</span>
-      <div class="brain"><p class="pw-lead"><span class="spin"></span><b>Thinking…</b> built in. The model reasons on its own before answering.</p></div>
-      <p class="pw-lead">"Think step by step" is mostly redundant now. Spend your words on a <b>clear goal</b> and <b>good context</b> instead.</p>
-    </div>
-  </div></div>
-</section>
-
-<!-- 11 · Overprompting -->
+<!-- 10 · Overprompting -->
 <section class="pw-slide s-op" aria-label="The overprompting problem">
   <h2 class="pw-h">The overprompting problem</h2><div class="pw-rule"></div>
   <div class="pw-cv">
@@ -610,7 +577,7 @@ Q: The secret word?  A:</div><div class="pw-bub a">PINEAPPLE</div></div>
   </div>
 </section>
 
-<!-- 12 · Review the plan -->
+<!-- 11 · Review the plan -->
 <section class="pw-slide s-plan" aria-label="Review the agent's plan">
   <h2 class="pw-h">Review the agent's plan before it acts</h2><div class="pw-rule"></div>
   <div class="pw-cv">
@@ -628,7 +595,7 @@ Q: The secret word?  A:</div><div class="pw-bub a">PINEAPPLE</div></div>
   </div>
 </section>
 
-<!-- 13 · Input validation -->
+<!-- 12 · Input validation -->
 <section class="pw-slide s-gate" aria-label="Input validation">
   <h2 class="pw-h">① Input validation</h2><div class="pw-rule"></div>
   <div class="pw-cv"><div class="gate">
@@ -642,7 +609,7 @@ Q: The secret word?  A:</div><div class="pw-bub a">PINEAPPLE</div></div>
   </div></div>
 </section>
 
-<!-- 14 · CoT self-check -->
+<!-- 13 · CoT self-check -->
 <section class="pw-slide s-sc" aria-label="Chain-of-thought self-check">
   <h2 class="pw-h">② Make the bot check itself</h2><div class="pw-rule"></div>
   <div class="pw-cv"><div class="sc">
@@ -653,7 +620,7 @@ Q: The secret word?  A:</div><div class="pw-bub a">PINEAPPLE</div></div>
   </div></div>
 </section>
 
-<!-- 15 · Game overview -->
+<!-- 14 · Game overview -->
 <section class="pw-slide s-game" aria-label="The game">
   <p class="gk pw-in" style="--d:.05s">GAME TIME 🎮</p>
   <h2 class="pw-in" style="--d:.15s">Vault vs. Vault</h2>
@@ -671,14 +638,14 @@ Q: The secret word?  A:</div><div class="pw-bub a">PINEAPPLE</div></div>
   <p class="sw" data-b="4">Switching tabs to the game →</p>
 </section>
 
-<!-- 16 · Divider -->
+<!-- 15 · Divider -->
 <section class="pw-slide s-div" data-div aria-label="Section 4">
   <p class="n">04</p>
   <h2>Advanced attacks &amp; defense</h2>
   <p>When the attacker never talks to your bot at all.</p>
 </section>
 
-<!-- 17 · Indirect injection -->
+<!-- 16 · Indirect injection -->
 <section class="pw-slide s-ind" aria-label="Indirect prompt injection">
   <h2 class="pw-h">Indirect prompt injection</h2><div class="pw-rule"></div>
   <div class="pw-cv">
@@ -698,7 +665,7 @@ Q: The secret word?  A:</div><div class="pw-bub a">PINEAPPLE</div></div>
   </div>
 </section>
 
-<!-- 18 · Data theft -->
+<!-- 17 · Data theft -->
 <section class="pw-slide s-th" aria-label="Data theft">
   <h2 class="pw-h">Data theft: getting secrets out</h2><div class="pw-rule"></div>
   <div class="pw-cv"><div class="th">
@@ -718,7 +685,7 @@ Q: The secret word?  A:</div><div class="pw-bub a">PINEAPPLE</div></div>
   </div></div>
 </section>
 
-<!-- 19 · Output validator agent -->
+<!-- 18 · Output validator agent -->
 <section class="pw-slide s-val" aria-label="Output validator agent">
   <h2 class="pw-h">Advanced defense: a second agent checks the output</h2><div class="pw-rule"></div>
   <div class="pw-cv"><div class="val">
@@ -732,7 +699,7 @@ Q: The secret word?  A:</div><div class="pw-bub a">PINEAPPLE</div></div>
   </div></div>
 </section>
 
-<!-- 20 · Takeaways -->
+<!-- 19 · Takeaways -->
 <section class="pw-slide s-tk" aria-label="Takeaways">
   <h2 class="pw-h">Three things to remember</h2><div class="pw-rule"></div>
   <div class="pw-cv"><div class="tk">
@@ -742,7 +709,7 @@ Q: The secret word?  A:</div><div class="pw-bub a">PINEAPPLE</div></div>
   </div></div>
 </section>
 
-<!-- 21 · Q&A + resources -->
+<!-- 20 · Q&A + resources -->
 <section class="pw-slide s-end" aria-label="Questions and resources">
   <h2 class="pw-in" style="--d:.1s">Questions?</h2>
   <div class="res">
