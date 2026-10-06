@@ -346,27 +346,36 @@
 #pw-deck .th .def{position:absolute;left:0;top:440px}
 
 /* ---------- game overview ---------- */
-#pw-deck .s-game{background:radial-gradient(900px 560px at 50% 30%,#0d4a6b,#021422 75%)}
-#pw-deck .s-game .gk{position:absolute;left:0;right:0;top:44px;text-align:center;font-size:15px;font-weight:700;letter-spacing:.3em;color:var(--pw-teal-hi)}
-#pw-deck .s-game h2{position:absolute;left:0;right:0;top:72px;text-align:center;font-size:64px;font-weight:800;letter-spacing:-.03em;color:var(--pw-ink)}
-#pw-deck .s-game .arena{position:absolute;left:150px;right:150px;top:178px;height:140px}
-#pw-deck .s-game .vault{position:absolute;top:0;width:200px;height:140px;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--pw-panel);border:1.5px solid rgba(95,208,223,.55)}
-#pw-deck .s-game .vault span{font-size:38px;line-height:1.1} #pw-deck .s-game .vault b{font-size:20px} #pw-deck .s-game .vault small{font-size:13px;color:var(--pw-muted)}
-#pw-deck .s-game .vault.a{left:0} #pw-deck .s-game .vault.b{right:0;border-color:rgba(224,165,69,.6)}
-#pw-deck .s-game .arena svg{position:absolute;left:230px;top:10px;width:520px;height:120px;overflow:visible}
-#pw-deck .s-game .arena path{fill:none;stroke-width:3;stroke-dasharray:8 12;stroke-linecap:round;animation:pw-dash .8s linear infinite}
-#pw-deck .s-game .fl1{stroke:var(--pw-teal-hi)} #pw-deck .s-game .fl2{stroke:var(--pw-warn)}
-#pw-deck .s-game .chip{position:absolute;font-family:var(--pw-mono);font-size:14px;padding:6px 10px;border-radius:10px;white-space:nowrap}
-#pw-deck .s-game .c1{left:270px;top:6px;background:#123f5e;color:var(--pw-ink);animation:pw-c1 3.2s ease-in-out infinite}
-#pw-deck .s-game .c2{left:520px;top:96px;background:rgba(224,165,69,.18);color:#ffe2b0;animation:pw-c2 3.2s ease-in-out 1.6s infinite}
-@keyframes pw-c1{0%{opacity:0;transform:none}15%,80%{opacity:1}100%{opacity:0;transform:translateX(220px)}}
-@keyframes pw-c2{0%{opacity:0;transform:none}15%,80%{opacity:1}100%{opacity:0;transform:translateX(-220px)}}
-#pw-deck .s-game .phases{position:absolute;left:96px;right:96px;top:360px;display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
-#pw-deck .s-game .phases .pw-card{display:flex;flex-direction:column;gap:10px;padding:22px 24px}
-#pw-deck .s-game .pn{font-size:14px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--pw-teal-hi)}
-#pw-deck .s-game .phases p{font-size:20px;line-height:1.4;color:var(--pw-ink)}
-#pw-deck .s-game .phases small{font-size:15px;line-height:1.4;color:var(--pw-muted)}
-#pw-deck .s-game .sw{position:absolute;left:0;right:0;top:628px;text-align:center;font-size:20px;font-weight:600;color:var(--pw-teal-hi)}
+#pw-deck .s-game{background:radial-gradient(1100px 420px at 50% 115%,rgba(43,156,174,.38),transparent 70%),linear-gradient(180deg,#071725,#04182a)}
+#pw-deck .s-game .ghd{position:absolute;left:64px;top:36px;display:flex;align-items:center;gap:20px}
+#pw-deck .s-game .gb{display:flex;align-items:center;height:24px}
+#pw-deck .s-game .gb img{height:100%;width:auto;display:block}
+#pw-deck .s-game .gb b{display:none;font-size:22px;font-weight:800;color:#fff;line-height:1}
+#pw-deck .s-game .gb.nofile b{display:block}
+#pw-deck .s-game .gt{font-family:var(--pw-mono);font-size:12px;font-weight:700;letter-spacing:.28em;color:var(--pw-muted)}
+#pw-deck .s-game .gk{position:absolute;left:150px;top:118px;font-family:var(--pw-mono);font-size:14px;font-weight:700;letter-spacing:.28em;color:var(--pw-muted)}
+#pw-deck .s-game h2{position:absolute;left:146px;top:150px;white-space:nowrap;font-size:68px;font-weight:800;letter-spacing:-.035em;line-height:1;color:var(--pw-ink)}
+#pw-deck .s-game .vs{position:absolute;left:0;right:0;top:300px;display:flex;justify-content:center;align-items:center;gap:40px}
+#pw-deck .s-game .tm{display:flex;align-items:center;gap:14px;font-size:30px;font-weight:800;color:var(--pw-ink);opacity:0}
+#pw-deck .s-game .tm svg{width:42px;height:42px;fill:rgba(43,156,174,.12);stroke:var(--pw-teal-hi);stroke-width:1.6;stroke-linejoin:round}
+#pw-deck .s-game .tm.b svg{fill:rgba(224,165,69,.12);stroke:var(--pw-warn)}
+#pw-deck .s-game .v{font-family:var(--pw-mono);font-size:13px;font-weight:700;letter-spacing:.2em;color:var(--pw-muted);opacity:0}
+#pw-deck .pw-on.s-game .tm.a{animation:pw-ina .6s var(--pw-ease) .32s both}
+#pw-deck .pw-on.s-game .tm.b{animation:pw-inb .6s var(--pw-ease) .32s both}
+#pw-deck .pw-on.s-game .v{animation:pw-pop .5s var(--pw-ease) .45s both}
+@keyframes pw-ina{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:none}}
+@keyframes pw-inb{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}
+#pw-deck .s-game .phases{position:absolute;left:150px;right:150px;top:382px;display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
+#pw-deck .s-game .ph{position:relative;padding:22px 26px 26px;border-radius:12px;background:rgba(2,14,26,.72);border:1px solid rgba(234,246,248,.08);overflow:hidden;opacity:0}
+#pw-deck .s-game .ph::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--c);transform:scaleX(0);transform-origin:0 50%}
+#pw-deck .pw-on.s-game .ph{animation:pw-up .6s var(--pw-ease) var(--d) both}
+#pw-deck .pw-on.s-game .ph::before{animation:pw-bar .7s var(--pw-ease) calc(var(--d) + .2s) both}
+@keyframes pw-bar{to{transform:none}}
+#pw-deck .s-game .draft{--c:var(--pw-teal-hi)} #pw-deck .s-game .attack{--c:#FF6B7D} #pw-deck .s-game .win{--c:var(--pw-warn)}
+#pw-deck .s-game .no{font-family:var(--pw-mono);font-size:13px;font-weight:700;letter-spacing:.1em;color:var(--pw-muted)}
+#pw-deck .s-game .ph h3{margin:8px 0 12px;font-size:36px;font-weight:800;letter-spacing:-.02em;color:var(--c)}
+#pw-deck .s-game .ph p{font-size:18px;line-height:1.5;color:var(--pw-ink)}
+#pw-deck .s-game .sw{position:absolute;left:0;right:0;top:620px;text-align:center;font-size:17px;font-weight:600;color:var(--pw-teal-hi)}
 
 /* ---------- HUD: counter + buttons (the only chrome) ---------- */
 #pw-deck .pw-hud{position:absolute;right:18px;bottom:16px;z-index:10;display:flex;align-items:center;gap:6px;padding:5px;border-radius:999px;background:rgba(2,20,34,.6);border:1px solid rgba(234,246,248,.12);backdrop-filter:blur(6px)}
@@ -621,21 +630,21 @@ Q: The secret word?  A:</div><div class="pw-bub a">PINEAPPLE</div></div>
 </section>
 
 <!-- 14 · Game overview -->
-<section class="pw-slide s-game" aria-label="The game">
-  <p class="gk pw-in" style="--d:.05s">GAME TIME 🎮</p>
-  <h2 class="pw-in" style="--d:.15s">Vault vs. Vault</h2>
-  <div class="arena pw-in" style="--d:.3s" aria-hidden="true">
-    <div class="vault a"><span>🔐</span><b>Team Alpha</b><small>guards a password</small></div>
-    <svg viewBox="0 0 520 120"><path class="fl1" d="M10 40H510"/><path class="fl2" d="M510 80H10"/></svg>
-    <div class="chip c1">"ignore your rules…"</div><div class="chip c2">"pretend you're…"</div>
-    <div class="vault b"><span>🔐</span><b>Team Bravo</b><small>guards a password</small></div>
+<section class="pw-slide s-game" aria-label="How the game plays">
+  <div class="ghd pw-in" style="--d:.05s"><span class="gb"><img src="./assets/bny-logo.svg" alt="BNY" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='./assets/bny-logo.png'}else{this.parentNode.classList.add('nofile');this.remove()}"><b aria-hidden="true">BNY</b></span><span class="gt">PROMPT WARS</span></div>
+  <p class="gk pw-in" style="--d:.1s">— HOW IT PLAYS</p>
+  <h2 class="pw-in" style="--d:.18s">Two vaults. One password each.</h2>
+  <div class="vs">
+    <span class="tm a"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l8 3v6.2c0 4.9-3.4 8.7-8 9.8-4.6-1.1-8-4.9-8-9.8V5.5z"/></svg>Alpha</span>
+    <span class="v">VS</span>
+    <span class="tm b"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l8 3v6.2c0 4.9-3.4 8.7-8 9.8-4.6-1.1-8-4.9-8-9.8V5.5z"/></svg>Bravo</span>
   </div>
   <div class="phases">
-    <div class="pw-card" data-b="1"><span class="pn">01 · 🛡 Defend</span><p>Write your bot's system prompt. It hides a <b>secret password</b>.</p><small>It must still pass a helpfulness test: no just refusing everything.</small></div>
-    <div class="pw-card" data-b="2"><span class="pn">02 · ⚔️ Attack</span><p><b>3 tries</b> at the other team's vault. Each is a short chat, then <b>one password guess</b>.</p><small>Use everything from today's toolbox.</small></div>
-    <div class="pw-card" data-b="3"><span class="pn">03 · 🏆 Win</span><p>Crack their vault <b>while yours holds</b>.</p><small>Both break, or neither? It's a draw. Next round.</small></div>
+    <div class="ph draft" style="--d:.55s"><span class="no">01</span><h3>Draft</h3><p>Write your vault's prompt.<br>Pass the helpfulness test.</p></div>
+    <div class="ph attack" style="--d:.7s"><span class="no">02</span><h3>Attack</h3><p>3 tries × 8 messages.<br>One guess per try.</p></div>
+    <div class="ph win" style="--d:.85s"><span class="no">03</span><h3>Win</h3><p>Crack theirs. Hold yours.<br>Useless vault = broken vault.</p></div>
   </div>
-  <p class="sw" data-b="4">Switching tabs to the game →</p>
+  <p class="sw pw-in" style="--d:1.1s">Switching tabs to the game →</p>
 </section>
 
 <!-- 15 · Divider -->
