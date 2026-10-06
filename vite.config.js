@@ -13,6 +13,13 @@ function slidesEditor() {
     name: 'slides-editor',
     apply: 'serve',
     configureServer(server) {
+      // /slides and /slides/ would otherwise hit the SPA fallback and show the app.
+      server.middlewares.use((req, res, next) => {
+        const [path, query] = req.url.split('?');
+        if (path !== '/slides' && path !== '/slides/') return next();
+        res.writeHead(302, { Location: '/slides/index.html' + (query ? '?' + query : '') });
+        res.end();
+      });
       server.middlewares.use('/__slides/save', (req, res) => {
         if (req.method !== 'POST') { res.statusCode = 405; return res.end(); }
         let body = '';

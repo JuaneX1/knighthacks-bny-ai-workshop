@@ -7,6 +7,10 @@
       "maxDuration": 30
     }
   },
+  "redirects": [
+    { "source": "/slides", "destination": "/slides/index.html", "permanent": false },
+    { "source": "/slides/", "destination": "/slides/index.html", "permanent": false }
+  ],
   "rewrites": [
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
