@@ -4,7 +4,9 @@ import { useScoreboard } from '../hooks/useScoreboard.js';
 import Timer from '../components/Timer.jsx';
 import StatusBanner from '../components/StatusBanner.jsx';
 import MessageLog from '../components/MessageLog.jsx';
-import { PHASE_LABELS } from '../lib/format.js';
+import Bracket from '../components/Bracket.jsx';
+import { PHASE_LABELS, STAGE_LABELS, matchLabel } from '../lib/format.js';
+import { TEAM_IDS, teamCountFor } from '../../lib/keys.js';
 
 export default function AdminPage() {
   const [adminToken, setAdminToken] = useState(() => sessionStorage.getItem('ctf_admin_token') || '');
@@ -12,8 +14,10 @@ export default function AdminPage() {
   const [verified, setVerified] = useState(false);
   const [message, setMessage] = useState(null);
   const [teamsForm, setTeamsForm] = useState([
-    { name: 'Team Alpha', joinCode: 'ALPHA' },
-    { name: 'Team Bravo', joinCode: 'BRAVO' },
+    { name: 'Team SPARK', joinCode: 'SPARK' },
+    { name: 'Team THRIVE', joinCode: 'THRIVE' },
+    { name: 'Team OWN IT', joinCode: 'OWNIT' },
+    { name: 'Team CURIOUS', joinCode: 'CURIOUS' },
   ]);
   const [durations, setDurations] = useState({ draftDurationSec: 300, attackDurationSec: 600, promptsPerAttempt: 8 });
   const [log, setLog] = useState(null);
@@ -25,7 +29,8 @@ export default function AdminPage() {
       .listTeams(adminToken)
       .then(({ teams }) => {
         setVerified(true);
-        if (teams.length === 2) setTeamsForm(teams.map(({ name, joinCode }) => ({ name, joinCode })));
+        const saved = Object.fromEntries(teams.map(({ teamId, name, joinCode }) => [teamId, { name, joinCode }]));
+        setTeamsForm((prev) => TEAM_IDS.map((teamId, i) => saved[teamId] || prev[i]));
       })
       .catch(() => setVerified(false));
   }, [adminToken]);
@@ -79,13 +84,22 @@ export default function AdminPage() {
   }
 
   const teams = board?.teams || {};
+  const mode = board?.mode || 'duel';
+  const visibleTeams = teamsForm.slice(0, teamCountFor(mode));
+  const drawnSemis =
+    board?.stage === 'semis' && board.state === 'round_ended'
+      ? board.matches.map((pair, i) => ({ pair, i })).filter(({ i }) => !board.finalists[i])
+      : [];
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-8">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="heading-glow text-2xl font-bold">Admin</h1>
         <div className="text-right">
-          <p className="text-lg font-semibold text-brand-blue">{board ? PHASE_LABELS[board.state] : '...'}</p>
+          <p className="text-lg font-semibold text-brand-blue">
+            {STAGE_LABELS[board?.stage] && board.state !== 'game_ended' && `${STAGE_LABELS[board.stage]}: `}
+            {board ? PHASE_LABELS[board.state] : '...'}
+          </p>
           {board?.rounds?.[0] && board.state !== 'lobby' && board.state !== 'game_ended' && (
             <p className="text-sm text-brand-blue/50">Round {board.roundNumber}</p>
           )}
@@ -98,9 +112,27 @@ export default function AdminPage() {
         </div>
       )}
 
+      <Section title="Mode">
+        <div className="flex flex-wrap gap-2">
+          <Button tone={mode === 'duel' ? 'active' : 'default'} onClick={act(() => api.admin.setMode('duel', adminToken))}>
+            Duel (2 teams)
+          </Button>
+          <Button
+            tone={mode === 'tournament' ? 'active' : 'default'}
+            onClick={act(() => api.admin.setMode('tournament', adminToken))}
+          >
+            Tournament (4 teams)
+          </Button>
+        </div>
+        <p className="mt-2 text-xs text-brand-blue/40">
+          Duel: rounds repeat until one team wins. Tournament: semifinals (Team 1 vs 2, Team 3 vs 4) at the same time,
+          then a final between the winners. Switching is only allowed before the first round (reset first).
+        </p>
+      </Section>
+
       <Section title="Teams">
         <div className="space-y-2">
-          {teamsForm.map((t, i) => (
+          {visibleTeams.map((t, i) => (
             <div key={i} className="flex items-center gap-2">
               <span className="w-16 text-sm text-brand-blue/50">Team {i + 1}</span>
               <input
@@ -119,10 +151,10 @@ export default function AdminPage() {
           ))}
         </div>
         <p className="mt-2 text-xs text-brand-blue/40">
-          There are always exactly 2 teams. Renaming or changing a join code is safe at any time.
+          This mode uses exactly {visibleTeams.length} teams. Renaming or changing a join code is safe at any time.
         </p>
         <div className="mt-3">
-          <Button onClick={act(() => api.admin.setTeams(teamsForm, adminToken))}>Save teams</Button>
+          <Button onClick={act(() => api.admin.setTeams(visibleTeams, adminToken))}>Save teams</Button>
         </div>
       </Section>
 
@@ -159,7 +191,7 @@ export default function AdminPage() {
           </label>
         </div>
         <div className="mt-3 flex flex-wrap gap-2">
-          <Button onClick={act(() => api.admin.roundStart(durations, adminToken))}>Start next round</Button>
+          <Button onClick={act(() => api.admin.roundStart(durations, adminToken))}>{startLabel(board)}</Button>
           <Button onClick={act(() => api.admin.phaseAttack(adminToken))}>Force attack phase now</Button>
           <Button onClick={act(() => api.admin.phaseEnd(adminToken))}>Force end attack phase now</Button>
           <Button onClick={act(() => api.admin.timer(durations, adminToken))}>Update default settings</Button>
@@ -171,11 +203,31 @@ export default function AdminPage() {
         )}
       </Section>
 
+      {mode === 'tournament' && board && (
+        <Section title="Bracket">
+          <Bracket semis={board.lineup} finalists={board.finalists} winnerTeamId={board.winnerTeamId} teams={teams} />
+          {drawnSemis.map(({ pair, i }) => (
+            <div key={i} className="mt-4">
+              <p className="mb-2 text-sm text-brand-blue/50">
+                Semifinal {i + 1} ({matchLabel(pair, teams)}) was a draw. Who goes through?
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {pair.map((teamId) => (
+                  <Button key={teamId} onClick={act(() => api.admin.advance(i, teamId, adminToken))}>
+                    Advance {teams[teamId]?.name || teamId}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </Section>
+      )}
+
       <Section title="End game">
         <div className="flex flex-wrap gap-2">
-          {Object.entries(teams).map(([teamId, t]) => (
+          {(board?.lineup || []).flat().map((teamId) => (
             <Button key={teamId} onClick={act(() => api.admin.endGame({ result: teamId }, adminToken))}>
-              Declare {t.name} winner
+              Declare {teams[teamId]?.name || teamId} winner
             </Button>
           ))}
           <Button onClick={act(() => api.admin.endGame({ result: 'draw' }, adminToken))}>Declare draw</Button>
@@ -208,6 +260,12 @@ export default function AdminPage() {
   }
 }
 
+// The round-start button's label for what it will start next.
+function startLabel(board) {
+  if (board?.mode !== 'tournament') return 'Start next round';
+  return board.stage ? 'Start final' : 'Start semifinals';
+}
+
 function Section({ title, children }) {
   return (
     <div className="ui-panel mb-8 p-4">
@@ -220,6 +278,7 @@ function Section({ title, children }) {
 function Button({ children, onClick, tone = 'default' }) {
   const tones = {
     default: 'border border-brand-blue/30 bg-panel text-ink hover:border-brand-blue/60 hover:bg-panel/60',
+    active: 'border border-brand-blue bg-brand-blue/20 text-ink',
     bad: 'bg-brand-error/80 text-btn-ink hover:bg-brand-error hover:shadow-[0_0_14px_rgb(var(--color-error)/0.55)]',
   };
   return (

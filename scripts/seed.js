@@ -7,8 +7,10 @@ const redis = new Redis({
 });
 
 const TEAMS = [
-  { teamId: 'team-alpha', name: 'Team Alpha', joinCode: 'ALPHA' },
-  { teamId: 'team-bravo', name: 'Team Bravo', joinCode: 'BRAVO' },
+  { teamId: 'team-spark', name: 'Team SPARK', joinCode: 'SPARK' },
+  { teamId: 'team-thrive', name: 'Team THRIVE', joinCode: 'THRIVE' },
+  { teamId: 'team-own-it', name: 'Team OWN IT', joinCode: 'OWNIT' },
+  { teamId: 'team-curious', name: 'Team CURIOUS', joinCode: 'CURIOUS' },
 ];
 
 async function main() {

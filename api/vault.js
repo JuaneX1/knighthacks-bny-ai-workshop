@@ -1,7 +1,7 @@
 import { getRedis } from '../lib/redis.js';
 import { roundVaultKey, teamDefenseKey, checkCooldownKey } from '../lib/keys.js';
 import { withErrorHandling, methodGuard, readJsonBody, sendJson, requireTeamSession, HttpError } from '../lib/http.js';
-import { ensurePhaseFresh, getVault } from '../lib/stateMachine.js';
+import { ensurePhaseFresh, getVault, requireOpponentTeamId } from '../lib/stateMachine.js';
 import { validateVaultInput } from '../lib/validation.js';
 import { getCachedUtility, runUtilityCheck } from '../lib/utilityCheck.js';
 import { LlmError, friendlyLlmMessage } from '../lib/llm.js';
@@ -30,6 +30,7 @@ export default withErrorHandling(async (req, res) => {
   if (game.state !== 'draft') {
     throw new HttpError(409, 'You can only change your bot while the Defend phase is on');
   }
+  requireOpponentTeamId(game, teamId);
 
   const body = await readJsonBody(req);
   const clean = validateVaultInput(body);

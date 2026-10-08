@@ -39,6 +39,9 @@ export const api = {
   admin: {
     listTeams: (adminToken) => request('/admin/teams', { adminToken }),
     setTeams: (teams, adminToken) => request('/admin/teams', { method: 'POST', body: { teams }, adminToken }),
+    setMode: (mode, adminToken) => request('/admin/mode', { method: 'POST', body: { mode }, adminToken }),
+    advance: (matchIndex, teamId, adminToken) =>
+      request('/admin/advance', { method: 'POST', body: { matchIndex, teamId }, adminToken }),
     roundStart: (payload, adminToken) => request('/admin/round-start', { method: 'POST', body: payload, adminToken }),
     phaseAttack: (adminToken) => request('/admin/phase-attack', { method: 'POST', adminToken }),
     phaseEnd: (adminToken) => request('/admin/phase-end', { method: 'POST', adminToken }),

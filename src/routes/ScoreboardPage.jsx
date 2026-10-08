@@ -1,10 +1,10 @@
 import { useScoreboard } from '../hooks/useScoreboard.js';
 import RoundHistoryList from '../components/RoundHistoryList.jsx';
+import Bracket from '../components/Bracket.jsx';
 import Timer from '../components/Timer.jsx';
 import LoadingScreen from '../components/LoadingScreen.jsx';
 import BrandEmblem from '../components/icons/BrandEmblem.jsx';
-import { PHASE_LABELS } from '../lib/format.js';
-import { TEAM_IDS } from '../../lib/keys.js';
+import { PHASE_LABELS, STAGE_LABELS } from '../lib/format.js';
 
 export default function ScoreboardPage() {
   const { data: board, loading } = useScoreboard();
@@ -23,6 +23,7 @@ export default function ScoreboardPage() {
         </div>
       </div>
       <p className="mb-8 flex items-baseline gap-4 text-3xl font-semibold text-brand-blue">
+        {STAGE_LABELS[board.stage] && board.state !== 'game_ended' && <span>{STAGE_LABELS[board.stage]}:</span>}
         {PHASE_LABELS[board.state]}
         {board.phaseEndsAt && <Timer endsAt={board.phaseEndsAt} className="text-3xl" />}
       </p>
@@ -39,12 +40,25 @@ export default function ScoreboardPage() {
           )}
         </div>
       ) : (
-        <div className="mb-10 grid grid-cols-2 gap-6 text-center">
-          {TEAM_IDS.filter((teamId) => board.teams?.[teamId]).map((teamId) => (
-            <div key={teamId} className="ui-panel p-6">
-              <p className="text-4xl font-bold text-ink">{board.teams[teamId].name}</p>
-            </div>
-          ))}
+        board.mode === 'duel' && (
+          <div className="mb-10 grid grid-cols-2 gap-6 text-center">
+            {board.lineup.flat().map((teamId) => (
+              <div key={teamId} className="ui-panel p-6">
+                <p className="text-4xl font-bold text-ink">{board.teams[teamId].name}</p>
+              </div>
+            ))}
+          </div>
+        )
+      )}
+
+      {board.mode === 'tournament' && (
+        <div className="mb-10">
+          <Bracket
+            semis={board.lineup}
+            finalists={board.finalists}
+            winnerTeamId={board.winnerTeamId}
+            teams={board.teams}
+          />
         </div>
       )}
 

@@ -1,6 +1,6 @@
 import { getRedis } from '../lib/redis.js';
 import { withErrorHandling, methodGuard, readJsonBody, sendJson, requireTeamSession, HttpError } from '../lib/http.js';
-import { ensurePhaseFresh } from '../lib/stateMachine.js';
+import { ensurePhaseFresh, requireOpponentTeamId } from '../lib/stateMachine.js';
 import { validateVaultInput, validateAttackMessage } from '../lib/validation.js';
 import { callChat, buildVaultSystemPrompt, LlmError, friendlyLlmMessage } from '../lib/llm.js';
 import { revealsPassword, deflectReply } from '../lib/outputGuard.js';
@@ -18,6 +18,7 @@ export default withErrorHandling(async (req, res) => {
   if (game.state !== 'draft') {
     throw new HttpError(409, 'Test chat is only available during the draft phase');
   }
+  requireOpponentTeamId(game, teamId);
 
   const body = await readJsonBody(req);
   const vault = validateVaultInput(body);

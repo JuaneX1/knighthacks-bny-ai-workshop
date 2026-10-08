@@ -5,6 +5,7 @@ import {
   joinCodeKey,
   joinCodePattern,
   TEAM_IDS,
+  teamCountFor,
   roundKey,
   roundMessagesKey,
   roundGuessesKey,
@@ -22,7 +23,7 @@ import {
 
 // Every admin action used to be its own file under /api/admin. Consolidated into one
 // dynamic route (Vercel's [action].js path-segment convention) so it counts as a single
-// serverless function instead of eight - the Hobby plan caps a deployment at 12 total.
+// serverless function instead of ten - the Hobby plan caps a deployment at 12 total.
 // URLs are unchanged: /api/admin/teams, /api/admin/round-start, etc. all still work,
 // Vercel just routes them all here with req.query.action set to the matched segment.
 
@@ -38,12 +39,14 @@ async function handleTeams(req, res) {
 
   const body = await readJsonBody(req);
   const teams = Array.isArray(body.teams) ? body.teams : [];
-  if (teams.length !== TEAM_IDS.length) {
-    throw new HttpError(400, `Exactly ${TEAM_IDS.length} teams are required`);
+  const { mode } = await getGame(redis);
+  const teamCount = teamCountFor(mode);
+  if (teams.length !== teamCount) {
+    throw new HttpError(400, `Exactly ${teamCount} teams are required in ${mode} mode`);
   }
 
   // Team ids are fixed by position - only names and join codes are editable. Saving replaces
-  // the whole team list instead of adding to it, so edits can never create a third team.
+  // the whole team list instead of adding to it, so edits can never create an extra team.
   const cleaned = teams.map((t, i) => ({
     teamId: TEAM_IDS[i],
     name: String(t.name || '').trim(),
@@ -52,8 +55,8 @@ async function handleTeams(req, res) {
   if (cleaned.some((t) => !t.name || !t.joinCode)) {
     throw new HttpError(400, 'Each team needs a name and a join code');
   }
-  if (cleaned[0].joinCode.toLowerCase() === cleaned[1].joinCode.toLowerCase()) {
-    throw new HttpError(400, 'The two teams need different join codes');
+  if (new Set(cleaned.map((t) => t.joinCode.toLowerCase())).size !== cleaned.length) {
+    throw new HttpError(400, 'Every team needs a different join code');
   }
 
   // Also drops any stale join codes (including ones left by older duplicate saves).
@@ -68,6 +71,48 @@ async function handleTeams(req, res) {
   }
 
   sendJson(res, 200, { ok: true, teams: cleaned });
+}
+
+// Switches between a 2-team duel and a 4-team knockout tournament. Only allowed before the first round.
+async function handleMode(req, res) {
+  methodGuard(req, ['POST']);
+  const body = await readJsonBody(req);
+  if (!['duel', 'tournament'].includes(body.mode)) {
+    throw new HttpError(400, 'mode must be "duel" or "tournament"');
+  }
+
+  const redis = getRedis();
+  const game = await getGame(redis);
+  if (game.state !== 'lobby') {
+    throw new HttpError(409, 'Reset the game before switching modes');
+  }
+
+  await redis.hset(gameKey(), { mode: body.mode });
+  sendJson(res, 200, { ok: true, game: await getGame(redis) });
+}
+
+// Picks who goes through from a drawn semifinal, so the final can start.
+async function handleAdvance(req, res) {
+  methodGuard(req, ['POST']);
+  const body = await readJsonBody(req);
+  const redis = getRedis();
+
+  const game = await getGame(redis);
+  if (game.stage !== 'semis' || game.state !== 'round_ended') {
+    throw new HttpError(409, 'You can only pick who advances once the semifinals have ended');
+  }
+  const matchIndex = Number(body.matchIndex);
+  const match = game.matches[matchIndex];
+  if (!match || !match.includes(body.teamId)) {
+    throw new HttpError(400, 'teamId must be one of the teams in that semifinal');
+  }
+  if (game.finalists[matchIndex]) {
+    throw new HttpError(409, 'That semifinal already has a winner');
+  }
+
+  const finalists = game.matches.map((_, i) => (i === matchIndex ? body.teamId : game.finalists[i] || null));
+  await redis.hset(gameKey(), { finalists: JSON.stringify(finalists) });
+  sendJson(res, 200, { ok: true, game: await getGame(redis) });
 }
 
 async function handleRoundStart(req, res) {
@@ -165,7 +210,7 @@ async function handleEndGame(req, res) {
     fields.finalResult = 'draw';
     fields.winnerTeamId = '';
   } else if (body.result) {
-    const teamIds = await getTeamIds(redis);
+    const teamIds = await getTeamIds(redis, game.mode);
     if (!teamIds.includes(body.result)) throw new HttpError(400, 'result must be a known teamId or "draw"');
     fields.finalResult = 'decisive';
     fields.winnerTeamId = body.result;
@@ -186,6 +231,7 @@ async function handleReset(req, res) {
   }
 
   const redis = getRedis();
+  const { mode } = await getGame(redis);
   const roundKeys = await redis.keys('ctf:round:*');
   const sessionKeys = await redis.keys('ctf:activesession:*');
   const keysToDelete = [...roundKeys, ...sessionKeys];
@@ -194,7 +240,7 @@ async function handleReset(req, res) {
   }
 
   await redis.del(gameKey());
-  await redis.hset(gameKey(), { state: 'lobby', roundNumber: '0' });
+  await redis.hset(gameKey(), { state: 'lobby', roundNumber: '0', mode });
 
   sendJson(res, 200, { ok: true });
 }
@@ -204,19 +250,18 @@ async function handleLog(req, res) {
   const redis = getRedis();
 
   const game = await getGame(redis);
-  const teamIds = await getTeamIds(redis);
   const rounds = [];
 
   for (let n = 1; n <= game.roundNumber; n++) {
     const meta = await redis.hgetall(roundKey(n));
     const teams = {};
-    for (const teamId of teamIds) {
+    for (const teamId of (meta?.matches || []).flat()) {
       const vault = await getVault(redis, n, teamId);
       const messages = (await redis.lrange(roundMessagesKey(n, teamId), 0, -1)) || [];
       const guesses = (await redis.lrange(roundGuessesKey(n, teamId), 0, -1)) || [];
       teams[teamId] = { vault, messages, guesses };
     }
-    rounds.push({ roundNumber: n, state: meta?.state, outcome: meta?.outcome, winnerTeamId: meta?.winnerTeamId, teams });
+    rounds.push({ roundNumber: n, state: meta?.state, stage: meta?.stage || '', results: meta?.results || [], teams });
   }
 
   sendJson(res, 200, { game, rounds });
@@ -224,6 +269,8 @@ async function handleLog(req, res) {
 
 const handlers = {
   teams: handleTeams,
+  mode: handleMode,
+  advance: handleAdvance,
   'round-start': handleRoundStart,
   'phase-attack': handlePhaseAttack,
   'phase-end': handlePhaseEnd,

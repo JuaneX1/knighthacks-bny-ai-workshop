@@ -1,3 +1,5 @@
+import { STAGE_LABELS, matchLabel, matchResultLabel } from '../lib/format.js';
+
 export default function MessageLog({ log, teams }) {
   if (!log) return null;
 
@@ -6,10 +8,17 @@ export default function MessageLog({ log, teams }) {
       {log.rounds.length === 0 && <p className="text-brand-blue/50">No rounds yet.</p>}
       {log.rounds.map((round) => (
         <div key={round.roundNumber} className="ui-panel p-4">
-          <h3 className="mb-3 text-lg font-semibold text-ink">
-            Round {round.roundNumber} - {round.state}
-            {round.outcome && ` (${round.outcome}${round.winnerTeamId ? `: ${teams?.[round.winnerTeamId]?.name}` : ''})`}
+          <h3 className="text-lg font-semibold text-ink">
+            Round {round.roundNumber}
+            {STAGE_LABELS[round.stage] && ` · ${STAGE_LABELS[round.stage]}`} - {round.state}
           </h3>
+          <ul className="mb-3 text-sm text-brand-blue/60">
+            {round.results.map((result) => (
+              <li key={result.teams.join('-')}>
+                {matchLabel(result.teams, teams)}: {matchResultLabel(result, teams)}
+              </li>
+            ))}
+          </ul>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {Object.entries(round.teams).map(([teamId, t]) => (
               <div key={teamId} className="rounded border border-brand-blue/20 bg-well p-3 text-sm">

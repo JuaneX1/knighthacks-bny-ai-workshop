@@ -3,11 +3,13 @@ import { roundVaultKey, roundGuessesKey } from '../lib/keys.js';
 import { withErrorHandling, methodGuard, readJsonBody, sendJson, requireTeamSession, HttpError } from '../lib/http.js';
 import {
   ensurePhaseFresh,
-  getOpponentTeamId,
+  requireOpponentTeamId,
   getVault,
   getIterations,
   endAttempt,
+  markFinished,
   describeIterations,
+  ATTEMPTS_PER_ROUND,
 } from '../lib/stateMachine.js';
 
 // Ends the current try. Body { guess } makes a password guess; { giveUp: true } starts a fresh
@@ -22,8 +24,7 @@ export default withErrorHandling(async (req, res) => {
     throw new HttpError(409, `Guessing is only available during the attack phase (currently "${game.state}")`);
   }
 
-  const opponentTeamId = await getOpponentTeamId(redis, teamId);
-  if (!opponentTeamId) throw new HttpError(409, 'No opponent team configured');
+  const opponentTeamId = requireOpponentTeamId(game, teamId);
 
   const opponentVault = await getVault(redis, game.roundNumber, opponentTeamId);
   if (!opponentVault) throw new HttpError(409, 'Opponent vault not ready');
@@ -42,19 +43,16 @@ export default withErrorHandling(async (req, res) => {
     throw new HttpError(409, 'Send the bot at least one message in this try first');
   }
 
-  const attack = describeIterations(await getIterations(redis, game.roundNumber, teamId), game.promptsPerAttempt);
-  if (giveUp) {
-    return sendJson(res, 200, { correct: false, gaveUp: true, attack });
+  const correct = !giveUp && guess.toLowerCase() === opponentVault.password.toLowerCase();
+
+  if (!giveUp) {
+    await redis.rpush(roundGuessesKey(game.roundNumber, teamId), {
+      iteration: endedAttempt,
+      guess,
+      correct,
+      ts: Date.now(),
+    });
   }
-
-  const correct = guess.toLowerCase() === opponentVault.password.toLowerCase();
-
-  await redis.rpush(roundGuessesKey(game.roundNumber, teamId), {
-    iteration: endedAttempt,
-    guess,
-    correct,
-    ts: Date.now(),
-  });
 
   if (correct) {
     await redis.hset(roundVaultKey(game.roundNumber, opponentTeamId), {
@@ -63,5 +61,11 @@ export default withErrorHandling(async (req, res) => {
     });
   }
 
-  sendJson(res, 200, { correct, attack });
+  // A team is done for the round once it cracks the vault or ends its last try.
+  if (correct || endedAttempt === ATTEMPTS_PER_ROUND) {
+    await markFinished(redis, game.roundNumber, teamId);
+  }
+
+  const attack = describeIterations(await getIterations(redis, game.roundNumber, teamId), game.promptsPerAttempt);
+  sendJson(res, 200, giveUp ? { correct: false, gaveUp: true, attack } : { correct, attack });
 });

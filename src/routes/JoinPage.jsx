@@ -18,8 +18,8 @@ export default function JoinPage() {
     try {
       await api.join(joinCode.trim());
       const status = await api.status();
-      if (status.state === 'draft') navigate('/defend');
-      else if (status.state === 'attack') navigate('/attack');
+      if (status.role === 'player' && status.state === 'draft') navigate('/defend');
+      else if (status.role === 'player' && status.state === 'attack') navigate('/attack');
       else navigate('/waiting');
     } catch (err) {
       setError(err.message);

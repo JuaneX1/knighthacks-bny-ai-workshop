@@ -3,7 +3,7 @@ import { roundLockKey, roundMessagesKey, roundConvoKey } from '../lib/keys.js';
 import { withErrorHandling, methodGuard, readJsonBody, sendJson, requireTeamSession, HttpError } from '../lib/http.js';
 import {
   ensurePhaseFresh,
-  getOpponentTeamId,
+  requireOpponentTeamId,
   getVault,
   getIterations,
   usePrompt,
@@ -28,6 +28,7 @@ export default withErrorHandling(async (req, res) => {
   if (game.state !== 'attack') {
     throw new HttpError(409, `Attack chat is only available during the attack phase (currently "${game.state}")`);
   }
+  const opponentTeamId = requireOpponentTeamId(game, teamId);
 
   const its = await getIterations(redis, game.roundNumber, teamId);
   const convoKey = roundConvoKey(game.roundNumber, teamId, its.attempt);
@@ -36,9 +37,6 @@ export default withErrorHandling(async (req, res) => {
     const messages = its.attempt > ATTEMPTS_PER_ROUND ? [] : (await redis.lrange(convoKey, 0, -1)) || [];
     return sendJson(res, 200, { messages, attack: describeIterations(its, game.promptsPerAttempt) });
   }
-
-  const opponentTeamId = await getOpponentTeamId(redis, teamId);
-  if (!opponentTeamId) throw new HttpError(409, 'No opponent team configured');
 
   const opponentVault = await getVault(redis, game.roundNumber, opponentTeamId);
   if (!opponentVault) throw new HttpError(409, 'Opponent vault not ready');

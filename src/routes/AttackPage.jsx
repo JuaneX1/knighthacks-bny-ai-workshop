@@ -9,6 +9,7 @@ import AttackChatPanel from '../components/AttackChatPanel.jsx';
 import AttackHintsPanel from '../components/AttackHintsPanel.jsx';
 import GuessBox from '../components/GuessBox.jsx';
 import SwordIcon from '../components/icons/SwordIcon.jsx';
+import { roundTitle } from '../lib/format.js';
 
 // Progress only moves forward within a round, so whichever snapshot is further along is newest.
 // This keeps a slightly stale status poll from undoing a result we just got back.
@@ -29,6 +30,7 @@ export default function AttackPage() {
 
   useEffect(() => {
     if (!status) return;
+    if (status.role === 'spectator' && ['draft', 'attack'].includes(status.state)) navigate('/waiting');
     if (status.state === 'draft') navigate('/defend');
     if (['round_ended', 'game_ended'].includes(status.state)) navigate('/waiting');
     if (status.roundNumber && status.roundNumber !== loadedRound) {
@@ -72,12 +74,12 @@ export default function AttackPage() {
       <div className="mb-2 flex items-center justify-between">
         <h1 className="heading-glow flex items-center gap-2 text-2xl font-bold">
           <SwordIcon className="h-6 w-6 text-brand-blue drop-shadow-[0_0_6px_rgb(var(--color-blue)/0.6)]" />
-          Round {status.roundNumber}: Break their bot
+          {roundTitle(status)}: Break their bot
         </h1>
         <Timer endsAt={status.phaseEndsAt} className="text-xl" />
       </div>
       <p className="mb-4 text-brand-blue/50">
-        Chat with the other team's bot and trick it into telling you the password. When you think you know it, guess! You
+        Chat with {status.opponentName}'s bot and trick it into telling you the password. When you think you know it, guess! You
         get {attack.attemptsTotal} tries. Each try is up to {attack.promptsPerAttempt} messages and 1 guess.
       </p>
 
@@ -93,7 +95,7 @@ export default function AttackPage() {
       <div className="mb-4 space-y-2">
         {status.opponentFailedCheck && !cracked && (
           <StatusBanner tone="good">
-            Their bot failed the helpfulness test, so it already counts as broken. If your own bot stays safe, you win!
+            Their bot failed the helpfulness test, so it already counts as broken. If your own bot stays safe, you win this match!
           </StatusBanner>
         )}
         {cracked && (

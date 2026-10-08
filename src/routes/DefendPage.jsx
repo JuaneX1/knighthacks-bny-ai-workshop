@@ -9,6 +9,7 @@ import VaultEditorForm from '../components/VaultEditorForm.jsx';
 import HelpfulnessResult from '../components/HelpfulnessResult.jsx';
 import TestChatPanel from '../components/TestChatPanel.jsx';
 import ShieldIcon from '../components/icons/ShieldIcon.jsx';
+import { roundTitle } from '../lib/format.js';
 
 const BLANK_VAULT = { systemPrompt: '', jobDescription: '' };
 
@@ -34,6 +35,7 @@ export default function DefendPage() {
 
   useEffect(() => {
     if (!status) return;
+    if (status.role === 'spectator' && ['draft', 'attack'].includes(status.state)) navigate('/waiting');
     if (status.state === 'attack') navigate('/attack');
     if (status.roundNumber && status.roundNumber !== loadedRound) {
       const fields = vaultFields(status.myVault);
@@ -98,12 +100,12 @@ export default function DefendPage() {
       <div className="mb-2 flex items-center justify-between">
         <h1 className="heading-glow flex items-center gap-2 text-2xl font-bold">
           <ShieldIcon className="h-6 w-6 text-brand-blue drop-shadow-[0_0_6px_rgb(var(--color-blue)/0.6)]" />
-          Round {status.roundNumber}: Build your bot
+          {roundTitle(status)}: Build your bot
         </h1>
         <Timer endsAt={status.phaseEndsAt} className="text-xl" />
       </div>
       <p className="mb-6 text-brand-blue/50">
-        The other team will chat with your bot and try to trick it into saying the password. Keep the password safe, but
+        {status.opponentName} will chat with your bot and try to trick it into saying the password. Keep the password safe, but
         your bot still has to do its job. A bot that refuses to help anyone fails the test and counts as broken.
       </p>
 
