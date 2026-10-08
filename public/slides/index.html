@@ -332,13 +332,16 @@
 #pw-deck .s-iv .ar{height:2px;margin:0 7px;background:rgba(127,162,178,.45);position:relative}
 #pw-deck .s-iv .ar::after{content:"";position:absolute;right:-1px;top:-4px;border:5px solid transparent;border-left:7px solid rgba(127,162,178,.6);border-right:0}
 #pw-deck .s-iv .ivn{position:absolute;left:64px;right:64px;top:540px;font-size:20px;line-height:1.5;color:var(--pw-text)}
-#pw-deck .s-era .eras{position:absolute;left:64px;right:64px;top:150px;display:grid;grid-template-columns:repeat(3,1fr);gap:24px 28px}
-#pw-deck .s-era .era{position:relative;overflow:hidden;display:flex;flex-direction:column;gap:8px;padding:22px 22px 20px;border-radius:14px;background:var(--pw-panel);border:1px solid var(--pw-rule);opacity:0}
+#pw-deck .s-era .eras{position:absolute;left:64px;right:64px;top:140px;display:grid;grid-template-columns:repeat(3,1fr);gap:24px 28px}
+#pw-deck .s-era .era{position:relative;overflow:hidden;display:flex;flex-direction:column;gap:7px;padding:18px 22px 16px;border-radius:14px;background:var(--pw-panel);border:1px solid var(--pw-rule);opacity:0}
 #pw-deck .s-era .era::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--c);transform:scaleX(0);transform-origin:0 50%}
 #pw-deck .pw-on.s-era .era::before{animation:pw-bar .6s var(--pw-ease) both;animation-delay:calc(var(--i)*.17s + .5s)}
 #pw-deck .s-era .era:nth-child(1){--c:#5FD0DF}#pw-deck .s-era .era:nth-child(2){--c:#7CC7B6}#pw-deck .s-era .era:nth-child(3){--c:#B9B57A}#pw-deck .s-era .era:nth-child(4){--c:#E0A545}#pw-deck .s-era .era:nth-child(5){--c:#E17A5E}#pw-deck .s-era .era:nth-child(6){--c:#D65263}
 #pw-deck .pw-on.s-era .era{animation:pw-up .5s var(--pw-ease) both;animation-delay:calc(var(--i)*.17s + .3s)}
 #pw-deck .s-era .en{font-family:var(--pw-mono);font-size:12px;font-weight:700;letter-spacing:.18em;color:var(--pw-teal-hi)}
+#pw-deck .s-era .en .dt{color:var(--pw-muted);letter-spacing:.12em}
+#pw-deck .s-era .srcl{margin-top:auto;padding-top:6px;font-family:var(--pw-mono);font-size:11.5px;line-height:1.45;color:var(--pw-muted)}
+#pw-deck .s-era .erf{position:absolute;left:64px;bottom:30px;font-size:14px;color:var(--pw-muted)}
 #pw-deck .s-era .era h3{font-size:22px;line-height:1.2;color:var(--pw-ink)}
 #pw-deck .s-era .era p{font-size:16px;line-height:1.5;color:var(--pw-text)}
 #pw-deck .s-era .era p b{color:#ffd2d8}
@@ -637,13 +640,14 @@
 <section class="pw-slide s-era" aria-label="Six eras of prompt injection">
   <h2 class="pw-h">Six eras of prompt injection</h2><div class="pw-rule"></div>
   <div class="eras">
-    <div class="era" style="--i:0"><span class="en">ERA 1</span><h3>"Ignore previous instructions"</h3><p>Direct injection. The attacker types new orders straight into the chat.</p></div>
-    <div class="era" style="--i:1"><span class="en">ERA 2</span><h3>Jailbreak culture ("DAN")</h3><p>Role-play and personas like "Do Anything Now" that talk the model out of its rules.</p></div>
-    <div class="era" style="--i:2"><span class="en">ERA 3</span><h3>Indirect injection</h3><p>"It wasn't the user, it was the content." Hidden instructions in pages, emails and docs the model reads later.</p></div>
-    <div class="era" style="--i:3"><span class="en">ERA 4</span><h3>Multi-step / multi-chain</h3><p>Apps chain several LLM calls, and a payload can survive from one step to the next.</p></div>
-    <div class="era" style="--i:4"><span class="en">ERA 5</span><h3>Multimodal</h3><p>Instructions hidden in images, including ones only visible after the image is downscaled.</p></div>
-    <div class="era hot" style="--i:5"><span class="en">ERA 6</span><h3>Tool and agent abuse</h3><p>Injection becomes "action injection": the model picks tools, calls APIs, runs commands. Bad text becomes a <b>real-world state change</b>.</p></div>
+    <div class="era" style="--i:0"><span class="en">ERA 1 <span class="dt">&middot; SEP 2022</span></span><h3>"Ignore previous instructions"</h3><p>Direct injection. The attacker types new orders straight into the chat.</p><span class="srcl">Riley Goodside demos it; Simon Willison names it "prompt injection"</span></div>
+    <div class="era" style="--i:1"><span class="en">ERA 2 <span class="dt">&middot; DEC 2022</span></span><h3>Jailbreak culture ("DAN")</h3><p>Role-play and personas like "Do Anything Now" that talk the model out of its rules.</p><span class="srcl">First DAN prompt posted to r/ChatGPT</span></div>
+    <div class="era" style="--i:2"><span class="en">ERA 3 <span class="dt">&middot; FEB 2023</span></span><h3>Indirect injection</h3><p>"It wasn't the user, it was the content." Hidden instructions in pages, emails and docs the model reads later.</p><span class="srcl">Greshake et al., "Not what you've signed up for" (arXiv 2302.12173)</span></div>
+    <div class="era" style="--i:3"><span class="en">ERA 4 <span class="dt">&middot; DEC 2024</span></span><h3>Multi-step / multi-chain</h3><p>Apps chain several LLM calls, and a payload can survive from one step to the next.</p><span class="srcl">Reversec Labs, "Multi-Chain Prompt Injection Attacks"</span></div>
+    <div class="era" style="--i:4"><span class="en">ERA 5 <span class="dt">&middot; JUL 2023</span></span><h3>Multimodal</h3><p>Instructions hidden in images, including ones only visible after the image is downscaled.</p><span class="srcl">Cornell Tech: instructions in images and audio. Downscaling trick: Trail of Bits, Aug 2025</span></div>
+    <div class="era hot" style="--i:5"><span class="en">ERA 6 <span class="dt">&middot; MAY 2023 &rarr; NOW</span></span><h3>Tool and agent abuse</h3><p>Injection becomes "action injection": the model picks tools, calls APIs, runs commands. Bad text becomes a <b>real-world state change</b>.</p><span class="srcl">ChatGPT plugins leak a Gmail inbox (Rehberger) &rarr; Grok + Bankrbot, May 2026</span></div>
   </div>
+  <p class="erf pw-in" style="--d:1.4s">Dates mark a well-known early example. The eras overlap.</p>
 </section>
 
 <!-- 8 · MCP: bad text → bad actions -->
