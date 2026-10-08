@@ -332,6 +332,18 @@
 #pw-deck .s-iv .ar{height:2px;margin:0 7px;background:rgba(127,162,178,.45);position:relative}
 #pw-deck .s-iv .ar::after{content:"";position:absolute;right:-1px;top:-4px;border:5px solid transparent;border-left:7px solid rgba(127,162,178,.6);border-right:0}
 #pw-deck .s-iv .ivn{position:absolute;left:64px;right:64px;top:540px;font-size:20px;line-height:1.5;color:var(--pw-text)}
+#pw-deck .s-era .eras{position:absolute;left:64px;right:64px;top:150px;display:grid;grid-template-columns:repeat(3,1fr);gap:24px 28px}
+#pw-deck .s-era .era{position:relative;overflow:hidden;display:flex;flex-direction:column;gap:8px;padding:22px 22px 20px;border-radius:14px;background:var(--pw-panel);border:1px solid var(--pw-rule);opacity:0}
+#pw-deck .s-era .era::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--c);transform:scaleX(0);transform-origin:0 50%}
+#pw-deck .pw-on.s-era .era::before{animation:pw-bar .6s var(--pw-ease) both;animation-delay:calc(var(--i)*.17s + .5s)}
+#pw-deck .s-era .era:nth-child(1){--c:#5FD0DF}#pw-deck .s-era .era:nth-child(2){--c:#7CC7B6}#pw-deck .s-era .era:nth-child(3){--c:#B9B57A}#pw-deck .s-era .era:nth-child(4){--c:#E0A545}#pw-deck .s-era .era:nth-child(5){--c:#E17A5E}#pw-deck .s-era .era:nth-child(6){--c:#D65263}
+#pw-deck .pw-on.s-era .era{animation:pw-up .5s var(--pw-ease) both;animation-delay:calc(var(--i)*.17s + .3s)}
+#pw-deck .s-era .en{font-family:var(--pw-mono);font-size:12px;font-weight:700;letter-spacing:.18em;color:var(--pw-teal-hi)}
+#pw-deck .s-era .era h3{font-size:22px;line-height:1.2;color:var(--pw-ink)}
+#pw-deck .s-era .era p{font-size:16px;line-height:1.5;color:var(--pw-text)}
+#pw-deck .s-era .era p b{color:#ffd2d8}
+#pw-deck .s-era .era.hot{border-color:rgba(214,82,99,.65);background:linear-gradient(180deg,rgba(214,82,99,.18),var(--pw-panel))}
+#pw-deck .s-era .era.hot .en{color:var(--pw-bad)}
 #pw-deck .s-db .db{position:absolute;left:64px;right:120px;top:168px;margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:22px}
 #pw-deck .s-db .db li{display:flex;align-items:baseline;gap:28px;padding:22px 0 24px;border-bottom:1px solid rgba(234,246,248,.12)}
 #pw-deck .s-db .db li:last-child{border-bottom:0}
@@ -620,7 +632,21 @@
   </div></div>
 </section>
 
-<!-- 7 · MCP: bad text → bad actions -->
+<!-- 7 · Eras of prompt injection -->
+<!-- Source slide had Era 4 and Era 5 titles shifted; titles are matched to their descriptions here. -->
+<section class="pw-slide s-era" aria-label="Six eras of prompt injection">
+  <h2 class="pw-h">Six eras of prompt injection</h2><div class="pw-rule"></div>
+  <div class="eras">
+    <div class="era" style="--i:0"><span class="en">ERA 1</span><h3>"Ignore previous instructions"</h3><p>Direct injection. The attacker types new orders straight into the chat.</p></div>
+    <div class="era" style="--i:1"><span class="en">ERA 2</span><h3>Jailbreak culture ("DAN")</h3><p>Role-play and personas like "Do Anything Now" that talk the model out of its rules.</p></div>
+    <div class="era" style="--i:2"><span class="en">ERA 3</span><h3>Indirect injection</h3><p>"It wasn't the user, it was the content." Hidden instructions in pages, emails and docs the model reads later.</p></div>
+    <div class="era" style="--i:3"><span class="en">ERA 4</span><h3>Multi-step / multi-chain</h3><p>Apps chain several LLM calls, and a payload can survive from one step to the next.</p></div>
+    <div class="era" style="--i:4"><span class="en">ERA 5</span><h3>Multimodal</h3><p>Instructions hidden in images, including ones only visible after the image is downscaled.</p></div>
+    <div class="era hot" style="--i:5"><span class="en">ERA 6</span><h3>Tool and agent abuse</h3><p>Injection becomes "action injection": the model picks tools, calls APIs, runs commands. Bad text becomes a <b>real-world state change</b>.</p></div>
+  </div>
+</section>
+
+<!-- 8 · MCP: bad text → bad actions -->
 <section class="pw-slide s-mcp" aria-label="Tools turn bad text into bad actions">
   <h2 class="pw-h">Tools: Enabling Actions via LLM</h2><div class="pw-rule"></div>
   <div class="pw-cv"><div class="mcp">
@@ -641,14 +667,14 @@
   </div></div>
 </section>
 
-<!-- 8 · Divider -->
+<!-- 9 · Divider -->
 <section class="pw-slide s-div" data-div="" aria-label="Section 2">
   <p class="n">02</p>
   <h2>The attacker's toolbox</h2>
   
 </section>
 
-<!-- 9 · Techniques -->
+<!-- 10 · Techniques -->
 <section class="pw-slide s-tq" aria-label="Injection techniques">
   <h2 class="pw-h">Injection techniques</h2><div class="pw-rule"></div>
   <div class="pw-cv">
@@ -679,14 +705,14 @@ Q: The secret word?  A:</div><div class="pw-bub a">PINEAPPLE</div></div>
   </div>
 </section>
 
-<!-- 10 · Divider -->
+<!-- 11 · Divider -->
 <section class="pw-slide s-div" data-div="" aria-label="Section 3">
   <p class="n">03</p>
   <h2>Prompting foundations &amp; basic guardrails</h2>
   
 </section>
 
-<!-- 11 · Overprompting -->
+<!-- 12 · Overprompting -->
 <section class="pw-slide s-op" aria-label="The overprompting problem">
   <h2 class="pw-h">① The Overprompting Problem</h2><div class="pw-rule"></div>
   <div class="pw-cv">
@@ -713,7 +739,7 @@ Q: The secret word?  A:</div><div class="pw-bub a">PINEAPPLE</div></div>
   </div>
 </section>
 
-<!-- 12 · Name the tricks -->
+<!-- 13 · Name the tricks -->
 <section class="pw-slide s-nt" aria-label="Name the tricks in your prompt">
   <h2 class="pw-h">② Prepare For The Attack</h2><div class="pw-rule"></div>
   <div class="nt">
@@ -734,7 +760,7 @@ Q: The secret word?  A:</div><div class="pw-bub a">PINEAPPLE</div></div>
   </div>
 </section>
 
-<!-- 13 · CoT self-check -->
+<!-- 14 · CoT self-check -->
 <section class="pw-slide s-sc" aria-label="Chain-of-thought self-check">
   <h2 class="pw-h">③ Make the bot check itself</h2><div class="pw-rule"></div>
   <div class="pw-cv"><div class="sc">
@@ -745,7 +771,7 @@ Q: The secret word?  A:</div><div class="pw-bub a">PINEAPPLE</div></div>
   </div></div>
 </section>
 
-<!-- 14 · Game overview -->
+<!-- 15 · Game overview -->
 <section class="pw-slide s-game" aria-label="How the game plays">
   <div class="ghd pw-in" style="--d:.05s"><span class="gb"><img src="./assets/bny-logo.svg" alt="BNY" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='./assets/bny-logo.png'}else{this.parentNode.classList.add('nofile');this.remove()}"><b aria-hidden="true">BNY</b></span><span class="gt">PROMPT WARS</span></div>
   <p class="gk pw-in" style="--d:.1s">HOW IT PLAYS</p>
@@ -763,7 +789,7 @@ Q: The secret word?  A:</div><div class="pw-bub a">PINEAPPLE</div></div>
   
 </section>
 
-<!-- 15 · Debrief -->
+<!-- 16 · Debrief -->
 <section class="pw-slide s-db" aria-label="Debrief">
   <h2 class="pw-h">Debrief</h2><div class="pw-rule"></div>
   <ol class="db">
@@ -773,14 +799,14 @@ Q: The secret word?  A:</div><div class="pw-bub a">PINEAPPLE</div></div>
   </ol>
 </section>
 
-<!-- 16 · Divider -->
+<!-- 17 · Divider -->
 <section class="pw-slide s-div" data-div="" aria-label="Section 4">
   <p class="n">04</p>
   <h2>Advanced attacks &amp; defense</h2>
   
 </section>
 
-<!-- 17 · Indirect injection -->
+<!-- 18 · Indirect injection -->
 <section class="pw-slide s-ind" aria-label="Indirect prompt injection">
   <h2 class="pw-h">Indirect prompt injection</h2><div class="pw-rule"></div>
   <div class="pw-cv">
@@ -800,7 +826,7 @@ Q: The secret word?  A:</div><div class="pw-bub a">PINEAPPLE</div></div>
   </div>
 </section>
 
-<!-- 18 · Data theft -->
+<!-- 19 · Data theft -->
 <section class="pw-slide s-th" aria-label="Data theft">
   <h2 class="pw-h">Data theft</h2><div class="pw-rule"></div>
   <div class="pw-cv"><div class="th">
@@ -820,7 +846,7 @@ Q: The secret word?  A:</div><div class="pw-bub a">PINEAPPLE</div></div>
   </div></div>
 </section>
 
-<!-- 19 · Input validation -->
+<!-- 20 · Input validation -->
 <section class="pw-slide s-iv" aria-label="Input validation">
   <h2 class="pw-h">Input validation, done properly</h2><div class="pw-rule"></div>
   <div class="iv">
@@ -853,7 +879,7 @@ Q: The secret word?  A:</div><div class="pw-bub a">PINEAPPLE</div></div>
   <p class="ivn pw-in" style="--d:.3s"><b>Decode first</b>, so tricks look like plain text. <b>Score with a small classifier model</b> (like Meta's Prompt Guard), not a word list. <b>Check everything the bot reads</b>, not only what users type.</p>
 </section>
 
-<!-- 20 · Output validator agent -->
+<!-- 21 · Output validator agent -->
 <section class="pw-slide s-val" aria-label="Output validator agent">
   <h2 class="pw-h">Advanced defense: a second agent checks the output</h2><div class="pw-rule"></div>
   <div class="pw-cv"><div class="val">
@@ -867,7 +893,7 @@ Q: The secret word?  A:</div><div class="pw-bub a">PINEAPPLE</div></div>
   </div></div>
 </section>
 
-<!-- 21 · Takeaways -->
+<!-- 22 · Takeaways -->
 <section class="pw-slide s-tk" aria-label="Takeaways">
   <h2 class="pw-h">Three things to remember</h2><div class="pw-rule"></div>
   <div class="pw-cv"><div class="tk">
@@ -907,7 +933,7 @@ Q: The secret word?  A:</div><div class="pw-bub a">PINEAPPLE</div></div>
   </div></div>
 </section>
 
-<!-- 22 · Q&A + resources -->
+<!-- 23 · Q&A + resources -->
 <section class="pw-slide s-end" aria-label="Questions and resources">
   <h2 class="pw-in" style="--d:.1s">Questions?</h2>
   <div class="res">
@@ -917,7 +943,7 @@ Q: The secret word?  A:</div><div class="pw-bub a">PINEAPPLE</div></div>
   <span class="pw-brand pw-in" style="--d:.6s"><!-- logo file: public/slides/assets/bny-logo.svg (or .png) --><img src="./assets/bny-logo.svg" alt="BNY" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='./assets/bny-logo.png'}else{this.parentNode.classList.add('nofile');this.remove()}"><b aria-hidden="true">BNY</b></span>
 </section>
 
-<!-- 23 · Connect -->
+<!-- 24 · Connect -->
 <section class="pw-slide s-cn" aria-label="Connect with us">
   <h2 class="pw-h">Let's connect</h2><div class="pw-rule"></div>
   <div class="cns-row">
