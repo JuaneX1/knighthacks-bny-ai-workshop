@@ -2,7 +2,11 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGameStatus } from '../hooks/useGameStatus.js';
 import { api } from '../lib/api.js';
-import Timer from '../components/Timer.jsx';
+import Timer, { TimeUpNotice } from '../components/Timer.jsx';
+import { useTeamTheme } from '../hooks/useTeamTheme.js';
+import { useAnnouncePhase } from '../lib/phaseAnnouncer.js';
+import TeamBadge from '../components/TeamBadge.jsx';
+import TeamName from '../components/TeamName.jsx';
 import StatusBanner from '../components/StatusBanner.jsx';
 import LoadingScreen from '../components/LoadingScreen.jsx';
 import VaultEditorForm from '../components/VaultEditorForm.jsx';
@@ -28,6 +32,8 @@ export default function DefendPage() {
   const [saveMsg, setSaveMsg] = useState(null);
   const [loadedRound, setLoadedRound] = useState(null);
   const navigate = useNavigate();
+  useTeamTheme(status, statusError);
+  useAnnouncePhase(status);
 
   useEffect(() => {
     if (statusError?.status === 401) navigate('/');
@@ -37,6 +43,8 @@ export default function DefendPage() {
     if (!status) return;
     if (status.role === 'spectator' && ['draft', 'attack'].includes(status.state)) navigate('/waiting');
     if (status.state === 'attack') navigate('/attack');
+    // The admin can end a round (or the game) before this page ever sees the attack phase.
+    if (['round_ended', 'game_ended'].includes(status.state)) navigate('/waiting');
     if (status.roundNumber && status.roundNumber !== loadedRound) {
       const fields = vaultFields(status.myVault);
       setLoadedRound(status.roundNumber);
@@ -97,6 +105,7 @@ export default function DefendPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-8">
+      <TeamBadge status={status} />
       <div className="mb-2 flex items-center justify-between">
         <h1 className="heading-glow flex items-center gap-2 text-2xl font-bold">
           <ShieldIcon className="h-6 w-6 text-brand-blue drop-shadow-[0_0_6px_rgb(var(--color-blue)/0.6)]" />
@@ -104,9 +113,12 @@ export default function DefendPage() {
         </h1>
         <Timer endsAt={status.phaseEndsAt} className="text-xl" />
       </div>
+      <TimeUpNotice endsAt={status.phaseEndsAt}>
+        Time's up! Finish your changes, the admin will start the attack phase shortly
+      </TimeUpNotice>
       <p className="mb-6 text-brand-blue/50">
-        {status.opponentName} will chat with your bot and try to trick it into saying the password. Keep the password safe, but
-        your bot still has to do its job. A bot that refuses to help anyone fails the test and counts as broken.
+        <TeamName teamId={status.opponentTeamId} name={status.opponentName} className="font-semibold" /> will chat
+        with your bot and try to trick it into saying the password. Keep the password safe, but your bot still has to do its job. A bot that refuses to help anyone fails the test and counts as broken.
       </p>
 
       {carriedOver && (

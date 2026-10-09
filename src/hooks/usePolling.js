@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 export function usePolling(fetchFn, intervalMs, { enabled = true } = {}) {
   const [data, setData] = useState(null);
@@ -6,6 +6,7 @@ export function usePolling(fetchFn, intervalMs, { enabled = true } = {}) {
   const [loading, setLoading] = useState(true);
   const fetchFnRef = useRef(fetchFn);
   fetchFnRef.current = fetchFn;
+  const tickRef = useRef(null);
 
   useEffect(() => {
     if (!enabled) return undefined;
@@ -27,13 +28,18 @@ export function usePolling(fetchFn, intervalMs, { enabled = true } = {}) {
       }
     }
 
+    tickRef.current = tick;
     tick();
     const id = setInterval(tick, intervalMs);
     return () => {
       cancelled = true;
+      tickRef.current = null;
       clearInterval(id);
     };
   }, [intervalMs, enabled]);
 
-  return { data, error, loading };
+  // Fetch now instead of waiting for the next interval, e.g. right after an action changes the data.
+  const refresh = useCallback(() => tickRef.current?.(), []);
+
+  return { data, error, loading, refresh };
 }

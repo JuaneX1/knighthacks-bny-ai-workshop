@@ -28,8 +28,11 @@ export default withErrorHandling(async (req, res) => {
   const game = await ensurePhaseFresh(redis);
   const opponentTeamId = getOpponentTeamId(game, teamId);
   const phaseEndsAt = game.state === 'draft' ? game.draftEndsAt : game.state === 'attack' ? game.attackEndsAt : null;
+  const me = await redis.hget(teamsKey(), teamId);
 
   const base = {
+    teamId,
+    teamName: me?.name || teamId,
     state: game.state,
     mode: game.mode,
     stage: game.stage,
@@ -71,6 +74,7 @@ export default withErrorHandling(async (req, res) => {
 
   sendJson(res, 200, {
     ...base,
+    opponentTeamId,
     opponentName: opponent?.name || opponentTeamId,
     myVault,
     myAttack,

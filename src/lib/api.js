@@ -37,6 +37,7 @@ export const api = {
   scoreboard: () => request('/scoreboard'),
 
   admin: {
+    overview: (adminToken) => request('/admin/overview', { adminToken }),
     listTeams: (adminToken) => request('/admin/teams', { adminToken }),
     setTeams: (teams, adminToken) => request('/admin/teams', { method: 'POST', body: { teams }, adminToken }),
     setMode: (mode, adminToken) => request('/admin/mode', { method: 'POST', body: { mode }, adminToken }),

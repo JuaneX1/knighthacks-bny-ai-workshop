@@ -1,3 +1,4 @@
+import TeamName from './TeamName.jsx';
 import { STAGE_LABELS, matchLabel, matchResultLabel } from '../lib/format.js';
 
 export default function MessageLog({ log, teams }) {
@@ -21,8 +22,11 @@ export default function MessageLog({ log, teams }) {
           </ul>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {Object.entries(round.teams).map(([teamId, t]) => (
-              <div key={teamId} className="rounded border border-brand-blue/20 bg-well p-3 text-sm">
-                <p className="font-medium text-ink">{teams?.[teamId]?.name || teamId}'s vault</p>
+              <div key={teamId} className={`${teamId} rounded border border-l-4 border-brand-blue/20 border-l-team/60 bg-well p-3 text-sm`}>
+                <p className="font-medium text-ink">
+                  <TeamName teamId={teamId} teams={teams} />
+                  's vault
+                </p>
                 {t.vault && (
                   <>
                     <p className="mt-1 font-mono text-xs text-brand-blue/50">password: {t.vault.password}</p>

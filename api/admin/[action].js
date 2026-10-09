@@ -9,6 +9,8 @@ import {
   roundKey,
   roundMessagesKey,
   roundGuessesKey,
+  roundFinishedKey,
+  activeSessionKey,
 } from '../../lib/keys.js';
 import { withErrorHandling, methodGuard, readJsonBody, sendJson, requireAdmin, HttpError } from '../../lib/http.js';
 import {
@@ -18,8 +20,13 @@ import {
   startRound,
   runDraftToAttack,
   runEvaluateRound,
+  getIterations,
+  describeIterations,
+  getOpponentTeamId,
+  configuredTeamIds,
   MAX_PROMPTS_PER_ATTEMPT,
 } from '../../lib/stateMachine.js';
+import { getCachedUtility } from '../../lib/utilityCheck.js';
 
 // Every admin action used to be its own file under /api/admin. Consolidated into one
 // dynamic route (Vercel's [action].js path-segment convention) so it counts as a single
@@ -167,6 +174,18 @@ async function handleTimer(req, res) {
   const body = await readJsonBody(req);
   const redis = getRedis();
 
+  // Adds time to the running phase's timer, counting from now if it has already run out.
+  if (body.addSec) {
+    const game = await getGame(redis);
+    const field = game.state === 'draft' ? 'draftEndsAt' : game.state === 'attack' ? 'attackEndsAt' : null;
+    if (!field) throw new HttpError(409, 'There is no phase timer running');
+    const addMs = Math.min(3600, Math.max(1, Number(body.addSec) || 0)) * 1000;
+    const newEnd = Math.max(Date.now(), game[field] || 0) + addMs;
+    await redis.hset(gameKey(), { [field]: String(newEnd) });
+    await redis.hset(roundKey(game.roundNumber), { [field]: String(newEnd) });
+    return sendJson(res, 200, { ok: true, game: await getGame(redis) });
+  }
+
   const fields = {};
   if (body.draftDurationSec) fields.draftDurationSec = String(body.draftDurationSec);
   if (body.attackDurationSec) fields.attackDurationSec = String(body.attackDurationSec);
@@ -267,7 +286,60 @@ async function handleLog(req, res) {
   sendJson(res, 200, { game, rounds });
 }
 
+// Where a team's bot stands: no text yet, saved but not tested, or the helpfulness test result.
+async function vaultStatus(redis, game, vault) {
+  if (!vault || (!vault.systemPrompt && !vault.jobDescription)) return 'empty';
+  if (game.state !== 'draft') {
+    if (vault.utilityPassed === null) return 'untested';
+    return vault.utilityPassed ? 'passed' : 'failed';
+  }
+  const check = await getCachedUtility(redis, vault);
+  if (!check) return 'untested';
+  return check.passed ? 'passed' : 'failed';
+}
+
+// Live view for the admin dashboard: who has joined, and how each team is doing this round.
+async function handleOverview(req, res) {
+  methodGuard(req, ['GET']);
+  const redis = getRedis();
+  const game = await getGame(redis);
+  const teams = (await redis.hgetall(teamsKey())) || {};
+  const inRound = ['draft', 'attack'].includes(game.state) && game.roundNumber > 0;
+  const finished = inRound ? (await redis.smembers(roundFinishedKey(game.roundNumber))) || [] : [];
+
+  const out = [];
+  for (const teamId of configuredTeamIds(teams, game.mode)) {
+    const joined = (await redis.exists(activeSessionKey(teamId))) === 1;
+    const opponentTeamId = getOpponentTeamId(game, teamId);
+    let round = null;
+    if (inRound && opponentTeamId) {
+      const vault = await getVault(redis, game.roundNumber, teamId);
+      const opponentVault = await getVault(redis, game.roundNumber, opponentTeamId);
+      const its = await getIterations(redis, game.roundNumber, teamId);
+      round = {
+        opponentTeamId,
+        vault: await vaultStatus(redis, game, vault),
+        vaultCracked: Boolean(vault?.crackedByOpponent),
+        crackedOpponent: Boolean(opponentVault?.crackedByOpponent),
+        attack: describeIterations(its, game.promptsPerAttempt),
+        finished: finished.includes(teamId),
+      };
+    }
+    out.push({ teamId, name: teams[teamId].name, joinCode: teams[teamId].joinCode, joined, playing: Boolean(opponentTeamId), round });
+  }
+
+  sendJson(res, 200, {
+    teams: out,
+    settings: {
+      draftDurationSec: game.draftDurationSec,
+      attackDurationSec: game.attackDurationSec,
+      promptsPerAttempt: game.promptsPerAttempt,
+    },
+  });
+}
+
 const handlers = {
+  overview: handleOverview,
   teams: handleTeams,
   mode: handleMode,
   advance: handleAdvance,
