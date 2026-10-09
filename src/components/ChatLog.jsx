@@ -31,9 +31,10 @@ export default function ChatLog({ log, sending, emptyText, className = 'max-h-72
 }
 
 // Long pasted messages (prompt stuffing) start collapsed so they don't bury the conversation.
+// Bot replies are always shown in full.
 function ChatMessage({ message }) {
   const isUser = message.role === 'user';
-  const long = message.text.length > COLLAPSE_AT_CHARS;
+  const long = isUser && message.text.length > COLLAPSE_AT_CHARS;
   const [expanded, setExpanded] = useState(false);
   const text = long && !expanded ? `${message.text.slice(0, COLLAPSE_AT_CHARS)}…` : message.text;
 

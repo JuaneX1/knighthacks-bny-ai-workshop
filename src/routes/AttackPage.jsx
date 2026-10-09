@@ -8,7 +8,6 @@ import TeamBadge from '../components/TeamBadge.jsx';
 import TeamName from '../components/TeamName.jsx';
 import StatusBanner from '../components/StatusBanner.jsx';
 import LoadingScreen from '../components/LoadingScreen.jsx';
-import AttemptPips from '../components/AttemptPips.jsx';
 import AttackChatPanel from '../components/AttackChatPanel.jsx';
 import AttackHintsPanel from '../components/AttackHintsPanel.jsx';
 import GuessBox from '../components/GuessBox.jsx';
@@ -18,7 +17,7 @@ import { roundTitle } from '../lib/format.js';
 // Progress only moves forward within a round, so whichever snapshot is further along is newest.
 // This keeps a slightly stale status poll from undoing a result we just got back.
 function progress(a) {
-  return a.done ? Infinity : a.attempt * 1000 + a.promptsUsed;
+  return a.attempt * 1000 + a.promptsUsed;
 }
 
 export default function AttackPage() {
@@ -73,7 +72,6 @@ export default function AttackPage() {
 
   const attack =
     localAttack && progress(localAttack) > progress(status.myAttack) ? localAttack : status.myAttack;
-  const triesUsed = attack.done ? attack.attemptsTotal : attack.attempt - 1;
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-8">
@@ -91,17 +89,10 @@ export default function AttackPage() {
       <p className="mb-4 text-brand-blue/50">
         Chat with <TeamName teamId={status.opponentTeamId} name={status.opponentName} className="font-semibold" />
         's bot and trick it into telling you the password. When you think you know it, guess! You
-        get {attack.attemptsTotal} tries. Each try is up to {attack.promptsPerAttempt} messages and 1 guess.
+        get unlimited tries. Each try is up to {attack.promptsPerAttempt} messages and 1 guess.
       </p>
 
-      {!attack.done && !cracked && (
-        <div className="mb-4 flex items-center gap-3 text-sm text-ink/70">
-          <AttemptPips used={triesUsed} total={attack.attemptsTotal} />
-          <span>
-            Try {attack.attempt} of {attack.attemptsTotal}
-          </span>
-        </div>
-      )}
+      {!cracked && <div className="mb-4 text-sm text-ink/70">Try {attack.attempt}</div>}
 
       <div className="mb-4 space-y-2">
         {status.opponentFailedCheck && !cracked && (
@@ -114,13 +105,10 @@ export default function AttackPage() {
             You cracked it! Waiting for the round to end
           </StatusBanner>
         )}
-        {!cracked && attack.done && (
-          <StatusBanner waiting>You've used all your tries. Waiting for the round to end</StatusBanner>
-        )}
       </div>
 
       <div className="space-y-4">
-        {!attack.done && !cracked && (
+        {!cracked && (
           <>
             <AttackHintsPanel />
             <AttackChatPanel key={attack.attempt} attack={attack} disabled={cracked} onAttackChange={setLocalAttack} />

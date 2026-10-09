@@ -29,6 +29,7 @@ export default function ResetDialog({ onConfirm, onCancel, busy }) {
         </h2>
         <ul className="mb-4 list-disc space-y-1 pl-5 text-sm text-ink/80">
           <li>Every round, chat and guess is deleted.</li>
+          <li>Every team's saved bot is deleted, so the next game starts from scratch.</li>
           <li>All players are signed out and need to rejoin with their code.</li>
           <li>Team names, join codes and the game mode are kept.</li>
         </ul>

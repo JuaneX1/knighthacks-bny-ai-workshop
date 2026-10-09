@@ -1,7 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import MessageLog from '../MessageLog.jsx';
 import Spinner from '../Spinner.jsx';
 import { api } from '../../lib/api.js';
+import { usePolling } from '../../hooks/usePolling.js';
+
+const LIVE_INTERVAL_MS = 5000;
 
 // Every round's bots, chats and guesses, for walking through what happened after the game.
 export default function DebriefTab({ adminToken, teams, notify }) {
@@ -9,6 +12,13 @@ export default function DebriefTab({ adminToken, teams, notify }) {
   const [loading, setLoading] = useState(false);
   const [roundFilter, setRoundFilter] = useState('all');
   const [teamFilter, setTeamFilter] = useState('all');
+  const [live, setLive] = useState(false);
+  // While "Live" is on, the log re-fetches every few seconds so new messages and guesses show up.
+  const { data: liveLog } = usePolling(() => api.admin.log(adminToken), LIVE_INTERVAL_MS, { enabled: live });
+
+  useEffect(() => {
+    if (live && liveLog) setLog(liveLog);
+  }, [live, liveLog]);
 
   async function load() {
     setLoading(true);
@@ -39,6 +49,10 @@ export default function DebriefTab({ adminToken, teams, notify }) {
           {loading && <Spinner />}
           {log ? 'Refresh log' : 'Load full log'}
         </button>
+        <label className="flex items-center gap-2 pb-2 text-sm text-brand-blue/60">
+          <input type="checkbox" checked={live} onChange={(e) => setLive(e.target.checked)} />
+          Live (updates every {LIVE_INTERVAL_MS / 1000}s)
+        </label>
         {log && (
           <>
             <Select label="Round" value={roundFilter} onChange={setRoundFilter}>
@@ -62,7 +76,7 @@ export default function DebriefTab({ adminToken, teams, notify }) {
       </div>
       {!log && !loading && (
         <p className="text-sm text-brand-blue/50">
-          Loads every bot, the messages it received and the guesses made against it. Best used after the game.
+          Loads every bot, the messages each team sent and the guesses it made. Tick Live to watch a round as it happens.
         </p>
       )}
       <MessageLog log={filtered} teams={teams} />

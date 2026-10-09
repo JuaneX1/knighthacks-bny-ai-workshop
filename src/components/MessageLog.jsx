@@ -39,19 +39,21 @@ export default function MessageLog({ log, teams }) {
                     <p className="mt-1 whitespace-pre-wrap text-ink/70">{t.vault.systemPrompt}</p>
                   </>
                 )}
-                <p className="mt-3 font-medium text-ink/90">Messages received (attacked by opponent):</p>
-                {t.messages.length === 0 && <p className="text-brand-blue/40">None</p>}
-                {t.messages.map((m, i) => (
+                <p className="mt-3 font-medium text-ink/90">
+                  Messages sent (attacking {teams?.[t.opponentTeamId]?.name || t.opponentTeamId}'s bot):
+                </p>
+                {(t.attacks || []).length === 0 && <p className="text-brand-blue/40">None</p>}
+                {(t.attacks || []).map((m, i) => (
                   <div key={i} className="mt-2 border-t border-brand-blue/20 pt-2">
                     <p className="text-brand-blue/50">
                       Try {m.iteration}
                       {m.promptNumber ? `, msg ${m.promptNumber}` : ''}:{' '}
                       <span className="whitespace-pre-wrap break-words">{m.promptText}</span>
                     </p>
-                    <p className="whitespace-pre-wrap break-words text-brand-blue/90">reply: {m.replyText}</p>
+                    <p className="whitespace-pre-wrap break-words text-brand-blue/90">their bot replied: {m.replyText}</p>
                   </div>
                 ))}
-                <p className="mt-3 font-medium text-ink/90">Guesses made (by this team):</p>
+                <p className="mt-3 font-medium text-ink/90">Password guesses:</p>
                 {t.guesses.length === 0 && <p className="text-brand-blue/40">None</p>}
                 {t.guesses.map((g, i) => (
                   <p key={i} className={g.correct ? 'text-brand-success' : 'text-brand-blue/50'}>

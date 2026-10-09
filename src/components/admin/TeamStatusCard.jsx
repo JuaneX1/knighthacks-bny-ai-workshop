@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import TeamName from '../TeamName.jsx';
-import AttemptPips from '../AttemptPips.jsx';
 
 const VAULT_LABELS = {
   empty: { text: 'Nothing written yet', tone: 'text-brand-blue/50' },
@@ -60,14 +59,10 @@ function AttackProgress({ round, teams }) {
       </span>
     );
   }
-  if (attack.done) return <span className="text-brand-blue/50">Out of tries</span>;
-  const triesUsed = attack.attempt - 1;
+  // Tries are unlimited, so there's no "out of tries" state - just where they are in the current one.
   return (
-    <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
-      <AttemptPips used={triesUsed} total={attack.attemptsTotal} />
-      <span className="whitespace-nowrap text-ink/80">
-        Try {attack.attempt} · {attack.promptsUsed}/{attack.promptsPerAttempt} msgs
-      </span>
+    <span className="whitespace-nowrap text-ink/80">
+      Try {attack.attempt} · {attack.promptsUsed}/{attack.promptsPerAttempt} msgs
     </span>
   );
 }

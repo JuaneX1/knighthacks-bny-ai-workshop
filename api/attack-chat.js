@@ -8,7 +8,6 @@ import {
   getIterations,
   usePrompt,
   describeIterations,
-  ATTEMPTS_PER_ROUND,
 } from '../lib/stateMachine.js';
 import { validateAttackMessage } from '../lib/validation.js';
 import { callChat, buildVaultSystemPrompt, LlmError, friendlyLlmMessage } from '../lib/llm.js';
@@ -34,7 +33,7 @@ export default withErrorHandling(async (req, res) => {
   const convoKey = roundConvoKey(game.roundNumber, teamId, its.attempt);
 
   if (req.method === 'GET') {
-    const messages = its.attempt > ATTEMPTS_PER_ROUND ? [] : (await redis.lrange(convoKey, 0, -1)) || [];
+    const messages = (await redis.lrange(convoKey, 0, -1)) || [];
     return sendJson(res, 200, { messages, attack: describeIterations(its, game.promptsPerAttempt) });
   }
 
@@ -44,9 +43,6 @@ export default withErrorHandling(async (req, res) => {
     throw new HttpError(409, 'You already cracked it - waiting for the round to resolve');
   }
 
-  if (its.attempt > ATTEMPTS_PER_ROUND) {
-    throw new HttpError(409, "You've used all your tries this round");
-  }
   if (its.promptsUsed >= game.promptsPerAttempt) {
     throw new HttpError(409, 'No messages left in this try - make a guess to start your next try');
   }

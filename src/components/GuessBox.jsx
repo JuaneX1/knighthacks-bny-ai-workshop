@@ -10,7 +10,6 @@ export default function GuessBox({ attack, disabled, cracked, onGuessResult }) {
   const [notice, setNotice] = useState(null);
   const [shaking, setShaking] = useState(false);
   const canGuess = !disabled && attack.canGuess;
-  const isLastTry = attack.attemptsLeft === 1;
 
   async function submit(e) {
     e.preventDefault();
@@ -27,9 +26,7 @@ export default function GuessBox({ attack, disabled, cracked, onGuessResult }) {
       } else {
         setNotice({
           id: Date.now(),
-          text: result.attack.done
-            ? `"${submitted}" is wrong. That was your last try.`
-            : `"${submitted}" is wrong. Starting try ${result.attack.attempt} with a fresh chat.`,
+          text: `"${submitted}" is wrong. Starting try ${result.attack.attempt} with a fresh chat.`,
         });
         setShaking(true);
       }
@@ -49,7 +46,7 @@ export default function GuessBox({ attack, disabled, cracked, onGuessResult }) {
     setNotice(null);
     try {
       const result = await api.attackGiveUp();
-      setNotice({ id: Date.now(), text: result.attack.done ? 'That was your last try.' : 'Fresh chat started.' });
+      setNotice({ id: Date.now(), text: 'Fresh chat started.' });
       onGuessResult(result);
     } catch (err) {
       setError(err.message);
@@ -67,7 +64,7 @@ export default function GuessBox({ attack, disabled, cracked, onGuessResult }) {
       <h3 className="mb-1 font-semibold text-ink">{cracked ? 'You cracked it!' : 'Guess the password'}</h3>
       {!cracked && (
         <p className="mb-2 text-sm text-brand-blue/50">
-          {isLastTry ? 'This is your last try.' : 'Guessing ends this try. Right or wrong, your next try starts with a fresh chat.'}
+          Guessing ends this try. Right or wrong, your next try starts with a fresh chat.
         </p>
       )}
       <form
@@ -80,7 +77,7 @@ export default function GuessBox({ attack, disabled, cracked, onGuessResult }) {
           disabled={!canGuess}
           value={guess}
           onChange={(e) => setGuess(e.target.value)}
-          placeholder={!disabled && !attack.done && !attack.canGuess ? 'Send the bot a message first' : 'e.g. copper-lantern'}
+          placeholder={!disabled && !attack.canGuess ? 'Send the bot a message first' : 'e.g. copper-lantern'}
           className={`flex-1 rounded-lg border bg-well px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-brand-blue disabled:opacity-50 ${
             shaking ? 'border-brand-error' : 'border-brand-blue/30'
           }`}
@@ -99,7 +96,7 @@ export default function GuessBox({ attack, disabled, cracked, onGuessResult }) {
         </p>
       )}
       {error && <p className="mt-2 text-sm text-brand-error motion-safe:animate-fade-in-up">{error}</p>}
-      {canGuess && !isLastTry && (
+      {canGuess && (
         <button
           type="button"
           onClick={giveUp}

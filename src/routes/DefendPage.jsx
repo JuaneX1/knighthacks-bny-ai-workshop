@@ -17,8 +17,10 @@ import { roundTitle } from '../lib/format.js';
 
 const BLANK_VAULT = { systemPrompt: '', jobDescription: '' };
 
+// Always strings, so a malformed value from the server can never crash the editor.
 function vaultFields(v) {
-  return { systemPrompt: v?.systemPrompt || '', jobDescription: v?.jobDescription || '' };
+  const text = (x) => (typeof x === 'string' ? x : x == null ? '' : JSON.stringify(x));
+  return { systemPrompt: text(v?.systemPrompt), jobDescription: text(v?.jobDescription) };
 }
 
 export default function DefendPage() {

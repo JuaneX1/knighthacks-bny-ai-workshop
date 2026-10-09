@@ -9,6 +9,7 @@ import {
   roundKey,
   roundMessagesKey,
   roundGuessesKey,
+  teamDefenseKey,
   roundFinishedKey,
   activeSessionKey,
 } from '../../lib/keys.js';
@@ -149,6 +150,7 @@ async function handlePhaseAttack(req, res) {
   }
 
   const ok = await runDraftToAttack(redis);
+  if (ok === 'checking') throw new HttpError(409, "A team's test is still running - try again in a few seconds");
   if (!ok) throw new HttpError(409, 'Transition already in progress or state changed, try again');
 
   sendJson(res, 200, { ok: true, game: await getGame(redis) });
@@ -246,14 +248,16 @@ async function handleReset(req, res) {
   methodGuard(req, ['POST']);
   const body = await readJsonBody(req);
   if (body.confirm !== true) {
-    throw new HttpError(400, 'Pass { confirm: true } to reset - this wipes all round data');
+    throw new HttpError(400, 'Pass { confirm: true } to reset - this wipes all round data and saved bots');
   }
 
   const redis = getRedis();
   const { mode } = await getGame(redis);
   const roundKeys = await redis.keys('ctf:round:*');
   const sessionKeys = await redis.keys('ctf:activesession:*');
-  const keysToDelete = [...roundKeys, ...sessionKeys];
+  // Saved bots carry between rounds of one game, never into the next game.
+  const defenseKeys = TEAM_IDS.map(teamDefenseKey);
+  const keysToDelete = [...roundKeys, ...sessionKeys, ...defenseKeys];
   if (keysToDelete.length > 0) {
     await redis.del(...keysToDelete);
   }
@@ -273,12 +277,17 @@ async function handleLog(req, res) {
 
   for (let n = 1; n <= game.roundNumber; n++) {
     const meta = await redis.hgetall(roundKey(n));
+    // Grouped by attacker: each team gets the messages it sent (stored under the vault it attacked)
+    // and the guesses it made, so a team's whole attack reads in one place.
     const teams = {};
-    for (const teamId of (meta?.matches || []).flat()) {
-      const vault = await getVault(redis, n, teamId);
-      const messages = (await redis.lrange(roundMessagesKey(n, teamId), 0, -1)) || [];
-      const guesses = (await redis.lrange(roundGuessesKey(n, teamId), 0, -1)) || [];
-      teams[teamId] = { vault, messages, guesses };
+    for (const pair of meta?.matches || []) {
+      for (const teamId of pair) {
+        const opponentTeamId = pair.find((id) => id !== teamId);
+        const vault = await getVault(redis, n, teamId);
+        const attacks = (await redis.lrange(roundMessagesKey(n, opponentTeamId), 0, -1)) || [];
+        const guesses = (await redis.lrange(roundGuessesKey(n, teamId), 0, -1)) || [];
+        teams[teamId] = { vault, opponentTeamId, attacks, guesses };
+      }
     }
     rounds.push({ roundNumber: n, state: meta?.state, stage: meta?.stage || '', results: meta?.results || [], teams });
   }

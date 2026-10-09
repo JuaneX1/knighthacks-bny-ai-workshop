@@ -4,7 +4,7 @@ A live prompt-injection capture-the-flag game for a hackathon workshop. Play it 
 
 Every round, **each team in a match simultaneously**:
 1. **Draft (5 min)** — write a system prompt / rules for their own vault chatbot, which hides a secret password, then "Save & test" it so it passes a helpfulness test.
-2. **Attack (10 min)** — get 3 tries against the *opponent's* vault: each try is a conversation of up to 8 messages (the bot remembers the conversation) that ends with one password guess.
+2. **Attack (10 min)** — get unlimited tries against the *opponent's* vault: each try is a conversation of up to 8 messages (the bot remembers the conversation) that ends with one password guess.
 
 A team **wins a match** when the opponent's vault breaks (cracked, or failed the helpfulness test) while its own vault holds up. Anything else is a draw. Designed for one device per team, plus one admin device that runs the room and an optional projector showing the scoreboard. Joining from a new device invalidates a team's previous session, so only one device per team can be active at a time.
 
@@ -128,9 +128,9 @@ To edit the text, run `npm run dev:web`, open `http://localhost:5173/slides/inde
 - **Modes:** the admin switches between Duel and Tournament from the lobby (reset first if a game was played).
   - **Duel:** the same 2 teams play rounds until one wins a match outright.
   - **Tournament (knockout):** round 1 is both semifinals at once (Team 1 vs 2, Team 3 vs 4) on shared timers; round 2 is the final between the semifinal winners. No third-place match - knocked-out teams watch. A drawn semifinal waits for the admin to pick who advances; a drawn final waits for the admin to declare the winner under End game.
-- **Draft phase (5 min, default):** system prompt (max 400 words) and a job description (required to test). Each team's last saved vault is carried into the next round automatically (stored under `ctf:defense:<teamId>`, which survives an admin reset).
+- **Draft phase (5 min, default):** system prompt (max 400 words) and a job description (required to test). Each team's last saved vault is carried into the next round automatically (stored under `ctf:defense:<teamId>`). An admin reset clears these, so each new game starts with blank bots.
 - **Helpfulness test (stops "impenetrable" vaults):** "Save & test" asks the vault 2 ordinary questions about its own job and has one grading call decide PASS/FAIL - 3 AI calls total. Results are cached by the vault's exact text, so re-testing unchanged text (or an unchanged vault carried into a new round) is free. Teams can test once every 30 seconds. When the attack phase starts, each vault's result is locked in with no AI calls; a vault that was never tested, or failed, **counts as broken**. A fixed platform preamble also tells every vault to genuinely help with its job.
-- **Attack phase (10 min, default):** each team gets 3 tries against its *opponent's* vault. A try is a conversation of up to 8 messages (admin-configurable, "Messages per try") where the bot remembers earlier messages, and it ends with one password guess (or "start a fresh chat" to give it up). The phase ends at the timer, or once every playing team is out of tries or has cracked its opponent.
+- **Attack phase (10 min, default):** each team gets unlimited tries against its *opponent's* vault. A try is a conversation of up to 8 messages (admin-configurable, "Messages per try") where the bot remembers earlier messages, and it ends with one password guess (or "start a fresh chat" to give it up). The phase ends when the admin ends it, or on its own once every playing team has cracked its opponent. Phase timers are only a guide: play continues after one runs out until the admin moves on.
 - **Winning a match:** a team wins when the opponent's vault is broken (cracked or failed the helpfulness test) **and** its own vault is not. Anything else is a draw: in a duel the admin starts a new round, in a tournament the admin decides.
 - **If the workshop runs out of time:** the admin can declare a manual winner or draw from the Admin panel to end the game.
 
