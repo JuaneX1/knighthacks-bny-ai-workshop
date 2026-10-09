@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
 import { api } from '../lib/api.js';
 import { useScoreboard } from '../hooks/useScoreboard.js';
+import { usePolling } from '../hooks/usePolling.js';
 import Timer from '../components/Timer.jsx';
 import StatusBanner from '../components/StatusBanner.jsx';
 import MessageLog from '../components/MessageLog.jsx';
 import Bracket from '../components/Bracket.jsx';
 import { PHASE_LABELS, STAGE_LABELS, matchLabel } from '../lib/format.js';
 import { TEAM_IDS, teamCountFor } from '../../lib/keys.js';
+
+const LOG_INTERVAL_MS = 5000;
 
 export default function AdminPage() {
   const [adminToken, setAdminToken] = useState(() => sessionStorage.getItem('ctf_admin_token') || '');
@@ -21,7 +24,14 @@ export default function AdminPage() {
   ]);
   const [durations, setDurations] = useState({ draftDurationSec: 300, attackDurationSec: 600, promptsPerAttempt: 8 });
   const [log, setLog] = useState(null);
+  const [logLive, setLogLive] = useState(false);
   const { data: board } = useScoreboard({ enabled: verified });
+  // While "Live" is on, the debrief log re-fetches every few seconds so new messages and guesses show up.
+  const { data: liveLog } = usePolling(() => api.admin.log(adminToken), LOG_INTERVAL_MS, { enabled: verified && logLive });
+
+  useEffect(() => {
+    if (logLive && liveLog) setLog(liveLog);
+  }, [logLive, liveLog]);
 
   useEffect(() => {
     if (!adminToken) return;
@@ -247,7 +257,13 @@ export default function AdminPage() {
       </Section>
 
       <Section title="Debrief log">
-        <Button onClick={loadLog}>Load full log</Button>
+        <div className="flex flex-wrap items-center gap-3">
+          <Button onClick={loadLog}>{log ? 'Refresh log' : 'Load full log'}</Button>
+          <label className="flex items-center gap-2 text-sm text-brand-blue/60">
+            <input type="checkbox" checked={logLive} onChange={(e) => setLogLive(e.target.checked)} />
+            Live (updates every {LOG_INTERVAL_MS / 1000}s)
+          </label>
+        </div>
         <div className="mt-4">
           <MessageLog log={log} teams={teams} />
         </div>
