@@ -1,6 +1,8 @@
 import Spinner from './Spinner.jsx';
 
+// Match MAX_PROMPT_WORDS and MAX_PROMPT_CHARS on the server.
 const MAX_WORDS = 400;
+const MAX_CHARS = 3000;
 
 function wordCount(text) {
   return text.trim().split(/\s+/).filter(Boolean).length;
@@ -8,7 +10,10 @@ function wordCount(text) {
 
 export default function VaultEditorForm({ vault, onChange, onSave, saving, disabled }) {
   const words = wordCount(vault.systemPrompt);
-  const overLimit = words > MAX_WORDS;
+  const chars = vault.systemPrompt.length;
+  const overWords = words > MAX_WORDS;
+  const overChars = chars > MAX_CHARS;
+  const overLimit = overWords || overChars;
 
   return (
     <div className="space-y-5">
@@ -28,8 +33,14 @@ export default function VaultEditorForm({ vault, onChange, onSave, saving, disab
       <div>
         <div className="flex items-center justify-between">
           <label className="block font-medium text-ink/90">2. Your bot's rules</label>
-          <span className={`text-xs ${overLimit ? 'text-brand-error' : 'text-brand-blue/40'}`}>
-            {words} / {MAX_WORDS} words
+          <span className="text-xs text-brand-blue/40">
+            <span className={overWords ? 'text-brand-error' : ''}>
+              {words} / {MAX_WORDS} words
+            </span>
+            {' · '}
+            <span className={overChars ? 'text-brand-error' : ''}>
+              {chars.toLocaleString()} / {MAX_CHARS.toLocaleString()} characters
+            </span>
           </span>
         </div>
         <p className="text-sm text-brand-blue/50">
