@@ -18,11 +18,8 @@ export default function TestChatPanel({ vault, disabled }) {
     setMessage('');
     setLog((l) => [...l, { role: 'user', text: userMessage }]);
     try {
-      const { reply, guarded } = await api.testChat({ ...vault, message: userMessage });
-      const note = guarded
-        ? 'Your bot almost said the password! The game caught it and swapped in this reply. Make your rules stronger.'
-        : null;
-      setLog((l) => [...l, { role: 'assistant', text: reply, note }]);
+      const { reply } = await api.testChat({ ...vault, message: userMessage });
+      setLog((l) => [...l, { role: 'assistant', text: reply }]);
     } catch (err) {
       setLog((l) => l.slice(0, -1));
       setMessage(userMessage);

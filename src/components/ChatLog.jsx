@@ -52,7 +52,6 @@ function ChatMessage({ message }) {
           {expanded ? 'Show less' : `Show all (${message.text.length.toLocaleString()} characters)`}
         </button>
       )}
-      {message.note && <p className="text-xs text-amber-300">{message.note}</p>}
     </div>
   );
 }
