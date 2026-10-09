@@ -258,12 +258,17 @@ async function handleLog(req, res) {
 
   for (let n = 1; n <= game.roundNumber; n++) {
     const meta = await redis.hgetall(roundKey(n));
+    // Grouped by attacker: each team gets the messages it sent (stored under the vault it attacked)
+    // and the guesses it made, so a team's whole attack reads in one place.
     const teams = {};
-    for (const teamId of (meta?.matches || []).flat()) {
-      const vault = await getVault(redis, n, teamId);
-      const messages = (await redis.lrange(roundMessagesKey(n, teamId), 0, -1)) || [];
-      const guesses = (await redis.lrange(roundGuessesKey(n, teamId), 0, -1)) || [];
-      teams[teamId] = { vault, messages, guesses };
+    for (const pair of meta?.matches || []) {
+      for (const teamId of pair) {
+        const opponentTeamId = pair.find((id) => id !== teamId);
+        const vault = await getVault(redis, n, teamId);
+        const attacks = (await redis.lrange(roundMessagesKey(n, opponentTeamId), 0, -1)) || [];
+        const guesses = (await redis.lrange(roundGuessesKey(n, teamId), 0, -1)) || [];
+        teams[teamId] = { vault, opponentTeamId, attacks, guesses };
+      }
     }
     rounds.push({ roundNumber: n, state: meta?.state, stage: meta?.stage || '', results: meta?.results || [], teams });
   }
