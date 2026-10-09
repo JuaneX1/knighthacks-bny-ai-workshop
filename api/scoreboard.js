@@ -11,7 +11,9 @@ export default withErrorHandling(async (req, res) => {
   const game = await ensurePhaseFresh(redis);
 
   // hgetall already JSON-decodes each hash value automatically - these are real objects, not strings.
-  const teams = (await redis.hgetall(teamsKey())) || {};
+  const rawTeams = (await redis.hgetall(teamsKey())) || {};
+  // This endpoint is public, so only names go out - never join codes.
+  const teams = Object.fromEntries(Object.entries(rawTeams).map(([teamId, t]) => [teamId, { name: t?.name || teamId }]));
 
   const summaryKeys = Array.from({ length: game.roundNumber }, (_, i) => roundSummaryKey(i + 1));
   const summaries = summaryKeys.length > 0 ? await redis.mget(...summaryKeys) : [];

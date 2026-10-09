@@ -238,7 +238,7 @@ export default function AdminPage() {
         <Button
           tone="bad"
           onClick={act(async () => {
-            if (!confirm('This wipes all round data. Continue?')) return;
+            if (!confirm('This wipes all round data and every team\'s saved bot, and signs all teams out. Continue?')) return;
             await api.admin.reset(adminToken);
           })}
         >

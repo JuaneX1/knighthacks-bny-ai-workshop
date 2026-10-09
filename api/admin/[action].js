@@ -9,6 +9,7 @@ import {
   roundKey,
   roundMessagesKey,
   roundGuessesKey,
+  teamDefenseKey,
 } from '../../lib/keys.js';
 import { withErrorHandling, methodGuard, readJsonBody, sendJson, requireAdmin, HttpError } from '../../lib/http.js';
 import {
@@ -142,6 +143,7 @@ async function handlePhaseAttack(req, res) {
   }
 
   const ok = await runDraftToAttack(redis);
+  if (ok === 'checking') throw new HttpError(409, "A team's test is still running - try again in a few seconds");
   if (!ok) throw new HttpError(409, 'Transition already in progress or state changed, try again');
 
   sendJson(res, 200, { ok: true, game: await getGame(redis) });
@@ -227,14 +229,16 @@ async function handleReset(req, res) {
   methodGuard(req, ['POST']);
   const body = await readJsonBody(req);
   if (body.confirm !== true) {
-    throw new HttpError(400, 'Pass { confirm: true } to reset - this wipes all round data');
+    throw new HttpError(400, 'Pass { confirm: true } to reset - this wipes all round data and saved bots');
   }
 
   const redis = getRedis();
   const { mode } = await getGame(redis);
   const roundKeys = await redis.keys('ctf:round:*');
   const sessionKeys = await redis.keys('ctf:activesession:*');
-  const keysToDelete = [...roundKeys, ...sessionKeys];
+  // Saved bots carry between rounds of one game, never into the next game.
+  const defenseKeys = TEAM_IDS.map(teamDefenseKey);
+  const keysToDelete = [...roundKeys, ...sessionKeys, ...defenseKeys];
   if (keysToDelete.length > 0) {
     await redis.del(...keysToDelete);
   }

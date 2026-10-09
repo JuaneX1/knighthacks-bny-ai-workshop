@@ -1,12 +1,14 @@
 import { getRedis } from '../lib/redis.js';
-import { roundVaultKey, teamDefenseKey, checkCooldownKey } from '../lib/keys.js';
+import { checkCooldownKey } from '../lib/keys.js';
 import { withErrorHandling, methodGuard, readJsonBody, sendJson, requireTeamSession, HttpError } from '../lib/http.js';
-import { ensurePhaseFresh, getVault, requireOpponentTeamId } from '../lib/stateMachine.js';
+import { ensurePhaseFresh, getVault, requireOpponentTeamId, saveVault, clearChecking } from '../lib/stateMachine.js';
 import { validateVaultInput } from '../lib/validation.js';
 import { getCachedUtility, runUtilityCheck } from '../lib/utilityCheck.js';
 import { LlmError, friendlyLlmMessage } from '../lib/llm.js';
 
 const CHECK_COOLDOWN_MS = 30_000;
+// How long the "check running" marker lives if it's never cleared - longer than the check's time budget.
+const CHECKING_TTL_MS = 30_000;
 
 // GET: this team's vault for the current round.
 // PUT: save it. POST: save it, then run the helpfulness check ("Save & test").
@@ -35,24 +37,36 @@ export default withErrorHandling(async (req, res) => {
   const body = await readJsonBody(req);
   const clean = validateVaultInput(body);
 
-  await redis.hset(roundVaultKey(game.roundNumber, teamId), clean);
-  // Remember the latest defense so it's pre-filled next round.
-  await redis.hset(teamDefenseKey(teamId), clean);
+  // Decide whether a check will run before saving, so the save can mark it as running in the same
+  // step - otherwise the phase could switch between the save and the check starting.
+  const wantsCheck = req.method === 'POST' && Boolean(clean.jobDescription.trim());
+  // Same text as a vault that was already tested: reuse the result, no AI calls.
+  const cached = wantsCheck ? await getCachedUtility(redis, clean) : null;
+  const cooldownKey = checkCooldownKey(teamId);
+  const gotSlot =
+    wantsCheck && !cached ? Boolean(await redis.set(cooldownKey, '1', { nx: true, px: CHECK_COOLDOWN_MS })) : false;
+
+  const saved = await saveVault(redis, game.roundNumber, teamId, clean, { checkingTtlMs: gotSlot ? CHECKING_TTL_MS : 0 });
+  if (saved !== 'saved') {
+    if (gotSlot) await redis.del(cooldownKey);
+    throw new HttpError(
+      409,
+      saved === 'ending'
+        ? "Time's up - the Attack phase is starting. Your last saved version is the one that counts."
+        : 'The Defend phase is over - your last saved version is the one that counts.',
+    );
+  }
 
   if (req.method === 'PUT') {
     return sendJson(res, 200, { ok: true, check: await getCachedUtility(redis, clean) });
   }
 
-  if (!clean.jobDescription.trim()) {
+  if (!wantsCheck) {
     throw new HttpError(400, "Saved! Now give your bot a job (like \"pizza shop helper\") so we can test it.");
   }
 
-  // Same text as a vault that was already tested: reuse the result, no AI calls.
-  const cached = await getCachedUtility(redis, clean);
   if (cached) return sendJson(res, 200, { ok: true, check: cached });
 
-  const cooldownKey = checkCooldownKey(teamId);
-  const gotSlot = await redis.set(cooldownKey, '1', { nx: true, px: CHECK_COOLDOWN_MS });
   if (!gotSlot) {
     const waitSec = Math.max(1, Math.ceil((await redis.pttl(cooldownKey)) / 1000));
     throw new HttpError(429, `Saved! You can test again in ${waitSec} seconds.`);
@@ -69,5 +83,7 @@ export default withErrorHandling(async (req, res) => {
     }
     if (err instanceof HttpError) throw new HttpError(err.status, `Saved! ${err.message}`);
     throw err;
+  } finally {
+    await clearChecking(redis, game.roundNumber, teamId);
   }
 });

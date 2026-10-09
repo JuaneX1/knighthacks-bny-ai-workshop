@@ -11,6 +11,11 @@ import {
   describeIterations,
 } from '../lib/stateMachine.js';
 
+// Guesses ignore case, spaces and punctuation: "Copper Lantern" matches "copper-lantern".
+function normalizeGuess(text) {
+  return String(text).toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
 // Ends the current try. Body { guess } makes a password guess; { giveUp: true } starts a fresh
 // chat without guessing. Either way the next try begins with an empty conversation.
 export default withErrorHandling(async (req, res) => {
@@ -42,7 +47,7 @@ export default withErrorHandling(async (req, res) => {
     throw new HttpError(409, 'Send the bot at least one message in this try first');
   }
 
-  const correct = !giveUp && guess.toLowerCase() === opponentVault.password.toLowerCase();
+  const correct = !giveUp && normalizeGuess(guess) === normalizeGuess(opponentVault.password);
 
   if (!giveUp) {
     await redis.rpush(roundGuessesKey(game.roundNumber, teamId), {
