@@ -9,7 +9,6 @@ import {
   endAttempt,
   markFinished,
   describeIterations,
-  ATTEMPTS_PER_ROUND,
 } from '../lib/stateMachine.js';
 
 // Ends the current try. Body { guess } makes a password guess; { giveUp: true } starts a fresh
@@ -61,8 +60,8 @@ export default withErrorHandling(async (req, res) => {
     });
   }
 
-  // A team is done for the round once it cracks the vault or ends its last try.
-  if (correct || endedAttempt === ATTEMPTS_PER_ROUND) {
+  // A team is done for the round once it cracks the vault.
+  if (correct) {
     await markFinished(redis, game.roundNumber, teamId);
   }
 
