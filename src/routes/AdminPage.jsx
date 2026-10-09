@@ -1,309 +1,268 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { api } from '../lib/api.js';
 import { useScoreboard } from '../hooks/useScoreboard.js';
 import { usePolling } from '../hooks/usePolling.js';
-import Timer from '../components/Timer.jsx';
+import { useNow } from '../hooks/useNow.js';
+import LoadingScreen from '../components/LoadingScreen.jsx';
 import StatusBanner from '../components/StatusBanner.jsx';
-import MessageLog from '../components/MessageLog.jsx';
-import Bracket from '../components/Bracket.jsx';
-import { PHASE_LABELS, STAGE_LABELS, matchLabel } from '../lib/format.js';
+import BrandEmblem from '../components/icons/BrandEmblem.jsx';
+import ControlBar from '../components/admin/ControlBar.jsx';
+import LiveTab from '../components/admin/LiveTab.jsx';
+import SetupTab from '../components/admin/SetupTab.jsx';
+import DebriefTab from '../components/admin/DebriefTab.jsx';
+import ResetDialog from '../components/admin/ResetDialog.jsx';
+import { Toasts, useToasts } from '../components/admin/Toasts.jsx';
 import { TEAM_IDS, teamCountFor } from '../../lib/keys.js';
 
-const LOG_INTERVAL_MS = 5000;
+const DEFAULT_TEAMS = [
+  { name: 'Team SPARK', joinCode: 'SPARK' },
+  { name: 'Team THRIVE', joinCode: 'THRIVE' },
+  { name: 'Team OWN IT', joinCode: 'OWNIT' },
+  { name: 'Team CURIOUS', joinCode: 'CURIOUS' },
+];
+
+const TABS = [
+  { id: 'live', label: 'Live' },
+  { id: 'setup', label: 'Setup' },
+  { id: 'debrief', label: 'Debrief' },
+];
+
+const POLL_MS = 3000;
+const DEFAULT_SETTINGS = { draftDurationSec: 300, attackDurationSec: 600, promptsPerAttempt: 8 };
 
 export default function AdminPage() {
   const [adminToken, setAdminToken] = useState(() => sessionStorage.getItem('ctf_admin_token') || '');
-  const [tokenInput, setTokenInput] = useState('');
   const [verified, setVerified] = useState(false);
-  const [message, setMessage] = useState(null);
-  const [teamsForm, setTeamsForm] = useState([
-    { name: 'Team SPARK', joinCode: 'SPARK' },
-    { name: 'Team THRIVE', joinCode: 'THRIVE' },
-    { name: 'Team OWN IT', joinCode: 'OWNIT' },
-    { name: 'Team CURIOUS', joinCode: 'CURIOUS' },
-  ]);
-  const [durations, setDurations] = useState({ draftDurationSec: 300, attackDurationSec: 600, promptsPerAttempt: 8 });
-  const [log, setLog] = useState(null);
-  const [logLive, setLogLive] = useState(false);
-  const { data: board } = useScoreboard({ enabled: verified });
-  // While "Live" is on, the debrief log re-fetches every few seconds so new messages and guesses show up.
-  const { data: liveLog } = usePolling(() => api.admin.log(adminToken), LOG_INTERVAL_MS, { enabled: verified && logLive });
+  const [checking, setChecking] = useState(Boolean(adminToken));
 
-  useEffect(() => {
-    if (logLive && liveLog) setLog(liveLog);
-  }, [logLive, liveLog]);
+  // The teams as last saved on the server, in slot order, to tell when the form has unsaved edits.
+  const [savedTeams, setSavedTeams] = useState([]);
+  const [teamsForm, setTeamsForm] = useState(DEFAULT_TEAMS);
 
   useEffect(() => {
     if (!adminToken) return;
+    setChecking(true);
     api.admin
       .listTeams(adminToken)
       .then(({ teams }) => {
         setVerified(true);
         const saved = Object.fromEntries(teams.map(({ teamId, name, joinCode }) => [teamId, { name, joinCode }]));
-        setTeamsForm((prev) => TEAM_IDS.map((teamId, i) => saved[teamId] || prev[i]));
+        setTeamsForm(TEAM_IDS.map((teamId, i) => saved[teamId] || DEFAULT_TEAMS[i]));
+        setSavedTeams(teams.map(({ name, joinCode }) => ({ name, joinCode })));
       })
-      .catch(() => setVerified(false));
+      .catch(() => setVerified(false))
+      .finally(() => setChecking(false));
   }, [adminToken]);
 
-  function handleTokenSubmit(e) {
-    e.preventDefault();
-    sessionStorage.setItem('ctf_admin_token', tokenInput);
-    setAdminToken(tokenInput);
-  }
-
-  function act(fn) {
-    return async () => {
-      setMessage(null);
-      try {
-        await fn();
-        setMessage({ tone: 'good', text: 'Done.' });
-      } catch (err) {
-        setMessage({ tone: 'bad', text: err.message });
-      }
-    };
-  }
-
-  async function loadLog() {
-    try {
-      const data = await api.admin.log(adminToken);
-      setLog(data);
-    } catch (err) {
-      setMessage({ tone: 'bad', text: err.message });
-    }
+  function handleLogin(token) {
+    sessionStorage.setItem('ctf_admin_token', token);
+    setAdminToken(token);
   }
 
   if (!verified) {
-    return (
-      <div className="mx-auto max-w-sm px-6 py-16">
-        <h1 className="heading-glow mb-4 text-2xl font-bold">Admin login</h1>
-        <form onSubmit={handleTokenSubmit} className="space-y-3">
-          <input
-            type="password"
-            value={tokenInput}
-            onChange={(e) => setTokenInput(e.target.value)}
-            placeholder="Admin token"
-            className="ui-input w-full"
-          />
-          <button type="submit" className="btn-primary w-full">
-            Enter
-          </button>
-        </form>
-        {adminToken && <p className="mt-3 text-sm text-brand-error">Invalid token, try again.</p>}
-      </div>
-    );
+    if (checking) return <LoadingScreen label="Checking token" />;
+    return <AdminLogin onSubmit={handleLogin} failed={Boolean(adminToken)} />;
   }
 
-  const teams = board?.teams || {};
-  const mode = board?.mode || 'duel';
-  const visibleTeams = teamsForm.slice(0, teamCountFor(mode));
-  const drawnSemis =
-    board?.stage === 'semis' && board.state === 'round_ended'
-      ? board.matches.map((pair, i) => ({ pair, i })).filter(({ i }) => !board.finalists[i])
-      : [];
-
   return (
-    <div className="mx-auto max-w-4xl px-6 py-8">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="heading-glow text-2xl font-bold">Admin</h1>
-        <div className="text-right">
-          <p className="text-lg font-semibold text-brand-blue">
-            {STAGE_LABELS[board?.stage] && board.state !== 'game_ended' && `${STAGE_LABELS[board.stage]}: `}
-            {board ? PHASE_LABELS[board.state] : '...'}
-          </p>
-          {board?.rounds?.[0] && board.state !== 'lobby' && board.state !== 'game_ended' && (
-            <p className="text-sm text-brand-blue/50">Round {board.roundNumber}</p>
-          )}
-        </div>
-      </div>
-
-      {message && (
-        <div className="mb-4">
-          <StatusBanner tone={message.tone}>{message.text}</StatusBanner>
-        </div>
-      )}
-
-      <Section title="Mode">
-        <div className="flex flex-wrap gap-2">
-          <Button tone={mode === 'duel' ? 'active' : 'default'} onClick={act(() => api.admin.setMode('duel', adminToken))}>
-            Duel (2 teams)
-          </Button>
-          <Button
-            tone={mode === 'tournament' ? 'active' : 'default'}
-            onClick={act(() => api.admin.setMode('tournament', adminToken))}
-          >
-            Tournament (4 teams)
-          </Button>
-        </div>
-        <p className="mt-2 text-xs text-brand-blue/40">
-          Duel: rounds repeat until one team wins. Tournament: semifinals (Team 1 vs 2, Team 3 vs 4) at the same time,
-          then a final between the winners. Switching is only allowed before the first round (reset first).
-        </p>
-      </Section>
-
-      <Section title="Teams">
-        <div className="space-y-2">
-          {visibleTeams.map((t, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <span className="w-16 text-sm text-brand-blue/50">Team {i + 1}</span>
-              <input
-                value={t.name}
-                onChange={(e) => updateTeam(i, 'name', e.target.value)}
-                placeholder="Display name"
-                className="ui-input flex-1 py-1 text-sm"
-              />
-              <input
-                value={t.joinCode}
-                onChange={(e) => updateTeam(i, 'joinCode', e.target.value)}
-                placeholder="Join code"
-                className="ui-input w-32 py-1 text-sm"
-              />
-            </div>
-          ))}
-        </div>
-        <p className="mt-2 text-xs text-brand-blue/40">
-          This mode uses exactly {visibleTeams.length} teams. Renaming or changing a join code is safe at any time.
-        </p>
-        <div className="mt-3">
-          <Button onClick={act(() => api.admin.setTeams(visibleTeams, adminToken))}>Save teams</Button>
-        </div>
-      </Section>
-
-      <Section title="Round control">
-        <div className="flex flex-wrap items-center gap-3">
-          <label className="text-sm text-brand-blue/50">
-            Draft sec
-            <input
-              type="number"
-              value={durations.draftDurationSec}
-              onChange={(e) => setDurations((d) => ({ ...d, draftDurationSec: Number(e.target.value) }))}
-              className="ui-input ml-2 w-20 py-1 text-sm"
-            />
-          </label>
-          <label className="text-sm text-brand-blue/50">
-            Attack sec
-            <input
-              type="number"
-              value={durations.attackDurationSec}
-              onChange={(e) => setDurations((d) => ({ ...d, attackDurationSec: Number(e.target.value) }))}
-              className="ui-input ml-2 w-20 py-1 text-sm"
-            />
-          </label>
-          <label className="text-sm text-brand-blue/50">
-            Messages per try
-            <input
-              type="number"
-              min={1}
-              max={20}
-              value={durations.promptsPerAttempt}
-              onChange={(e) => setDurations((d) => ({ ...d, promptsPerAttempt: Number(e.target.value) }))}
-              className="ui-input ml-2 w-16 py-1 text-sm"
-            />
-          </label>
-        </div>
-        <div className="mt-3 flex flex-wrap gap-2">
-          <Button onClick={act(() => api.admin.roundStart(durations, adminToken))}>{startLabel(board)}</Button>
-          <Button onClick={act(() => api.admin.phaseAttack(adminToken))}>Force attack phase now</Button>
-          <Button onClick={act(() => api.admin.phaseEnd(adminToken))}>Force end attack phase now</Button>
-          <Button onClick={act(() => api.admin.timer(durations, adminToken))}>Update default settings</Button>
-        </div>
-        {(board?.state === 'draft' || board?.state === 'attack') && (
-          <p className="mt-2 text-sm text-brand-blue/50">
-            Time remaining: <Timer endsAt={board.phaseEndsAt} />
-          </p>
-        )}
-      </Section>
-
-      {mode === 'tournament' && board && (
-        <Section title="Bracket">
-          <Bracket semis={board.lineup} finalists={board.finalists} winnerTeamId={board.winnerTeamId} teams={teams} />
-          {drawnSemis.map(({ pair, i }) => (
-            <div key={i} className="mt-4">
-              <p className="mb-2 text-sm text-brand-blue/50">
-                Semifinal {i + 1} ({matchLabel(pair, teams)}) was a draw. Who goes through?
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {pair.map((teamId) => (
-                  <Button key={teamId} onClick={act(() => api.admin.advance(i, teamId, adminToken))}>
-                    Advance {teams[teamId]?.name || teamId}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          ))}
-        </Section>
-      )}
-
-      <Section title="End game">
-        <div className="flex flex-wrap gap-2">
-          {(board?.lineup || []).flat().map((teamId) => (
-            <Button key={teamId} onClick={act(() => api.admin.endGame({ result: teamId }, adminToken))}>
-              Declare {teams[teamId]?.name || teamId} winner
-            </Button>
-          ))}
-          <Button onClick={act(() => api.admin.endGame({ result: 'draw' }, adminToken))}>Declare draw</Button>
-        </div>
-      </Section>
-
-      <Section title="Danger zone">
-        <Button
-          tone="bad"
-          onClick={act(async () => {
-            if (!confirm('This wipes all round data and every team\'s saved bot, and signs all teams out. Continue?')) return;
-            await api.admin.reset(adminToken);
-          })}
-        >
-          Reset game
-        </Button>
-      </Section>
-
-      <Section title="Debrief log">
-        <div className="flex flex-wrap items-center gap-3">
-          <Button onClick={loadLog}>{log ? 'Refresh log' : 'Load full log'}</Button>
-          <label className="flex items-center gap-2 text-sm text-brand-blue/60">
-            <input type="checkbox" checked={logLive} onChange={(e) => setLogLive(e.target.checked)} />
-            Live (updates every {LOG_INTERVAL_MS / 1000}s)
-          </label>
-        </div>
-        <div className="mt-4">
-          <MessageLog log={log} teams={teams} />
-        </div>
-      </Section>
-    </div>
-  );
-
-  function updateTeam(i, field, value) {
-    setTeamsForm((prev) => prev.map((t, idx) => (idx === i ? { ...t, [field]: value } : t)));
-  }
-}
-
-// The round-start button's label for what it will start next.
-function startLabel(board) {
-  if (board?.mode !== 'tournament') return 'Start next round';
-  return board.stage ? 'Start final' : 'Start semifinals';
-}
-
-function Section({ title, children }) {
-  return (
-    <div className="ui-panel mb-8 p-4">
-      <h2 className="mb-3 text-lg font-semibold text-ink">{title}</h2>
-      {children}
-    </div>
+    <AdminDashboard
+      adminToken={adminToken}
+      teamsForm={teamsForm}
+      setTeamsForm={setTeamsForm}
+      savedTeams={savedTeams}
+      setSavedTeams={setSavedTeams}
+    />
   );
 }
 
-function Button({ children, onClick, tone = 'default' }) {
-  const tones = {
-    default: 'border border-brand-blue/30 bg-panel text-ink hover:border-brand-blue/60 hover:bg-panel/60',
-    active: 'border border-brand-blue bg-brand-blue/20 text-ink',
-    bad: 'bg-brand-error/80 text-btn-ink hover:bg-brand-error hover:shadow-[0_0_14px_rgb(var(--color-error)/0.55)]',
+function AdminDashboard({ adminToken, teamsForm, setTeamsForm, savedTeams, setSavedTeams }) {
+  const [tab, setTab] = useState(() => readTab());
+  const [busy, setBusy] = useState(null);
+  const [resetOpen, setResetOpen] = useState(false);
+  const [settings, setSettings] = useState(null);
+  const { toasts, notify, dismiss } = useToasts();
+  const now = useNow();
+
+  const { data: board, refresh: refreshBoard } = useScoreboard({ intervalMs: POLL_MS });
+  const {
+    data: overview,
+    error: overviewError,
+    refresh: refreshOverview,
+  } = usePolling(() => api.admin.overview(adminToken), POLL_MS);
+
+  // Round settings start from what the server has saved (or the defaults if that can't load),
+  // then the admin's edits take over.
+  useEffect(() => {
+    if (settings || (!overview && !overviewError)) return;
+    const s = overview?.settings || DEFAULT_SETTINGS;
+    setSettings({
+      draftMin: s.draftDurationSec / 60,
+      attackMin: s.attackDurationSec / 60,
+      promptsPerAttempt: s.promptsPerAttempt,
+    });
+  }, [overview, overviewError, settings]);
+
+  // Runs an admin action, then confirms it (or shows why it failed) and refreshes the dashboard.
+  const run = useCallback(
+    async (action, successText, busyLabel = successText) => {
+      setBusy(busyLabel);
+      try {
+        await action(adminToken);
+        notify('good', successText);
+        refreshBoard();
+        refreshOverview();
+        return true;
+      } catch (err) {
+        notify('bad', err.message);
+        return false;
+      } finally {
+        setBusy(null);
+      }
+    },
+    [adminToken, notify, refreshBoard, refreshOverview],
+  );
+
+  if (!board || !settings) return <LoadingScreen label="Loading game" />;
+
+  const visibleTeams = teamsForm.slice(0, teamCountFor(board.mode));
+  const teamsDirty = JSON.stringify(visibleTeams) !== JSON.stringify(savedTeams.slice(0, visibleTeams.length));
+  const roundSettings = {
+    draftDurationSec: Math.max(30, Math.round(Number(settings.draftMin) * 60) || 0),
+    attackDurationSec: Math.max(30, Math.round(Number(settings.attackMin) * 60) || 0),
+    promptsPerAttempt: Math.min(20, Math.max(1, Math.round(Number(settings.promptsPerAttempt)) || 1)),
   };
+
+  async function saveTeams() {
+    const toSave = visibleTeams;
+    if (await run((token) => api.admin.setTeams(toSave, token), 'Teams saved')) setSavedTeams(toSave);
+  }
+
+  function selectTab(id) {
+    setTab(id);
+    try {
+      sessionStorage.setItem('ctf_admin_tab', id);
+    } catch {
+      // only a convenience
+    }
+  }
+
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`rounded px-3 py-2 text-sm font-medium transition ${tones[tone]}`}
-    >
-      {children}
-    </button>
+    <div className="pb-16">
+      <ControlBar
+        board={board}
+        overview={overview}
+        settings={roundSettings}
+        run={run}
+        busy={busy}
+        now={now}
+        onReset={() => setResetOpen(true)}
+      />
+
+      <div className="mx-auto max-w-6xl px-6">
+        {overviewError && (
+          <div className="mb-4">
+            <StatusBanner tone="bad">
+              Couldn't load live team status: {overviewError.message}. If you're running the local API server, restart
+              it so it picks up the latest endpoints.
+            </StatusBanner>
+          </div>
+        )}
+
+        <div className="mb-6 flex items-center gap-1 border-b border-brand-blue/20" role="tablist">
+          {TABS.map(({ id, label }) => (
+            <button
+              key={id}
+              type="button"
+              role="tab"
+              aria-selected={tab === id}
+              onClick={() => selectTab(id)}
+              className={`-mb-px flex items-center gap-2 border-b-2 px-4 py-2 text-sm font-semibold transition ${
+                tab === id ? 'border-brand-blue text-ink' : 'border-transparent text-brand-blue/50 hover:text-brand-blue'
+              }`}
+            >
+              {label}
+              {id === 'setup' && teamsDirty && (
+                <span className="h-1.5 w-1.5 rounded-full bg-brand-warn" title="Unsaved team changes" />
+              )}
+            </button>
+          ))}
+        </div>
+
+        {tab === 'live' && (
+          <LiveTab board={board} overview={overview} run={run} busy={busy} onReset={() => setResetOpen(true)} />
+        )}
+        {tab === 'setup' && (
+          <SetupTab
+            board={board}
+            run={run}
+            onSaveTeams={saveTeams}
+            busy={busy}
+            setTeamsForm={setTeamsForm}
+            teamsDirty={teamsDirty}
+            visibleTeams={visibleTeams}
+            settings={settings}
+            setSettings={setSettings}
+          />
+        )}
+        {tab === 'debrief' && <DebriefTab adminToken={adminToken} teams={board.teams} notify={notify} />}
+      </div>
+
+      {resetOpen && (
+        <ResetDialog
+          busy={Boolean(busy)}
+          onCancel={() => setResetOpen(false)}
+          onConfirm={async () => {
+            const ok = await run((token) => api.admin.reset(token), 'Game reset. Players need to rejoin', 'Reset');
+            if (ok) setResetOpen(false);
+          }}
+        />
+      )}
+
+      <Toasts toasts={toasts} dismiss={dismiss} />
+    </div>
   );
+}
+
+function AdminLogin({ onSubmit, failed }) {
+  const [token, setToken] = useState('');
+  return (
+    <div className="mx-auto flex min-h-screen max-w-sm flex-col justify-center px-6">
+      <div className="mb-6 flex items-center gap-3">
+        <BrandEmblem className="h-10 w-10" />
+        <div>
+          <h1 className="heading-glow text-2xl font-bold">Admin</h1>
+          <p className="text-xs uppercase tracking-widest text-brand-blue/50">Prompt Wars control room</p>
+        </div>
+      </div>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          onSubmit(token);
+        }}
+        className="space-y-3"
+      >
+        <input
+          type="password"
+          value={token}
+          onChange={(e) => setToken(e.target.value)}
+          placeholder="Admin token"
+          autoFocus
+          className="ui-input w-full"
+        />
+        <button type="submit" disabled={!token} className="btn-primary w-full">
+          Enter
+        </button>
+      </form>
+      {failed && <p className="mt-3 text-sm text-brand-error">That token didn't work. Try again.</p>}
+    </div>
+  );
+}
+
+function readTab() {
+  try {
+    const saved = sessionStorage.getItem('ctf_admin_tab');
+    return TABS.some((t) => t.id === saved) ? saved : 'live';
+  } catch {
+    return 'live';
+  }
 }

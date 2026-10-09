@@ -8,6 +8,10 @@ import RoundHistoryList from '../components/RoundHistoryList.jsx';
 import RoundHistorySkeleton from '../components/RoundHistorySkeleton.jsx';
 import Bracket from '../components/Bracket.jsx';
 import Spinner from '../components/Spinner.jsx';
+import TeamBadge from '../components/TeamBadge.jsx';
+import TeamName from '../components/TeamName.jsx';
+import { useTeamTheme } from '../hooks/useTeamTheme.js';
+import { useAnnouncePhase } from '../lib/phaseAnnouncer.js';
 import { PHASE_LABELS } from '../lib/format.js';
 
 // History only changes when a round ends, so this page checks the scoreboard slowly.
@@ -21,12 +25,19 @@ const ADVANCEMENT_MESSAGES = {
 
 export default function WaitingPage() {
   const { data: status, error: statusError } = useGameStatus();
-  const { data: board } = useScoreboard({ intervalMs: BOARD_INTERVAL_MS });
+  const { data: board, refresh: refreshBoard } = useScoreboard({ intervalMs: BOARD_INTERVAL_MS });
   const navigate = useNavigate();
+  useTeamTheme(status, statusError);
+  useAnnouncePhase(status);
 
   useEffect(() => {
     if (statusError?.status === 401) navigate('/');
   }, [statusError, navigate]);
+
+  // The bracket and history change when the phase does, so don't wait out the slow interval.
+  useEffect(() => {
+    if (status?.state) refreshBoard();
+  }, [status?.state, status?.roundNumber, refreshBoard]);
 
   useEffect(() => {
     if (status?.role !== 'player') return;
@@ -35,10 +46,10 @@ export default function WaitingPage() {
   }, [status, navigate]);
 
   const watching = status?.role === 'spectator' && ['draft', 'attack'].includes(status.state);
-  const winnerName = board?.teams?.[status?.winnerTeamId]?.name;
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-10">
+      <TeamBadge status={status} />
       <h1 className="heading-glow mb-2 flex items-center gap-3 text-3xl font-bold">
         {status ? (
           <span key={status.state} className="motion-safe:animate-fade-in-up">
@@ -53,7 +64,7 @@ export default function WaitingPage() {
       </h1>
       {status?.phaseEndsAt && (
         <p className="mb-6 text-xl">
-          Time remaining: <Timer endsAt={status.phaseEndsAt} />
+          <span className="text-brand-blue/50">Phase timer:</span> <Timer endsAt={status.phaseEndsAt} />
         </p>
       )}
 
@@ -76,7 +87,12 @@ export default function WaitingPage() {
               ? 'Game ended in a draw.'
               : status.amIWinner
               ? 'Your team won the game!'
-              : `Game over - ${winnerName || 'another team'} won this time.`}
+              : (
+                <>
+                  Game over - <TeamName teamId={status.winnerTeamId} teams={board?.teams} className="font-semibold" /> won
+                  this time.
+                </>
+              )}
           </StatusBanner>
         </div>
       )}

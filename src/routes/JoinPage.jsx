@@ -4,11 +4,18 @@ import { api } from '../lib/api.js';
 import StatusBanner from '../components/StatusBanner.jsx';
 import Spinner from '../components/Spinner.jsx';
 import BrandEmblem from '../components/icons/BrandEmblem.jsx';
+import TeamReveal from '../components/TeamReveal.jsx';
+import { rememberTeam } from '../lib/teamTheme.js';
+import { resetPhaseBaseline } from '../lib/phaseAnnouncer.js';
+
+// How long the "You're on Team X" reveal plays before moving on to the game.
+const REVEAL_MS = 1900;
 
 export default function JoinPage() {
   const [joinCode, setJoinCode] = useState('');
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [joined, setJoined] = useState(null);
   const navigate = useNavigate();
 
   async function handleSubmit(e) {
@@ -16,20 +23,24 @@ export default function JoinPage() {
     setError(null);
     setSubmitting(true);
     try {
-      await api.join(joinCode.trim());
-      const status = await api.status();
+      const team = await api.join(joinCode.trim());
+      rememberTeam(team.teamId);
+      resetPhaseBaseline();
+      setJoined(team);
+      const [status] = await Promise.all([api.status(), new Promise((r) => setTimeout(r, REVEAL_MS))]);
       if (status.role === 'player' && status.state === 'draft') navigate('/defend');
       else if (status.role === 'player' && status.state === 'attack') navigate('/attack');
       else navigate('/waiting');
     } catch (err) {
+      setJoined(null);
       setError(err.message);
-    } finally {
       setSubmitting(false);
     }
   }
 
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6">
+      {joined && <TeamReveal teamId={joined.teamId} teamName={joined.teamName} />}
       <div className="mb-2 flex items-center gap-3">
         <BrandEmblem className="h-10 w-10" />
         <h1 className="heading-glow text-3xl font-bold">Prompt Wars</h1>

@@ -12,6 +12,8 @@ export default {
         well: 'rgb(var(--color-well) / <alpha-value>)',
         ink: 'rgb(var(--color-ink) / <alpha-value>)',
         'btn-ink': 'rgb(var(--color-btn-ink) / <alpha-value>)',
+        // The color of the nearest `.team-*` element; see index.css.
+        team: 'rgb(var(--team) / <alpha-value>)',
         brand: {
           blue: 'rgb(var(--color-blue) / <alpha-value>)',
           success: 'rgb(var(--color-success) / <alpha-value>)',
@@ -59,6 +61,24 @@ export default {
           '0%': { backgroundPosition: '0 0' },
           '100%': { backgroundPosition: '0 100%' },
         },
+        // A circle of color growing out from the middle of the screen until it covers it.
+        'reveal-sweep': {
+          '0%': { clipPath: 'circle(0% at 50% 50%)' },
+          '100%': { clipPath: 'circle(150% at 50% 50%)' },
+        },
+        'slam-in': {
+          '0%': { opacity: '0', transform: 'scale(1.25)', letterSpacing: '0.4em' },
+          '60%': { opacity: '1', transform: 'scale(0.98)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
+        },
+        'fade-out': {
+          '0%': { opacity: '1' },
+          '100%': { opacity: '0' },
+        },
+        'urgent-pulse': {
+          '0%, 100%': { opacity: '1', transform: 'scale(1)' },
+          '50%': { opacity: '0.55', transform: 'scale(1.06)' },
+        },
       },
       animation: {
         'fade-in-up': 'fade-in-up 250ms ease-out both',
@@ -68,6 +88,10 @@ export default {
         'glow-good': 'glow-good 2s ease-in-out infinite',
         'flicker-in': 'flicker-in 900ms ease-out both',
         'glow-pulse-blue': 'glow-pulse-blue 2.4s ease-in-out infinite',
+        'reveal-sweep': 'reveal-sweep 650ms cubic-bezier(0.65, 0, 0.35, 1) both',
+        'slam-in': 'slam-in 450ms cubic-bezier(0.2, 0.8, 0.2, 1) both',
+        'fade-out': 'fade-out 300ms ease-in both',
+        'urgent-pulse': 'urgent-pulse 1s ease-in-out infinite',
       },
     },
   },

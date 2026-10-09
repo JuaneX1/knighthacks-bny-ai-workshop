@@ -9,6 +9,11 @@
         var stored = localStorage.getItem('ctf_theme');
         var theme = stored || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
         document.documentElement.setAttribute('data-theme', theme);
+        // Apply the player's team colors before first paint (see src/lib/teamTheme.js).
+        var team = localStorage.getItem('ctf_team');
+        if (team && ['/defend', '/attack', '/waiting'].indexOf(location.pathname) !== -1) {
+          document.documentElement.setAttribute('data-team', team);
+        }
       })();
     </script>
   </head>

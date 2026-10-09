@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGameStatus } from '../hooks/useGameStatus.js';
-import Timer from '../components/Timer.jsx';
+import Timer, { TimeUpNotice } from '../components/Timer.jsx';
+import { useTeamTheme } from '../hooks/useTeamTheme.js';
+import { useAnnouncePhase } from '../lib/phaseAnnouncer.js';
+import TeamBadge from '../components/TeamBadge.jsx';
+import TeamName from '../components/TeamName.jsx';
 import StatusBanner from '../components/StatusBanner.jsx';
 import LoadingScreen from '../components/LoadingScreen.jsx';
 import AttackChatPanel from '../components/AttackChatPanel.jsx';
@@ -22,6 +26,8 @@ export default function AttackPage() {
   const [cracked, setCracked] = useState(false);
   const [loadedRound, setLoadedRound] = useState(null);
   const navigate = useNavigate();
+  useTeamTheme(status, statusError);
+  useAnnouncePhase(status);
 
   useEffect(() => {
     if (statusError?.status === 401) navigate('/');
@@ -69,6 +75,7 @@ export default function AttackPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-8">
+      <TeamBadge status={status} />
       <div className="mb-2 flex items-center justify-between">
         <h1 className="heading-glow flex items-center gap-2 text-2xl font-bold">
           <SwordIcon className="h-6 w-6 text-brand-blue drop-shadow-[0_0_6px_rgb(var(--color-blue)/0.6)]" />
@@ -76,8 +83,12 @@ export default function AttackPage() {
         </h1>
         <Timer endsAt={status.phaseEndsAt} className="text-xl" />
       </div>
+      <TimeUpNotice endsAt={status.phaseEndsAt}>
+        Time's up! Wrap up your last try, the admin will end the round shortly
+      </TimeUpNotice>
       <p className="mb-4 text-brand-blue/50">
-        Chat with {status.opponentName}'s bot and trick it into telling you the password. When you think you know it, guess! You
+        Chat with <TeamName teamId={status.opponentTeamId} name={status.opponentName} className="font-semibold" />
+        's bot and trick it into telling you the password. When you think you know it, guess! You
         get unlimited tries. Each try is up to {attack.promptsPerAttempt} messages and 1 guess.
       </p>
 

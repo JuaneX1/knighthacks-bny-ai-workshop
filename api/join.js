@@ -1,5 +1,5 @@
 import { getRedis } from '../lib/redis.js';
-import { joinCodeKey } from '../lib/keys.js';
+import { joinCodeKey, teamsKey } from '../lib/keys.js';
 import { signSessionToken, buildSessionCookie, activateNewSession } from '../lib/session.js';
 import { withErrorHandling, methodGuard, readJsonBody, sendJson, HttpError } from '../lib/http.js';
 
@@ -15,6 +15,7 @@ export default withErrorHandling(async (req, res) => {
 
   const sessionId = await activateNewSession(teamId);
   const token = signSessionToken({ teamId, sessionId });
+  const team = await redis.hget(teamsKey(), teamId);
   res.setHeader('Set-Cookie', buildSessionCookie(token));
-  sendJson(res, 200, { ok: true, teamId });
+  sendJson(res, 200, { ok: true, teamId, teamName: team?.name || teamId });
 });

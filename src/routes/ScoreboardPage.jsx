@@ -4,6 +4,7 @@ import Bracket from '../components/Bracket.jsx';
 import Timer from '../components/Timer.jsx';
 import LoadingScreen from '../components/LoadingScreen.jsx';
 import BrandEmblem from '../components/icons/BrandEmblem.jsx';
+import TeamName from '../components/TeamName.jsx';
 import { PHASE_LABELS, STAGE_LABELS } from '../lib/format.js';
 
 export default function ScoreboardPage() {
@@ -29,22 +30,13 @@ export default function ScoreboardPage() {
       </p>
 
       {board.state === 'game_ended' ? (
-        <div className="mb-10 rounded-2xl border border-brand-success/50 bg-brand-success/10 p-8 text-center motion-safe:animate-glow-good">
-          <p className="text-2xl text-brand-success/90">
-            {board.finalResult === 'draw' ? 'Final result: Draw' : 'Winner'}
-          </p>
-          {board.finalResult !== 'draw' && (
-            <p className="mt-2 text-6xl font-black text-brand-success">
-              {board.teams?.[board.winnerTeamId]?.name || board.winnerTeamId}
-            </p>
-          )}
-        </div>
+        <WinnerBanner board={board} />
       ) : (
         board.mode === 'duel' && (
           <div className="mb-10 grid grid-cols-2 gap-6 text-center">
             {board.lineup.flat().map((teamId) => (
-              <div key={teamId} className="ui-panel p-6">
-                <p className="text-4xl font-bold text-ink">{board.teams[teamId].name}</p>
+              <div key={teamId} className={`${teamId} ui-panel border-team/50 p-6`}>
+                <TeamName teamId={teamId} teams={board.teams} className="text-4xl font-bold" />
               </div>
             ))}
           </div>
@@ -63,6 +55,25 @@ export default function ScoreboardPage() {
       )}
 
       <RoundHistoryList rounds={board.rounds} teams={board.teams} />
+    </div>
+  );
+}
+
+// End-of-game banner, lit in the winning team's color (or neutral for a draw).
+function WinnerBanner({ board }) {
+  if (board.finalResult === 'draw') {
+    return (
+      <div className="ui-panel mb-10 p-8 text-center">
+        <p className="text-4xl font-black text-ink">Final result: Draw</p>
+      </div>
+    );
+  }
+  return (
+    <div
+      className={`${board.winnerTeamId} mb-10 rounded-2xl border border-team/60 bg-team/10 p-8 text-center shadow-[0_0_40px_-8px_rgb(var(--team)/0.6)]`}
+    >
+      <p className="text-2xl uppercase tracking-widest text-team/90">Winner</p>
+      <TeamName teamId={board.winnerTeamId} teams={board.teams} className="mt-2 text-6xl font-black" />
     </div>
   );
 }

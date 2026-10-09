@@ -3,7 +3,7 @@ import AnimatedDots from './AnimatedDots.jsx';
 export default function StatusBanner({ children, tone = 'info', waiting = false, className = '' }) {
   const tones = {
     info: 'bg-panel text-ink border-brand-blue/30',
-    warn: 'bg-amber-900/30 text-amber-200 border-amber-600/60',
+    warn: 'bg-brand-warn/10 text-brand-warn border-brand-warn/40',
     good: 'bg-brand-success/10 text-brand-success border-brand-success/40',
     bad: 'bg-brand-error/10 text-brand-error border-brand-error/40',
   };

@@ -1,4 +1,5 @@
-import { STAGE_LABELS, matchLabel, matchResultLabel } from '../lib/format.js';
+import TeamName from './TeamName.jsx';
+import { STAGE_LABELS } from '../lib/format.js';
 
 export default function RoundHistoryList({ rounds, teams }) {
   if (!rounds || rounds.length === 0) {
@@ -33,20 +34,22 @@ function MatchResult({ result, vaults, teams }) {
   return (
     <div className="mt-4">
       <div className="flex items-center justify-between gap-2">
-        <p className="font-medium text-ink/90">{matchLabel(result.teams, teams)}</p>
-        <span
-          className={`rounded px-2 py-1 text-xs font-medium ${
-            result.winnerTeamId
-              ? 'bg-brand-success/20 text-brand-success'
-              : 'border border-brand-blue/20 bg-panel text-ink/70'
-          }`}
-        >
-          {matchResultLabel(result, teams)}
-        </span>
+        <p className="font-medium">
+          <TeamName teamId={result.teams[0]} teams={teams} />
+          <span className="text-ink/50"> vs </span>
+          <TeamName teamId={result.teams[1]} teams={teams} />
+        </p>
+        {result.winnerTeamId ? (
+          <span className={`${result.winnerTeamId} rounded bg-team/15 px-2 py-1 text-xs font-medium text-team`}>
+            {teams?.[result.winnerTeamId]?.name || result.winnerTeamId} won
+          </span>
+        ) : (
+          <span className="rounded border border-brand-blue/20 bg-panel px-2 py-1 text-xs font-medium text-ink/70">Draw</span>
+        )}
       </div>
       <div className="mt-2 grid grid-cols-1 gap-3 md:grid-cols-2">
         {result.teams.map((teamId) => (
-          <VaultCard key={teamId} name={teams?.[teamId]?.name || teamId} vault={vaults?.[teamId]} />
+          <VaultCard key={teamId} teamId={teamId} teams={teams} vault={vaults?.[teamId]} />
         ))}
       </div>
     </div>
@@ -54,10 +57,10 @@ function MatchResult({ result, vaults, teams }) {
 }
 
 // A team's vault, revealed after the round is sealed.
-function VaultCard({ name, vault }) {
+function VaultCard({ teamId, teams, vault }) {
   return (
-    <div className="rounded border border-brand-blue/20 bg-well p-3 text-sm">
-      <p className="font-medium text-ink">{name}</p>
+    <div className={`${teamId} rounded border border-l-4 border-brand-blue/20 border-l-team/60 bg-well p-3 text-sm`}>
+      <TeamName teamId={teamId} teams={teams} className="font-medium" />
       {vault ? (
         <>
           <p className="mt-1 text-brand-blue/50">

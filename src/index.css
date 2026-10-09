@@ -34,12 +34,100 @@
   --overlay-scale: 0.4;
 }
 
+/*
+ * Team colors, one per fixed team slot. Every value clears 4.5:1 contrast against both its own
+ * team-tinted surfaces and the neutral navy/white ones, so team names stay readable anywhere.
+ */
+:root {
+  --team-spark: 242 132 70; /* ember orange */
+  --team-thrive: 172 150 250; /* violet */
+  --team-own-it: 244 124 188; /* magenta */
+  --team-curious: 90 172 246; /* sky blue */
+}
+
+:root[data-theme='light'] {
+  --team-spark: 184 78 20;
+  --team-thrive: 100 70 200;
+  --team-own-it: 170 40 112;
+  --team-curious: 28 104 182;
+}
+
+/* `.team-*` sets --team for anything tagged with a team, e.g. a team name on the neutral scoreboard. */
+.team-spark { --team: var(--team-spark); }
+.team-thrive { --team: var(--team-thrive); }
+.team-own-it { --team: var(--team-own-it); }
+.team-curious { --team: var(--team-curious); }
+
+/* Once a player joins, their team's color takes over the whole UI on the player screens. */
+:root[data-team='team-spark'] {
+  --color-blue: var(--team-spark);
+  --color-void: 33 20 13;
+  --color-panel: 58 35 23;
+  --color-well: 20 11 6;
+  --color-ink: 250 240 234;
+  --color-btn-ink: 33 20 13;
+}
+:root[data-team='team-thrive'] {
+  --color-blue: var(--team-thrive);
+  --color-void: 21 16 44;
+  --color-panel: 38 30 74;
+  --color-well: 12 9 28;
+  --color-ink: 240 236 252;
+  --color-btn-ink: 21 16 44;
+}
+:root[data-team='team-own-it'] {
+  --color-blue: var(--team-own-it);
+  --color-void: 37 12 29;
+  --color-panel: 64 24 51;
+  --color-well: 22 6 17;
+  --color-ink: 252 236 246;
+  --color-btn-ink: 37 12 29;
+}
+:root[data-team='team-curious'] {
+  --color-blue: var(--team-curious);
+  /* Royal blue rather than navy, so it reads as a different screen from the neutral theme. */
+  --color-void: 12 18 56;
+  --color-panel: 26 38 100;
+  --color-well: 7 10 34;
+  --color-ink: 234 243 252;
+  --color-btn-ink: 12 18 56;
+}
+
+:root[data-theme='light'][data-team='team-spark'] {
+  --color-void: 250 245 241;
+  --color-panel: 255 255 255;
+  --color-well: 244 234 227;
+  --color-ink: 52 26 12;
+  --color-btn-ink: 250 245 241;
+}
+:root[data-theme='light'][data-team='team-thrive'] {
+  --color-void: 246 244 252;
+  --color-panel: 255 255 255;
+  --color-well: 234 230 247;
+  --color-ink: 30 20 60;
+  --color-btn-ink: 246 244 252;
+}
+:root[data-theme='light'][data-team='team-own-it'] {
+  --color-void: 251 243 248;
+  --color-panel: 255 255 255;
+  --color-well: 245 230 240;
+  --color-ink: 58 14 38;
+  --color-btn-ink: 251 243 248;
+}
+:root[data-theme='light'][data-team='team-curious'] {
+  --color-void: 242 247 252;
+  --color-panel: 255 255 255;
+  --color-well: 228 237 247;
+  --color-ink: 10 32 62;
+  --color-btn-ink: 242 247 252;
+}
+
 body {
   min-height: 100vh;
   background-color: rgb(var(--color-void));
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   position: relative;
-  transition: background-color 200ms ease;
+  transition: background-color 500ms ease;
 }
 
 body::before {
