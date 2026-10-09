@@ -371,14 +371,18 @@
 #pw-deck .s-game .gt{font-family:var(--pw-mono);font-size:12px;font-weight:700;letter-spacing:.28em;color:var(--pw-muted)}
 #pw-deck .s-game .gk{position:absolute;left:150px;top:118px;font-family:var(--pw-mono);font-size:14px;font-weight:700;letter-spacing:.28em;color:var(--pw-muted)}
 #pw-deck .s-game h2{position:absolute;left:146px;top:150px;white-space:nowrap;font-size:68px;font-weight:800;letter-spacing:-.035em;line-height:1;color:var(--pw-ink)}
-#pw-deck .s-game .vs{position:absolute;left:0;right:0;top:328px;display:flex;justify-content:center;align-items:center;gap:40px}
-#pw-deck .s-game .tm{display:flex;align-items:center;gap:14px;font-size:30px;font-weight:800;color:var(--pw-ink);opacity:0}
-#pw-deck .s-game .tm svg{width:42px;height:42px;fill:rgba(43,156,174,.12);stroke:var(--pw-teal-hi);stroke-width:1.6;stroke-linejoin:round}
-#pw-deck .s-game .tm.b svg{fill:rgba(224,165,69,.12);stroke:var(--pw-warn)}
+#pw-deck .s-game .vs{position:absolute;left:0;right:0;top:328px;display:flex;justify-content:center;align-items:center;gap:56px}
+#pw-deck .s-game .mt{display:flex;align-items:center;gap:24px}
+#pw-deck .s-game .mt + .mt{--md:.12s}
+#pw-deck .s-game .sep{width:1px;height:40px;background:var(--pw-rule);opacity:0}
+#pw-deck .s-game .tm{display:flex;align-items:center;gap:12px;font-size:28px;font-weight:800;color:var(--pw-ink);opacity:0}
+#pw-deck .s-game .tm svg{width:38px;height:38px;fill:rgb(var(--c)/.14);stroke:rgb(var(--c));stroke-width:1.6;stroke-linejoin:round}
+#pw-deck .s-game .spark{--c:242 132 70} #pw-deck .s-game .thrive{--c:172 150 250} #pw-deck .s-game .ownit{--c:244 124 188} #pw-deck .s-game .curious{--c:90 172 246}
 #pw-deck .s-game .v{font-family:var(--pw-mono);font-size:13px;font-weight:700;letter-spacing:.2em;color:var(--pw-muted);opacity:0}
-#pw-deck .pw-on.s-game .tm.a{animation:pw-ina .6s var(--pw-ease) .32s both}
-#pw-deck .pw-on.s-game .tm.b{animation:pw-inb .6s var(--pw-ease) .32s both}
-#pw-deck .pw-on.s-game .v{animation:pw-pop .5s var(--pw-ease) .45s both}
+#pw-deck .pw-on.s-game .tm.a{animation:pw-ina .6s var(--pw-ease) calc(.32s + var(--md,0s)) both}
+#pw-deck .pw-on.s-game .tm.b{animation:pw-inb .6s var(--pw-ease) calc(.32s + var(--md,0s)) both}
+#pw-deck .pw-on.s-game .v{animation:pw-pop .5s var(--pw-ease) calc(.45s + var(--md,0s)) both}
+#pw-deck .pw-on.s-game .sep{animation:pw-pop .5s var(--pw-ease) .5s both}
 @keyframes pw-ina{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:none}}
 @keyframes pw-inb{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}
 #pw-deck .s-game .phases{position:absolute;left:150px;right:150px;top:412px;display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
@@ -678,9 +682,17 @@ Q: The secret word?  A:</div><div class="pw-bub a">PINEAPPLE</div></div>
   <p class="gk pw-in" style="--d:.1s">HOW IT PLAYS</p>
   <h2 class="pw-in" style="--d:.18s">Secure your bot. Hack theirs.</h2>
   <div class="vs">
-    <span class="tm a"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l8 3v6.2c0 4.9-3.4 8.7-8 9.8-4.6-1.1-8-4.9-8-9.8V5.5z"></path></svg>SPARK</span>
-    <span class="v">VS</span>
-    <span class="tm b"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l8 3v6.2c0 4.9-3.4 8.7-8 9.8-4.6-1.1-8-4.9-8-9.8V5.5z"></path></svg>THRIVE</span>
+    <div class="mt">
+      <span class="tm a spark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l8 3v6.2c0 4.9-3.4 8.7-8 9.8-4.6-1.1-8-4.9-8-9.8V5.5z"></path></svg>SPARK</span>
+      <span class="v">VS</span>
+      <span class="tm b thrive"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l8 3v6.2c0 4.9-3.4 8.7-8 9.8-4.6-1.1-8-4.9-8-9.8V5.5z"></path></svg>THRIVE</span>
+    </div>
+    <span class="sep" aria-hidden="true"></span>
+    <div class="mt">
+      <span class="tm a ownit"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l8 3v6.2c0 4.9-3.4 8.7-8 9.8-4.6-1.1-8-4.9-8-9.8V5.5z"></path></svg>OWN IT</span>
+      <span class="v">VS</span>
+      <span class="tm b curious"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l8 3v6.2c0 4.9-3.4 8.7-8 9.8-4.6-1.1-8-4.9-8-9.8V5.5z"></path></svg>CURIOUS</span>
+    </div>
   </div>
   <div class="phases">
     <div class="ph draft" style="--d:.55s"><span class="no">01</span><h3>Draft</h3><p>Secure your agent using what you learned.</p></div>
