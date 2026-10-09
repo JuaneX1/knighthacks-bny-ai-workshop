@@ -27,7 +27,6 @@ export default withErrorHandling(async (req, res) => {
   const systemPrompt = buildVaultSystemPrompt(vault, DUMMY_PASSWORD);
 
   try {
-        jobDescription: vault.jobDescription,
     const reply = await callChat({ systemPrompt, userMessage: message, maxTokens: 800 });
     sendJson(res, 200, { reply });
   } catch (err) {
