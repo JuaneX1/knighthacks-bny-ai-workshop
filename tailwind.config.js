@@ -23,18 +23,14 @@ export default {
       },
       keyframes: {
         'fade-in-up': {
-          '0%': { opacity: '0', transform: 'translateY(6px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
+          '0%': { opacity: '0', transform: 'translateY(14px) scale(0.97)' },
+          '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
         },
         shake: {
-          '0%, 100%': { transform: 'translateX(0)' },
-          '20%, 60%': { transform: 'translateX(-6px)' },
-          '40%, 80%': { transform: 'translateX(6px)' },
-        },
-        pop: {
-          '0%': { transform: 'scale(1)' },
-          '40%': { transform: 'scale(1.35)' },
-          '100%': { transform: 'scale(1)' },
+          '0%, 100%': { transform: 'translateX(0) rotate(0)' },
+          '15%, 55%': { transform: 'translateX(-10px) rotate(-1deg)' },
+          '35%, 75%': { transform: 'translateX(10px) rotate(1deg)' },
+          '90%': { transform: 'translateX(-3px)' },
         },
         'typing-dot': {
           '0%, 80%, 100%': { opacity: '0.25', transform: 'translateY(0)' },
@@ -42,16 +38,16 @@ export default {
         },
         'glow-good': {
           '0%, 100%': { boxShadow: '0 0 0 0 rgb(var(--color-success) / 0)' },
-          '50%': { boxShadow: '0 0 24px 2px rgb(var(--color-success) / 0.45)' },
+          '50%': { boxShadow: '0 0 28px 4px rgb(var(--color-success) / 0.5)' },
         },
-        'flicker-in': {
-          '0%': { opacity: '0' },
-          '10%': { opacity: '0.4' },
-          '12%': { opacity: '0' },
-          '20%': { opacity: '0.8' },
-          '24%': { opacity: '0.2' },
-          '30%': { opacity: '1' },
-          '100%': { opacity: '1' },
+        // Title arrives in sliced, offset strips that snap together, like a bad signal locking in.
+        'glitch-in': {
+          '0%': { opacity: '0', clipPath: 'inset(40% 0 45% 0)', transform: 'translateX(-14px) skewX(-12deg)' },
+          '20%': { opacity: '1', clipPath: 'inset(0 0 70% 0)', transform: 'translateX(10px) skewX(8deg)' },
+          '40%': { clipPath: 'inset(60% 0 0 0)', transform: 'translateX(-6px) skewX(-4deg)' },
+          '60%': { clipPath: 'inset(20% 0 30% 0)', transform: 'translateX(4px)' },
+          '80%': { clipPath: 'inset(0 0 0 0)', transform: 'translateX(-2px)' },
+          '100%': { opacity: '1', clipPath: 'inset(0 0 0 0)', transform: 'none' },
         },
         'glow-pulse-blue': {
           '0%, 100%': { boxShadow: '0 0 0 0 rgb(var(--color-blue) / 0)' },
@@ -67,31 +63,39 @@ export default {
           '100%': { clipPath: 'circle(150% at 50% 50%)' },
         },
         'slam-in': {
-          '0%': { opacity: '0', transform: 'scale(1.25)', letterSpacing: '0.4em' },
-          '60%': { opacity: '1', transform: 'scale(0.98)' },
+          '0%': { opacity: '0', transform: 'scale(1.8)', filter: 'blur(8px)' },
+          '55%': { opacity: '1', transform: 'scale(0.92)', filter: 'blur(0)' },
+          '75%': { transform: 'scale(1.04)' },
           '100%': { opacity: '1', transform: 'scale(1)' },
+        },
+        // Rubber stamp hitting the page: oversized and crooked, then pressed down at a slight tilt.
+        stamp: {
+          '0%': { opacity: '0', transform: 'scale(2.4) rotate(-14deg)' },
+          '60%': { opacity: '1', transform: 'scale(0.94) rotate(-5deg)' },
+          '100%': { opacity: '1', transform: 'scale(1) rotate(-4deg)' },
+        },
+        // One countdown second: the number punches out and settles.
+        tick: {
+          '0%': { transform: 'scale(1.5)' },
+          '100%': { transform: 'scale(1)' },
         },
         'fade-out': {
           '0%': { opacity: '1' },
           '100%': { opacity: '0' },
         },
-        'urgent-pulse': {
-          '0%, 100%': { opacity: '1', transform: 'scale(1)' },
-          '50%': { opacity: '0.55', transform: 'scale(1.06)' },
-        },
       },
       animation: {
-        'fade-in-up': 'fade-in-up 250ms ease-out both',
-        shake: 'shake 400ms ease-in-out',
-        pop: 'pop 350ms ease-out',
+        'fade-in-up': 'fade-in-up 380ms cubic-bezier(0.34, 1.56, 0.64, 1) both',
+        shake: 'shake 500ms cubic-bezier(0.36, 0.07, 0.19, 0.97)',
         'typing-dot': 'typing-dot 1.2s ease-in-out infinite',
         'glow-good': 'glow-good 2s ease-in-out infinite',
-        'flicker-in': 'flicker-in 900ms ease-out both',
+        'glitch-in': 'glitch-in 600ms steps(1, end) both',
         'glow-pulse-blue': 'glow-pulse-blue 2.4s ease-in-out infinite',
         'reveal-sweep': 'reveal-sweep 650ms cubic-bezier(0.65, 0, 0.35, 1) both',
-        'slam-in': 'slam-in 450ms cubic-bezier(0.2, 0.8, 0.2, 1) both',
+        'slam-in': 'slam-in 550ms cubic-bezier(0.2, 0.8, 0.2, 1) both',
+        stamp: 'stamp 450ms cubic-bezier(0.2, 0.8, 0.2, 1) both',
+        tick: 'tick 400ms cubic-bezier(0.2, 0.8, 0.2, 1)',
         'fade-out': 'fade-out 300ms ease-in both',
-        'urgent-pulse': 'urgent-pulse 1s ease-in-out infinite',
       },
     },
   },

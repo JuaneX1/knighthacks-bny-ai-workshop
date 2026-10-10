@@ -4,6 +4,7 @@ import StatusBanner from './StatusBanner.jsx';
 
 const WARN_MS = 60 * 1000;
 const URGENT_MS = 15 * 1000;
+const COUNTDOWN_MS = 10 * 1000;
 
 // Phase timers are a guide, not a hard stop: at zero this shows "Time's up" and play carries on
 // until the admin moves to the next phase.
@@ -17,13 +18,23 @@ export default function Timer({ endsAt, className = '' }) {
 
   const remaining = endsAt ? endsAt - now : null;
   const timeUp = remaining !== null && remaining <= 0;
+  const countingDown = remaining !== null && remaining > 0 && remaining <= COUNTDOWN_MS;
 
   return (
     <span
       role="timer"
-      className={`inline-block font-mono tabular-nums transition-colors duration-300 ${timerTone(remaining)} ${className}`}
+      className={`inline-block whitespace-nowrap font-mono tabular-nums transition-colors duration-300 ${timerTone(remaining)} ${className}`}
     >
-      {timeUp ? "Time's up" : formatCountdown(endsAt, now)}
+      {timeUp ? (
+        <span className="inline-block motion-safe:animate-stamp">Time's up</span>
+      ) : (
+        <span
+          key={countingDown ? Math.ceil(remaining / 1000) : 'steady'}
+          className={`inline-block ${countingDown ? 'motion-safe:animate-tick' : ''}`}
+        >
+          {formatCountdown(endsAt, now)}
+        </span>
+      )}
     </span>
   );
 }
@@ -31,7 +42,7 @@ export default function Timer({ endsAt, className = '' }) {
 function timerTone(remaining) {
   if (remaining === null || remaining > WARN_MS) return 'text-brand-blue';
   if (remaining > URGENT_MS) return 'text-brand-warn';
-  if (remaining > 0) return 'text-brand-error motion-safe:animate-urgent-pulse';
+  if (remaining > 0) return 'text-brand-error font-bold';
   return 'text-brand-error';
 }
 

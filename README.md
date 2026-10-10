@@ -1,159 +1,157 @@
-# Prompt Injection Workshop - KnightHacks
+# Prompt Wars
 
-A live prompt-injection capture-the-flag game for a hackathon workshop. Play it as a **duel** (2 teams, repeated rounds) or a **tournament** (4 teams, knockout: two semifinals at the same time, then a final).
+A prompt-injection capture-the-flag game we built for the KnightHacks x BNY workshop. Each team writes a chatbot that guards a secret password, then spends the next round trying to talk the other team's bot into giving up theirs.
 
-Every round, **each team in a match simultaneously**:
-1. **Draft (5 min)** — write a system prompt / rules for their own vault chatbot, which hides a secret password, then "Save & test" it so it passes a helpfulness test.
-2. **Attack (10 min)** — get unlimited tries against the *opponent's* vault: each try is a conversation of up to 8 messages (the bot remembers the conversation) that ends with one password guess.
+You can run it as a duel (2 teams playing repeated rounds) or a tournament (4 teams: both semifinals run at the same time, then a final).
 
-A team **wins a match** when the opponent's vault breaks (cracked, or failed the helpfulness test) while its own vault holds up. Anything else is a draw. Designed for one device per team, plus one admin device that runs the room and an optional projector showing the scoreboard. Joining from a new device invalidates a team's previous session, so only one device per team can be active at a time.
+Every round has two phases, and both teams in a match play them at the same time:
+
+1. Draft, 5 minutes. Write the rules (the system prompt) for your bot, then hit "Save & test". The bot has to pass a helpfulness test, so a bot that refuses everything doesn't count.
+2. Attack, 10 minutes. Chat with the other team's bot. Each try is a conversation of up to 8 messages, and the bot remembers what you said earlier in it. A try ends with one password guess. You get as many tries as the clock allows.
+
+You win a match if the other team's bot breaks (you cracked it, or it failed the helpfulness test) and yours doesn't. Anything else is a draw.
+
+The setup we use is one device per team, one admin device to run the room, and a projector showing the scoreboard. If a team joins from a second device, the first one gets logged out.
 
 ## Stack
 
-- **Frontend:** React + Vite, plain JavaScript, Tailwind CSS.
-- **Backend:** Vercel serverless functions in `/api`.
-- **State:** Upstash Redis (`@upstash/redis`) — all game state lives there since serverless functions don't persist memory.
-- **LLM:** Google Gemini (Flash) via its OpenAI-compatible `chat/completions` endpoint.
+The frontend is React and Vite in plain JavaScript, styled with Tailwind. The backend is a set of Vercel serverless functions in `/api`. Serverless functions don't keep memory between requests, so all game state lives in Upstash Redis. The bots run on Google Gemini Flash through its OpenAI-compatible `chat/completions` endpoint.
 
 ## Project layout
 
 ```
 /api            Vercel serverless functions (game logic, auth, LLM calls)
+/lib            Shared server code: state machine, Redis keys, rate limits, LLM client
 /src            React app (Vite)
-/scripts        seed.js (demo data) and simulate.js (end-to-end dry run)
+/scripts        local API server, seed.js (demo data), simulate.js (end-to-end dry run)
+/public/slides  The workshop slide deck
 ```
 
-See the plan/comments in `lib/stateMachine.js` for the full round/phase state machine.
+The comments in `lib/stateMachine.js` walk through how rounds and phases move from one to the next.
 
-## Local development
+## Running it locally
 
-### 1. Prerequisites
+You need:
 
-- Node.js 18+
-- An [Upstash Redis](https://upstash.com/) database (free tier is plenty) — grab its REST URL and token.
-- A [Google AI Studio](https://aistudio.google.com/) API key for Gemini.
-- The [Vercel CLI](https://vercel.com/docs/cli): `npm i -g vercel`
+- Node.js 18 or newer
+- An [Upstash Redis](https://upstash.com/) database. The free tier is enough. You'll need its REST URL and token.
+- A [Google AI Studio](https://aistudio.google.com/) API key for Gemini
 
-### 2. Install dependencies
+Install dependencies and copy the env template:
 
 ```bash
 npm install
-```
-
-### 3. Configure environment variables
-
-Copy `.env.example` to `.env` and fill it in:
-
-```bash
 cp .env.example .env
 ```
 
-| Variable | Description |
+Then fill in `.env`:
+
+| Variable | What to put there |
 |---|---|
-| `UPSTASH_REDIS_REST_URL` | From your Upstash Redis database dashboard |
-| `UPSTASH_REDIS_REST_TOKEN` | From your Upstash Redis database dashboard |
-| `LLM_API_KEY` | Google AI Studio API key |
-| `LLM_MAX_CALLS_PER_MINUTE` | Optional, default `10`. Hard cap on AI calls per 15-second window across the whole game (each playing team gets an equal share). Set `20` for a 4-team tournament. |
-| `LLM_MODEL` | e.g. `gemini-flash-lite-latest` (fast and currently available; Google's dated model names churn quickly, so check `GET https://generativelanguage.googleapis.com/v1beta/openai/models` with your key if this one ever 404s) |
-| `SESSION_SECRET` | Any long random string (used to sign team session cookies) |
-| `ADMIN_TOKEN` | Any long random string (the admin's login token) |
+| `UPSTASH_REDIS_REST_URL` | From your Upstash database dashboard |
+| `UPSTASH_REDIS_REST_TOKEN` | From your Upstash database dashboard |
+| `LLM_API_KEY` | Your Google AI Studio key |
+| `LLM_MAX_CALLS_PER_MINUTE` | Optional, defaults to `10`. Despite the name, this caps AI calls per 15-second window for the whole game, split evenly between playing teams. Use `20` for a 4-team tournament. |
+| `LLM_MODEL` | For example `gemini-flash-lite-latest`. Google renames models often, so if this one starts returning 404s, list what your key can use with `GET https://generativelanguage.googleapis.com/v1beta/openai/models`. |
+| `SESSION_SECRET` | Any long random string. It signs the team session cookies. |
+| `ADMIN_TOKEN` | Any long random string. This is the admin login. |
 
-When running via `vercel dev`, also link the project (`vercel link`) and run `vercel env pull .env` if you'd rather manage env vars through the Vercel dashboard — either approach works as long as `.env` ends up populated for local dev.
+If you'd rather keep env vars in the Vercel dashboard, run `vercel link` and then `vercel env pull .env`. Either way works as long as `.env` ends up filled in.
 
-### 4. Seed demo data
+Seed the demo teams:
 
 ```bash
 npm run seed
 ```
 
-This creates 4 demo teams: `Team SPARK` (`SPARK`), `Team THRIVE` (`THRIVE`), `Team OWN IT` (`OWNIT`) and `Team CURIOUS` (`CURIOUS`). A duel uses the first two. Re-running is safe.
+That creates four teams with join codes `SPARK`, `THRIVE`, `OWNIT` and `CURIOUS`. A duel uses the first two. Running it again is safe.
 
-### 5. Run the dev server
-
-This project needs **two terminals** running side by side: one serving the `/api` functions, one serving the Vite frontend (which proxies `/api/*` requests to the first). Running everything through a single `vercel dev` doesn't work here — Vercel's dev server tries to auto-detect and re-invoke a frontend "dev" script, which recurses infinitely against itself in this kind of hybrid setup.
-
-**Terminal 1** — API functions (first run will ask you to log in / link the project, follow the prompts):
+Local dev needs two terminals. The first runs the API:
 
 ```bash
 npm run dev:api
 ```
 
-This serves the `/api/*` routes at `http://localhost:3000`.
+This is a small Express server (`scripts/local-api-server.js`) that serves the `/api` functions on `http://localhost:3000`. We don't use `vercel dev` for this because it tries to detect and run the frontend's dev script itself, and in this setup that recurses forever.
 
-**Terminal 2** — frontend:
+The second terminal runs the frontend:
 
 ```bash
 npm run dev:web
 ```
 
-This serves the React app at `http://localhost:5173`, proxying any `/api/*` request to `http://localhost:3000`.
+Vite serves the app on `http://localhost:5173` and forwards `/api/*` to port 3000. Use port 5173 in the browser:
 
-Use **`http://localhost:5173`** in your browser during local development (not 3000):
+- `http://localhost:5173/` to join as a team
+- `http://localhost:5173/admin` for the admin panel (log in with your `ADMIN_TOKEN`)
+- `http://localhost:5173/scoreboard` for the projector view
 
-- Join as a team: `http://localhost:5173/` with join code `SPARK`, `THRIVE`, `OWNIT` or `CURIOUS`.
-- Admin panel: `http://localhost:5173/admin` — enter your `ADMIN_TOKEN`.
-- Scoreboard (public, projector-friendly): `http://localhost:5173/scoreboard`.
+In the admin panel, pick Duel or Tournament, save the teams (they're already seeded, but you can rename them or change codes), and start the first round.
 
-From the admin panel: pick the mode (Duel or Tournament), save teams (already seeded, but you can rename/rejoin them), then start the first round to kick off the draft phase.
+In production none of this split exists. `vercel.json` builds the Vite app to static files and serves `/api/*` from the same domain.
 
-In production on Vercel there's no separate frontend dev server — `vercel.json` builds the Vite app to static files and serves `/api/*` as serverless functions from the same domain, so this split is purely a local-dev convenience.
+### Dry run before the event
 
-### 6. Dry-run before the event
-
-With both dev servers running (terminals 1 and 2 above), run the simulation against the API server directly:
+With both servers running, point the simulator at the API:
 
 ```bash
 npm run simulate -- --base-url http://localhost:3000
 ```
 
-This scripts one full duel round end-to-end (join, draft, force the attack phase, canned injection attempts, guesses) against your local server and exits non-zero if anything unexpected happens. Add `--tournament` (after an admin reset) to run the semifinals, settle any drawn semi, and play the final — a quick smoke test that the whole pipeline (auth, Redis, Gemini calls, filters, scoring) works before the real event.
+It plays one full duel round (join, draft, force the attack phase, send some canned injection attempts, guess) and exits non-zero if anything looks off. After an admin reset, add `--tournament` to play both semifinals, settle a drawn semi and play the final. It's a quick way to check that auth, Redis, Gemini and scoring all work before people show up.
 
 ## Workshop slides
 
-The slide deck is one self-contained file, `public/slides/index.html`, served at `/slides/index.html` on the same site as the app. Arrow keys (or a clicker's PageUp/PageDown) move through it.
+The deck is a single file, `public/slides/index.html`, served at `/slides/index.html` alongside the app. Arrow keys or a clicker's PageUp/PageDown move through it.
 
-To edit the text, run `npm run dev:web`, open `http://localhost:5173/slides/index.html`, and press **Shift+E** (or add `?edit` to the URL). Click any text to change it, then **Save to file**: the dev server writes the change straight into `public/slides/index.html`, so commit it like any other file. **Download** gives you the same file if the dev server isn't running (for example on the deployed site). Layout and animation changes still happen in the HTML by hand.
+To edit slide text, run `npm run dev:web`, open `http://localhost:5173/slides/index.html` and press Shift+E (or add `?edit` to the URL). Click any text to change it, then hit Save to file. The dev server writes your edits straight into `public/slides/index.html`, so you commit it like any other change. If the dev server isn't running, for example on the deployed site, Download gives you the same file to drop in by hand. Layout and animation changes still mean editing the HTML yourself.
 
 ## Deploying to Vercel
 
-1. Push this repo to GitHub (or your git host of choice).
-2. Import the project into Vercel.
-3. In the Vercel project settings, add the same environment variables listed above (`UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, `LLM_API_KEY`, `LLM_MODEL`, `SESSION_SECRET`, `ADMIN_TOKEN`) for the Production (and Preview, if you want) environment.
-4. Deploy. Vercel will run `npm run build` and serve `/api` as serverless functions automatically per `vercel.json`.
-5. Before the event, run `node scripts/seed.js` once against your production Redis (with `.env` pointed at the same Upstash credentials you set in Vercel) to seed teams, or set real teams via the Admin panel.
+1. Push the repo to GitHub and import it into Vercel.
+2. In the project settings, add the same env vars as above (`UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, `LLM_API_KEY`, `LLM_MODEL`, `SESSION_SECRET`, `ADMIN_TOKEN`) for Production, and for Preview if you want previews to work.
+3. Deploy. Vercel runs `npm run build` and serves `/api` as functions, as configured in `vercel.json`.
+4. Before the event, either run `node scripts/seed.js` once with `.env` pointed at the production Redis, or set up the real teams in the admin panel.
 
-## Gameplay rules reference
+## Game rules in detail
 
-- **Teams:** 4 fixed slots with internal ids `team-spark`, `team-thrive`, `team-own-it`, `team-curious`. A duel uses the first 2, a tournament all 4. The admin can rename them and change join codes at any time; saving replaces the team list rather than adding to it.
-- **Modes:** the admin switches between Duel and Tournament from the lobby (reset first if a game was played).
-  - **Duel:** the same 2 teams play rounds until one wins a match outright.
-  - **Tournament (knockout):** round 1 is both semifinals at once (Team 1 vs 2, Team 3 vs 4) on shared timers; round 2 is the final between the semifinal winners. No third-place match - knocked-out teams watch. A drawn semifinal waits for the admin to pick who advances; a drawn final waits for the admin to declare the winner under End game.
-- **Draft phase (5 min, default):** system prompt (max 400 words and 3,000 characters, so joining words with `_` can't dodge the word limit) and a job description (required to test). Each team's last saved vault is carried into the next round automatically (stored under `ctf:defense:<teamId>`). An admin reset clears these, so each new game starts with blank bots.
-- **Helpfulness test (stops "impenetrable" vaults):** "Save & test" asks the vault 2 ordinary questions about its own job and has one grading call decide PASS/FAIL - 3 AI calls total. Results are cached by the vault's exact text, so re-testing unchanged text (or an unchanged vault carried into a new round) is free. Teams can test once every 30 seconds. When the attack phase starts, each vault's result is locked in with no AI calls; a vault that was never tested, or failed, **counts as broken**. A fixed platform preamble also tells every vault to genuinely help with its job.
-- **Attack phase (10 min, default):** each team gets unlimited tries against its *opponent's* vault. A try is a conversation of up to 8 messages (admin-configurable, "Messages per try") where the bot remembers earlier messages, and it ends with one password guess (or "start a fresh chat" to give it up). The phase ends when the admin ends it, or on its own once every playing team has cracked its opponent. Phase timers are only a guide: play continues after one runs out until the admin moves on.
-- **Winning a match:** a team wins when the opponent's vault is broken (cracked or failed the helpfulness test) **and** its own vault is not. Anything else is a draw: in a duel the admin starts a new round, in a tournament the admin decides.
-- **If the workshop runs out of time:** the admin can declare a manual winner or draw from the Admin panel to end the game.
+Teams. There are four fixed slots with ids `team-spark`, `team-thrive`, `team-own-it` and `team-curious`. A duel uses the first two and a tournament uses all four. The admin can rename teams and change join codes at any time. Saving the team list replaces it rather than adding to it.
+
+Modes. The admin picks Duel or Tournament from the lobby. If a game has already been played, reset first.
+
+- In a duel, the same two teams play rounds until one wins a match outright.
+- In a tournament, round 1 is both semifinals at once (team 1 vs 2, team 3 vs 4) on the same timer, and round 2 is the final. There's no third-place match, so knocked-out teams watch. If a semifinal is drawn, the admin picks who goes through. If the final is drawn, the admin declares the winner from End game.
+
+Draft phase (5 minutes by default). Teams write a system prompt, capped at 400 words and 3,000 characters. The character cap is there so nobody gets around the word limit by joining words with underscores. They also write a job description, which the helpfulness test needs. Whatever a team saved last carries over into the next round, stored under `ctf:defense:<teamId>`. An admin reset clears it, so a new game starts with blank bots.
+
+Helpfulness test. Without this, the winning strategy would be a bot that refuses to say anything. "Save & test" asks the bot two ordinary questions about its job, and a third AI call grades the answers PASS or FAIL. Results are cached by the bot's exact text, so testing unchanged text again, or a bot carried over from last round, costs nothing. A team can test once every 30 seconds. When the attack phase starts, each bot's last result is locked in with no new AI calls, and a bot that never passed counts as broken. Every bot also gets a fixed preamble telling it to actually help with its job.
+
+Attack phase (10 minutes by default). Tries are unlimited. Each try is a conversation of up to 8 messages (the admin can change this under "Messages per try"), and it ends with a guess or with "start a fresh chat", which gives the try up. The phase ends when the admin ends it, or by itself once every playing team has cracked its opponent. The timers are only a guide: when one hits zero, play continues until the admin moves on.
+
+Winning. A team wins the match when the opponent's bot is broken (cracked, or failed the helpfulness test) and its own bot isn't. Anything else is a draw. In a duel the admin starts another round. In a tournament the admin decides.
+
+If the workshop runs long, the admin can declare a winner or a draw from the admin panel and end the game.
 
 ## Security notes
 
-- All secrets (`LLM_API_KEY`, `SESSION_SECRET`, `ADMIN_TOKEN`, Redis credentials) live only in serverless functions — never shipped to the frontend.
-- Team identity is always read from a verified, `HttpOnly` session cookie — never trusted from the request body.
-- Only one active session per team is allowed; joining from a new device invalidates the old one.
-- No endpoint returns a vault's password, prompt, or filter to anyone but that team (or after the round is sealed, via the public scoreboard).
-- All chat/vault text is rendered as plain text in React — never `dangerouslySetInnerHTML`.
-- Attack messages are capped at 10,000 characters (room for prompt stuffing and many-shot examples) and rate-limited to 1 per 2 seconds per team.
-- There is no platform-level output filter during the attack phase - if a defender's prompt lets the bot say the password, the attacker sees it. Protecting the password is entirely the defending team's job, not a safety net the game provides. The draft-phase practice chat works the same way, but with a dummy password, so defenders see exactly what an attacker would.
-- If an LLM call fails or times out, the player sees a friendly error and it does **not** count against their message budget.
-- **AI usage cap:** every AI call (attack chat, practice chat, helpfulness tests) reserves capacity from a Redis sliding window first. The whole game is capped at `LLM_MAX_CALLS_PER_MINUTE` calls per 15-second window (default 10), and each playing team at an equal share of that (minimum 3), so no team can starve the others. Over the cap, players see "The AI needs a short break. Try again in N seconds."
+- Every secret (`LLM_API_KEY`, `SESSION_SECRET`, `ADMIN_TOKEN` and the Redis credentials) stays in the serverless functions. None of it reaches the browser.
+- The server reads team identity from a signed `HttpOnly` session cookie. It never trusts a team id sent in a request body.
+- Each team has one active session. Joining from a new device ends the old one.
+- No endpoint shows a bot's password or prompt to anyone except its own team, until the round is sealed and the scoreboard reveals it.
+- Chat and prompt text is rendered as plain text in React, never through `dangerouslySetInnerHTML`.
+- Attack messages can be up to 10,000 characters, which leaves room for prompt stuffing and many-shot examples. Each team can send one every 2 seconds.
+- The game doesn't filter the bot's output during the attack phase. If a defender's prompt lets the bot say the password, the attacker sees it. Keeping the password safe is entirely the defending team's job. The draft-phase practice chat behaves the same way but uses a decoy password, so defenders see exactly what an attacker would.
+- If an LLM call fails or times out, the player gets a friendly error and the message doesn't count against their budget.
+- Every AI call (attack chat, practice chat, helpfulness tests) reserves a slot in a Redis sliding window first. The whole game gets `LLM_MAX_CALLS_PER_MINUTE` calls per 15-second window (10 by default), and each playing team gets an equal share with a minimum of 3, so one team can't starve the others. Over the cap, players see "The AI needs a short break. Try again in N seconds."
 
 ## Usage budget
 
-Most Redis traffic comes from polling, not gameplay. Team pages poll `/api/status` every 3s (about 5 Redis commands each, 2 for knocked-out teams); the projector and admin poll `/api/scoreboard` every 5s (3 commands, regardless of how many rounds were played); waiting screens check the scoreboard every 15s.
+Most Redis traffic comes from polling, not from playing. Team pages poll `/api/status` every 3 seconds, which costs about 5 Redis commands each time (2 for knocked-out teams). The projector and admin poll `/api/scoreboard` every 5 seconds at 3 commands, however many rounds have been played. Waiting screens check the scoreboard every 15 seconds.
 
-| | Polling, approx. | AI calls, max per round |
+| | Polling, roughly | Most AI calls in one attack phase |
 |---|---|---|
-| Duel | ~300 commands/min | 48 attack calls + draft-phase tests |
-| Tournament semifinals | ~550 commands/min | 96 attack calls + draft-phase tests |
-| Tournament final | ~350 commands/min | 48 attack calls + draft-phase tests |
+| Duel | ~300 commands/min | 400 at the default cap |
+| Tournament semifinals | ~550 commands/min | 800 with the cap at 20 |
+| Tournament final | ~350 commands/min | 800 with the cap at 20 |
 
-Each attack message adds roughly 12 commands on top. A full tournament is about 250 AI calls. Storage stays small: a worst-case round (every message 10,000 characters) is about 2MB.
+Since tries are unlimited, the rate cap sets the AI ceiling: 10 calls per 15 seconds over a 10-minute attack phase comes to 400. Real games use far less, because teams spend most of their time reading replies and thinking. Draft-phase tests come on top of that. Each attack message adds about 12 Redis commands. Storage stays small: a worst-case round where every message is 10,000 characters takes about 2 MB.

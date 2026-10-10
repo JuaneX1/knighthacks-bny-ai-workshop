@@ -171,7 +171,7 @@ body::after {
   }
 
   .ui-btn {
-    @apply flex items-center justify-center gap-2 rounded-lg px-4 py-3 font-semibold tracking-wide transition active:scale-[0.98] disabled:opacity-40 disabled:active:scale-100;
+    @apply flex items-center justify-center gap-2 rounded-lg px-4 py-3 font-semibold tracking-wide transition hover:-translate-y-0.5 active:translate-y-0 active:scale-95 disabled:opacity-40 disabled:hover:translate-y-0 disabled:active:scale-100;
   }
 
   .btn-primary {
@@ -191,7 +191,7 @@ body::after {
   }
 
   .heading-glow {
-    @apply tracking-wide text-ink motion-safe:animate-flicker-in;
+    @apply tracking-wide text-ink motion-safe:animate-glitch-in;
     text-shadow: 0 0 12px rgb(var(--color-blue) / 0.35);
   }
 }

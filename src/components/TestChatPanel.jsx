@@ -31,9 +31,9 @@ export default function TestChatPanel({ vault, disabled }) {
 
   return (
     <div className="ui-panel p-4">
-      <h3 className="font-semibold text-ink">Practice: chat with your own bot</h3>
+      <h3 className="font-semibold text-ink">Sparring room</h3>
       <p className="mb-2 text-sm text-brand-blue/50">
-        Pretend to be the other team and try to break it. It uses a fake password here, not your real one.
+        Attack your own bot before they do. It uses a decoy password here, not the real one.
       </p>
       <ChatLog log={log} sending={sending} className="max-h-48" />
       <ChatInput

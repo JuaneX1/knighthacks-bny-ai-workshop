@@ -44,7 +44,7 @@ export default function VaultEditorForm({ vault, onChange, onSave, saving, disab
           </span>
         </div>
         <p className="text-sm text-brand-blue/50">
-          Your bot knows a secret password. Write rules that stop it from giving the password away.
+          Your bot knows the password. Write the rules that keep its mouth shut.
         </p>
         <textarea
           disabled={disabled}
@@ -70,7 +70,7 @@ export default function VaultEditorForm({ vault, onChange, onSave, saving, disab
         >
           {saving ? (
             <>
-              <Spinner /> Saving & testing
+              <Spinner /> Testing your bot
             </>
           ) : (
             'Save & test my bot'

@@ -47,12 +47,12 @@ export default function AttackPage() {
     }
   }, [status, loadedRound, navigate]);
 
-  if (!status) return <LoadingScreen label="Loading round" />;
+  if (!status) return <LoadingScreen label="Connecting" />;
 
   if (status.state === 'lobby') {
     return (
       <Centered>
-        <StatusBanner waiting>Waiting for the admin to start the first round</StatusBanner>
+        <StatusBanner waiting>Hold tight. The host kicks off round one soon</StatusBanner>
       </Centered>
     );
   }
@@ -79,30 +79,34 @@ export default function AttackPage() {
       <div className="mb-2 flex items-center justify-between">
         <h1 className="heading-glow flex items-center gap-2 text-2xl font-bold">
           <SwordIcon className="h-6 w-6 text-brand-blue drop-shadow-[0_0_6px_rgb(var(--color-blue)/0.6)]" />
-          {roundTitle(status)}: Break their bot
+          {roundTitle(status)}: Crack their bot
         </h1>
         <Timer endsAt={status.phaseEndsAt} className="text-xl" />
       </div>
       <TimeUpNotice endsAt={status.phaseEndsAt}>
-        Time's up! Wrap up your last try, the admin will end the round shortly
+        Time's up! Finish this try, the round ends any second
       </TimeUpNotice>
       <p className="mb-4 text-brand-blue/50">
-        Chat with <TeamName teamId={status.opponentTeamId} name={status.opponentName} className="font-semibold" />
-        's bot and trick it into telling you the password. When you think you know it, guess! You
-        get unlimited tries. Each try is up to {attack.promptsPerAttempt} messages and 1 guess.
+        Talk <TeamName teamId={status.opponentTeamId} name={status.opponentName} className="font-semibold" />
+        's bot into spilling its password, then take your shot. Tries are unlimited: each one is up to{' '}
+        {attack.promptsPerAttempt} messages and one guess.
       </p>
 
-      {!cracked && <div className="mb-4 text-sm text-ink/70">Try {attack.attempt}</div>}
+      {!cracked && (
+        <div key={attack.attempt} className="mb-4 font-mono text-sm font-bold uppercase tracking-widest text-brand-blue motion-safe:animate-slam-in">
+          Try #{attack.attempt}
+        </div>
+      )}
 
       <div className="mb-4 space-y-2">
         {status.opponentFailedCheck && !cracked && (
           <StatusBanner tone="good">
-            Their bot failed the helpfulness test, so it already counts as broken. If your own bot stays safe, you win this match!
+            Their bot failed the helpfulness test, so it's already broken. Keep yours safe and this match is yours!
           </StatusBanner>
         )}
         {cracked && (
           <StatusBanner tone="good" waiting className="text-base font-medium">
-            You cracked it! Waiting for the round to end
+            Password cracked! Sit tight until the round ends
           </StatusBanner>
         )}
       </div>

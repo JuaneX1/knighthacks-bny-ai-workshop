@@ -3,7 +3,7 @@ import { STAGE_LABELS } from '../lib/format.js';
 
 export default function RoundHistoryList({ rounds, teams }) {
   if (!rounds || rounds.length === 0) {
-    return <p className="text-brand-blue/50">No rounds played yet.</p>;
+    return <p className="text-brand-blue/50">No rounds yet. The first breach is coming.</p>;
   }
 
   return (
@@ -16,7 +16,10 @@ export default function RoundHistoryList({ rounds, teams }) {
               {STAGE_LABELS[round.stage] && <span className="text-brand-blue/50"> · {STAGE_LABELS[round.stage]}</span>}
             </h3>
             {round.inProgress && (
-              <span className="rounded border border-brand-blue/20 bg-panel px-2 py-1 text-xs text-ink/70">In progress</span>
+              <span className="flex items-center gap-1.5 rounded border border-brand-error/40 bg-brand-error/10 px-2 py-1 text-xs font-bold uppercase tracking-widest text-brand-error">
+                <span className="h-1.5 w-1.5 rounded-full bg-current motion-safe:animate-ping" />
+                Live
+              </span>
             )}
           </div>
 
@@ -66,14 +69,16 @@ function VaultCard({ teamId, teams, vault }) {
           <p className="mt-1 text-brand-blue/50">
             Password: <span className="font-mono text-ink/80">{vault.password}</span>
           </p>
-          <p className="mt-1 text-brand-blue/50">Cracked: {vault.crackedByOpponent ? 'yes' : 'no'}</p>
+          <p className={`mt-1 font-semibold ${vault.crackedByOpponent ? 'text-brand-error' : 'text-brand-success'}`}>
+            {vault.crackedByOpponent ? 'Cracked' : 'Held'}
+          </p>
           {vault.utilityPassed === false && (
             <p className="mt-1 text-brand-error">Failed the helpfulness test (counts as broken)</p>
           )}
           <p className="mt-2 whitespace-pre-wrap break-words text-ink/70">{vault.systemPrompt}</p>
         </>
       ) : (
-        <p className="text-brand-blue/40">No vault submitted.</p>
+        <p className="text-brand-blue/40">Never saved a bot.</p>
       )}
     </div>
   );

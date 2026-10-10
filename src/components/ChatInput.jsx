@@ -51,7 +51,7 @@ export default function ChatInput({ value, onChange, onSubmit, disabled, sending
       <p className="mt-1 flex justify-between text-xs text-brand-blue/40">
         <span>Enter to send, Shift+Enter for a new line</span>
         {nearLimit && (
-          <span className={value.length >= MAX_MESSAGE_CHARS ? 'text-brand-error' : 'text-amber-300'}>
+          <span className={value.length >= MAX_MESSAGE_CHARS ? 'text-brand-error' : 'text-brand-warn'}>
             {value.length.toLocaleString()} / {MAX_MESSAGE_CHARS.toLocaleString()} characters
           </span>
         )}

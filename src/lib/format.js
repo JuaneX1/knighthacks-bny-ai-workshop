@@ -8,10 +8,10 @@ export function formatCountdown(endsAt, now = Date.now()) {
 }
 
 export const PHASE_LABELS = {
-  lobby: 'Waiting to start',
+  lobby: 'Warming up',
   draft: 'Draft phase',
   attack: 'Attack phase',
-  round_ended: 'Round ended',
+  round_ended: 'Round over',
   game_ended: 'Game over',
 };
 

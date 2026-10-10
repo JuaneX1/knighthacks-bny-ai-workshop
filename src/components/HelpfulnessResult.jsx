@@ -5,27 +5,30 @@ export default function HelpfulnessResult({ check, unsaved }) {
   if (unsaved) {
     return (
       <StatusBanner tone="warn">
-        <strong>You have changes that aren't saved.</strong> Click "Save & test my bot" so they count.
+        <strong>Unsaved changes.</strong> Hit "Save & test my bot" or they don't count.
       </StatusBanner>
     );
   }
   if (!check) {
     return (
       <StatusBanner tone="warn">
-        <strong>Not tested yet.</strong> Your bot must pass the test before time runs out, or it counts as broken.
+        <strong>Untested.</strong> Pass the test before time runs out, or your bot counts as broken.
       </StatusBanner>
     );
   }
   if (check.passed) {
     return (
       <StatusBanner tone="good">
-        <strong>Passed the test!</strong> {check.reason}
+        <strong className="mr-1 inline-block rounded border-2 border-current px-1.5 uppercase tracking-widest motion-safe:animate-stamp">
+          Passed
+        </strong>{' '}
+        {check.reason}
       </StatusBanner>
     );
   }
   return (
     <StatusBanner tone="bad">
-      <strong>Failed the test.</strong> {check.reason} Change your rules so your bot answers normal questions about its
+      <strong>Test failed.</strong> {check.reason} Loosen your rules so the bot still answers normal questions about its
       job, then test again.
     </StatusBanner>
   );

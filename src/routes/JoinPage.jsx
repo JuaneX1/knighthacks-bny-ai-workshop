@@ -12,24 +12,24 @@ import { rememberTeam } from '../lib/teamTheme.js';
 import { resetPhaseBaseline } from '../lib/phaseAnnouncer.js';
 
 // How long the "You're on Team X" reveal plays before moving on to the game.
-const REVEAL_MS = 1900;
+const REVEAL_MS = 4200;
 
 const RULES = [
   {
-    title: 'Draft - 5 min',
-    body: 'Write the rules for your own vault chatbot. It hides a secret password but must still do its job, so "Save & test" it until it passes the helpfulness check.',
+    title: 'Draft · 5 min',
+    body: 'Write the rules for your bot. It guards a secret password but still has a day job, so hit "Save & test" until it passes the helpfulness check. A bot that refuses everyone counts as broken.',
   },
   {
-    title: 'Attack - 10 min',
-    body: "Trick the other team's bot into leaking its password. Each try is a short conversation that ends with one guess. Tries are unlimited.",
+    title: 'Attack · 10 min',
+    body: "Sweet-talk, trick or confuse the other team's bot into leaking its password. Each try is a chat of up to 8 messages that ends in one guess. Tries are unlimited.",
   },
   {
     title: 'Winning',
-    body: "You win when the opponent's vault breaks (cracked, or it failed the helpfulness check) while yours holds up. Anything else is a draw.",
+    body: "Crack their bot while yours holds and the match is yours. A bot that failed the helpfulness check counts as cracked. Anything else is a draw.",
   },
   {
     title: 'One device per team',
-    body: "Joining from a new device logs out your team's previous one, so pick one device and stick with it.",
+    body: "Logging in somewhere new kicks your old device out. Pick one and stick with it.",
   },
 ];
 
@@ -115,32 +115,32 @@ export default function JoinPage() {
         <BrandEmblem className="h-10 w-10" />
         <h1 className="heading-glow text-3xl font-bold">Prompt Wars</h1>
       </div>
-      <p className="mb-8 text-sm uppercase tracking-widest text-brand-blue/60">Attack and Defend AI Chatbots</p>
+      <p className="mb-8 text-sm uppercase tracking-widest text-brand-blue/60">Lock yours down. Talk theirs open.</p>
 
       {view === 'menu' && (
         <nav className="space-y-3 motion-safe:animate-fade-in-up">
           <MenuItem
             icon={<SwordIcon className="h-6 w-6" />}
             title="Join the game"
-            subtitle="Enter your team's join code"
+            subtitle="Got a team code? Get in here"
             onClick={() => setView('join')}
           />
           <MenuItem
             icon={<ShieldIcon className="h-6 w-6" />}
             title="How to play"
-            subtitle="Rounds, phases and how to win"
+            subtitle="Rules of engagement"
             onClick={() => setView('rules')}
           />
           <MenuItem
             icon={<TrophyIcon className="h-6 w-6" />}
             title="Scoreboard"
-            subtitle="Watch the matches live"
+            subtitle="Who's cracking who, live"
             href="/scoreboard"
           />
           <MenuItem
             icon={<span className="font-mono text-sm font-bold">&lt;/&gt;</span>}
             title="Workshop slides"
-            subtitle="Follow along with the presentation"
+            subtitle="Follow along with the talk"
             href="/slides"
           />
         </nav>
@@ -149,20 +149,20 @@ export default function JoinPage() {
       {view === 'join' && (
         <div className="motion-safe:animate-fade-in-up">
           <BackButton onClick={showMenu} />
-          <p className="mb-4 text-brand-blue/50">Enter your team's join code to get started.</p>
+          <p className="mb-4 text-brand-blue/50">Punch in the code your team was handed.</p>
           <form onSubmit={handleSubmit} className="space-y-4">
             <input
               type="text"
               value={joinCode}
               onChange={(e) => setJoinCode(e.target.value)}
-              placeholder="Join code"
+              placeholder="Team code"
               autoFocus
               className="ui-input w-full px-4 py-3 text-lg uppercase tracking-widest"
             />
             <button type="submit" disabled={submitting || !joinCode.trim()} className="btn-primary w-full">
               {submitting ? (
                 <>
-                  <Spinner /> Joining
+                  <Spinner /> Connecting
                 </>
               ) : (
                 'Join'
@@ -192,7 +192,7 @@ export default function JoinPage() {
             ))}
           </ol>
           <button type="button" onClick={() => setView('join')} className="btn-primary mt-6 w-full">
-            I'm ready - join
+            I'm ready. Let me in
           </button>
         </div>
       )}

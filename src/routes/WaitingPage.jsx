@@ -18,9 +18,9 @@ import { PHASE_LABELS } from '../lib/format.js';
 const BOARD_INTERVAL_MS = 15000;
 
 const ADVANCEMENT_MESSAGES = {
-  advanced: "You're through to the final! Waiting for the admin to start it",
-  eliminated: 'Your team is out of the tournament. Stay and watch the final',
-  pending: 'Your semifinal was a draw. The admin will decide who goes through',
+  advanced: "You're in the final! Stretch your fingers, it starts soon",
+  eliminated: "You're out, but the final still needs an audience",
+  pending: 'Your semifinal ended dead even. The host is picking who moves on',
 };
 
 export default function WaitingPage() {
@@ -58,7 +58,7 @@ export default function WaitingPage() {
         ) : (
           <>
             <Spinner className="h-7 w-7 text-brand-blue" />
-            <span className="text-brand-blue/50">Loading</span>
+            <span className="text-brand-blue/50">Connecting</span>
           </>
         )}
       </h1>
@@ -70,7 +70,7 @@ export default function WaitingPage() {
 
       {watching && (
         <div className="mb-6">
-          <StatusBanner>Your team is out of the tournament. Sit back and watch the final!</StatusBanner>
+          <StatusBanner>Your team's out. Grab a seat and watch the final!</StatusBanner>
         </div>
       )}
 
@@ -84,12 +84,12 @@ export default function WaitingPage() {
         <div className="mb-6">
           <StatusBanner tone={status.amIWinner ? 'good' : 'info'}>
             {status.finalResult === 'draw'
-              ? 'Game ended in a draw.'
+              ? 'Dead even. The game ends in a draw.'
               : status.amIWinner
               ? 'Your team won the game!'
               : (
                 <>
-                  Game over - <TeamName teamId={status.winnerTeamId} teams={board?.teams} className="font-semibold" /> won
+                  GG. <TeamName teamId={status.winnerTeamId} teams={board?.teams} className="font-semibold" /> took it
                   this time.
                 </>
               )}
@@ -111,8 +111,8 @@ export default function WaitingPage() {
 
 // What a team is waiting on between rounds.
 function waitingMessage(status) {
-  if (status.state === 'lobby') return 'Waiting for the admin to start the first round';
+  if (status.state === 'lobby') return 'Hold tight. The host kicks off round one soon';
   if (status.advancement) return ADVANCEMENT_MESSAGES[status.advancement];
-  if (status.stage === 'final') return 'The final was a draw. The admin will decide the winner';
-  return 'Waiting for the admin to start the next round';
+  if (status.stage === 'final') return 'The final ended dead even. The host breaks the tie';
+  return 'Catch your breath. Next round starts soon';
 }

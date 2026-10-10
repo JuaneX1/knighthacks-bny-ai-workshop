@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { api } from '../lib/api.js';
 import { burstConfetti } from '../lib/confetti.js';
 import Spinner from './Spinner.jsx';
+import GuessResultFlash from './GuessResultFlash.jsx';
 
 export default function GuessBox({ attack, disabled, cracked, onGuessResult }) {
   const [guess, setGuess] = useState('');
@@ -9,6 +10,8 @@ export default function GuessBox({ attack, disabled, cracked, onGuessResult }) {
   const [error, setError] = useState(null);
   const [notice, setNotice] = useState(null);
   const [shaking, setShaking] = useState(false);
+  const [flash, setFlash] = useState(null);
+  const clearFlash = useCallback(() => setFlash(null), []);
   const canGuess = !disabled && attack.canGuess;
 
   async function submit(e) {
@@ -21,12 +24,13 @@ export default function GuessBox({ attack, disabled, cracked, onGuessResult }) {
     try {
       const result = await api.attackGuess(submitted);
       setGuess('');
+      setFlash({ correct: result.correct, guess: submitted });
       if (result.correct) {
         burstConfetti();
       } else {
         setNotice({
           id: Date.now(),
-          text: `"${submitted}" is wrong. Starting try ${result.attack.attempt} with a fresh chat.`,
+          text: `"${submitted}" missed. Try #${result.attack.attempt} is up with a clean chat.`,
         });
         setShaking(true);
       }
@@ -40,13 +44,13 @@ export default function GuessBox({ attack, disabled, cracked, onGuessResult }) {
 
   async function giveUp() {
     if (!canGuess || submitting) return;
-    if (!confirm('Start a fresh chat? This uses up this try without guessing.')) return;
+    if (!confirm("Bail on this try? You get a clean chat, but this try's guess is gone.")) return;
     setSubmitting(true);
     setError(null);
     setNotice(null);
     try {
       const result = await api.attackGiveUp();
-      setNotice({ id: Date.now(), text: 'Fresh chat started.' });
+      setNotice({ id: Date.now(), text: 'Clean chat. Try a new angle.' });
       onGuessResult(result);
     } catch (err) {
       setError(err.message);
@@ -61,10 +65,11 @@ export default function GuessBox({ attack, disabled, cracked, onGuessResult }) {
         cracked ? 'border-brand-success motion-safe:animate-glow-good' : 'border-brand-blue/30'
       }`}
     >
-      <h3 className="mb-1 font-semibold text-ink">{cracked ? 'You cracked it!' : 'Guess the password'}</h3>
+      {flash && <GuessResultFlash result={flash} onDone={clearFlash} />}
+      <h3 className="mb-1 font-semibold text-ink">{cracked ? 'Password cracked!' : 'Take your shot'}</h3>
       {!cracked && (
         <p className="mb-2 text-sm text-brand-blue/50">
-          Guessing ends this try. Right or wrong, your next try starts with a fresh chat.
+          A guess ends this try. Hit or miss, the next try starts with a clean chat.
         </p>
       )}
       <form
@@ -77,7 +82,7 @@ export default function GuessBox({ attack, disabled, cracked, onGuessResult }) {
           disabled={!canGuess}
           value={guess}
           onChange={(e) => setGuess(e.target.value)}
-          placeholder={!disabled && !attack.canGuess ? 'Send the bot a message first' : 'e.g. copper-lantern'}
+          placeholder={!disabled && !attack.canGuess ? 'Talk to the bot first' : 'e.g. copper-lantern'}
           className={`flex-1 rounded-lg border bg-well px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-brand-blue disabled:opacity-50 ${
             shaking ? 'border-brand-error' : 'border-brand-blue/30'
           }`}
@@ -91,7 +96,7 @@ export default function GuessBox({ attack, disabled, cracked, onGuessResult }) {
         </button>
       </form>
       {notice && (
-        <p key={notice.id} className="mt-2 text-sm text-amber-300 motion-safe:animate-fade-in-up">
+        <p key={notice.id} className="mt-2 text-sm text-brand-warn motion-safe:animate-fade-in-up">
           {notice.text}
         </p>
       )}
@@ -103,7 +108,7 @@ export default function GuessBox({ attack, disabled, cracked, onGuessResult }) {
           disabled={submitting}
           className="mt-3 text-xs text-brand-blue/40 underline hover:text-brand-blue/80 disabled:opacity-50"
         >
-          Stuck? Start a fresh chat without guessing (uses this try)
+          Dead end? Start over without guessing (uses this try)
         </button>
       )}
     </div>

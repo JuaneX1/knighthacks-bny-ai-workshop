@@ -52,15 +52,15 @@ export default function AttackChatPanel({ attack, disabled, onAttackChange }) {
   return (
     <div className="ui-panel p-4">
       <div className="mb-2 flex items-center justify-between">
-        <h3 className="font-semibold text-ink">Chat with their bot</h3>
-        <span className={`text-sm ${outOfMessages ? 'text-amber-300' : 'text-brand-blue/50'}`}>
+        <h3 className="font-semibold text-ink">Their bot</h3>
+        <span className={`text-sm ${outOfMessages ? 'text-brand-warn' : 'text-brand-blue/50'}`}>
           {attack.promptsLeft} of {attack.promptsPerAttempt} messages left
         </span>
       </div>
       <ChatLog
         log={log}
         sending={sending}
-        emptyText="Say hi! The bot remembers everything you say during this try."
+        emptyText="Open with anything. It remembers this whole chat until you guess."
       />
       <ChatInput
         value={message}
@@ -68,7 +68,7 @@ export default function AttackChatPanel({ attack, disabled, onAttackChange }) {
         onSubmit={send}
         disabled={disabled || outOfMessages}
         sending={sending}
-        placeholder={outOfMessages ? 'No messages left - make a guess below' : 'Try to get the password...'}
+        placeholder={outOfMessages ? 'Out of messages. Take your shot below' : 'Make your move...'}
         buttonClassName="bg-brand-blue/90 text-btn-ink hover:bg-brand-blue hover:shadow-[0_0_14px_rgb(var(--color-blue)/0.55)]"
       />
       {error && <p className="mt-2 text-sm text-brand-error motion-safe:animate-fade-in-up">{error}</p>}

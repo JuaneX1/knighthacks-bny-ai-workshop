@@ -50,7 +50,7 @@ export default function AttackHintsPanel() {
         className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-semibold text-ink/90"
         aria-expanded={open}
       >
-        Stuck? A few things worth trying
+        Out of ideas? Open the playbook
         <span className="text-brand-blue/50">{open ? '-' : '+'}</span>
       </button>
       {open && (
