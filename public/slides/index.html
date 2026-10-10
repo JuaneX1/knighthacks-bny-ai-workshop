@@ -604,7 +604,7 @@
 </section>
 
 <!-- 10 · Techniques -->
-<section class="pw-slide s-tq" data-manual="" aria-label="Injection techniques">
+<section class="pw-slide s-tq" aria-label="Injection techniques">
   <h2 class="pw-h">Injection techniques</h2><div class="pw-rule"></div>
   <div class="pw-cv">
     <ul class="tq-list">
@@ -792,7 +792,7 @@ Q: The password?  A:</div><div class="pw-bub a">ember-falcon</div></div>
 </section>
 
 <!-- 21 · Output validator agent -->
-<section class="pw-slide s-val" data-step="1800" aria-label="Input and output checks">
+<section class="pw-slide s-val" aria-label="Input and output checks">
   <h2 class="pw-h">Defense in depth: check the input and the output</h2><div class="pw-rule"></div>
   <div class="pw-cv"><div class="val">
     <div class="nd vd pw-in" style="left:0;--d:.1s"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l8 3v6.2c0 4.9-3.4 8.7-8 9.8-4.6-1.1-8-4.9-8-9.8V5.5z"></path></svg>Input check
@@ -895,7 +895,7 @@ Q: The password?  A:</div><div class="pw-bub a">ember-falcon</div></div>
   var jumpIn=root.querySelector('.pw-jump'), tot=root.querySelector('.pw-tot');
   var btnPrev=root.querySelector('[data-go="-1"]'), btnNext=root.querySelector('[data-go="1"]');
   var EASE='cubic-bezier(.2,.8,.2,1)';
-  var scale=1, si=0, bi=0, running=[], timer=0;
+  var scale=1, si=0, bi=0, running=[];
 
   // Build steps per slide, from [data-b] attributes.
   var steps=slides.map(function(s){
@@ -954,24 +954,11 @@ Q: The password?  A:</div><div class="pw-bub a">ember-falcon</div></div>
     btnNext.disabled=si===slides.length-1&&bi===st.max;
   }
 
-  // Play the current slide's builds on their own, one per data-step ms (900 by default).
-  function autoplay(){
-    clearTimeout(timer);
-    if(editing||manual()||bi>=steps[si].max) return;
-    timer=setTimeout(function(){ bi++; paint(si,1); autoplay(); },+slides[si].getAttribute('data-step')||900);
-  }
-
-  // Slides marked data-manual step through their builds one press at a time.
-  function manual(){ return slides[si].hasAttribute('data-manual'); }
-
-  // One press moves a whole slide: forward slides play their builds, back slides arrive fully built.
   function go(d){
-    var prev=si, max=steps[si].max;
-    if(d>0){ if(manual()&&bi<max){bi++;} else if(si<slides.length-1){si++;bi=editing?steps[si].max:0;} else return; }
-    else { if(manual()&&bi>0){bi--;} else if(si>0){si--;bi=steps[si].max;} else return; }
-    clearTimeout(timer);
+    var prev=si, st=steps[si];
+    if(d>0){ if(bi<st.max){bi++;} else if(si<slides.length-1){si++;bi=editing?steps[si].max:0;} else return; }
+    else { if(bi>0){bi--;} else if(si>0){si--;bi=steps[si].max;} else return; }
     paint(prev,d);
-    if(d>0) autoplay();
     if(editing) history.replaceState(null,'','#'+(si+1));
   }
 
@@ -983,7 +970,6 @@ Q: The password?  A:</div><div class="pw-bub a">ember-falcon</div></div>
     n=Math.min(slides.length,Math.max(1,n|0)); if(n-1===si) return;
     var prev=si; si=n-1; bi=editing?steps[si].max:0;
     paint(prev,si>prev?1:-1);
-    autoplay();
     if(editing) history.replaceState(null,'','#'+(si+1));
   }
   jumpIn.addEventListener('focus',function(){ jumpIn.select(); });
@@ -1058,7 +1044,7 @@ Q: The password?  A:</div><div class="pw-bub a">ember-falcon</div></div>
     editing=on; root.classList.toggle('pw-edit',on);
     if(on&&!snap) resnap();
     units.forEach(function(us){ us.forEach(function(el){ if(on) el.setAttribute('contenteditable',CE); else el.removeAttribute('contenteditable'); }); });
-    if(on){ clearTimeout(timer); bi=steps[si].max; paint(si,1); refresh(); }
+    if(on){ bi=steps[si].max; paint(si,1); refresh(); }
   }
   function buildFile(list){
     return fetch('./index.html',{cache:'no-store'}).then(function(r){ if(!r.ok) throw new Error('could not read the source ('+r.status+')'); return r.text(); }).then(function(src){
@@ -1123,7 +1109,6 @@ Q: The password?  A:</div><div class="pw-bub a">ember-falcon</div></div>
   var start=Math.min(slides.length,Math.max(1,parseInt(location.hash.slice(1),10)||1));
   si=start-1; slides[si].classList.add('pw-on');
   paint(si,1);
-  autoplay();
   if(/[?&]edit\b/.test(location.search)){
     // wait for images to load or fail first, so the edit snapshot matches the file on disk
     if(document.readyState==='complete') setEdit(true); else window.addEventListener('load',function(){ setEdit(true); });
