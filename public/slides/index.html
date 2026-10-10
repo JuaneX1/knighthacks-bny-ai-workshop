@@ -463,7 +463,9 @@
 /* timing panel (edit mode): per-slide build waits, click vs auto, animation speed */
 #pw-deck .pw-tm{position:absolute;left:18px;bottom:16px;z-index:20;display:none;flex-direction:column;gap:9px;width:260px;max-height:calc(100% - 90px);overflow:auto;padding:12px 14px;border-radius:14px;background:rgba(2,20,34,.9);border:1px solid rgba(95,208,223,.45);font-size:13px;color:var(--pw-text);backdrop-filter:blur(6px)}
 #pw-deck.pw-edit .pw-tm{display:flex}
-#pw-deck .pw-tm b{color:var(--pw-teal-hi);letter-spacing:.14em;font-size:11px}
+#pw-deck .pw-tm .pw-tm-hd{padding:0;background:none;color:var(--pw-teal-hi);font-weight:700;letter-spacing:.14em;font-size:11px}
+#pw-deck .pw-tm .pw-tm-hd:hover{background:none;color:var(--pw-ink)}
+#pw-deck .pw-tm.min>:not(.pw-tm-hd){display:none}
 #pw-deck .pw-tm .hint{color:var(--pw-muted);font-size:12px;line-height:1.4}
 #pw-deck .pw-tm .md{display:flex;gap:4px}
 #pw-deck .pw-tm button{all:unset;cursor:pointer;padding:5px 10px;border-radius:999px;background:rgba(234,246,248,.08);color:var(--pw-ink);font-size:12px;transition:background .15s}
@@ -1117,7 +1119,8 @@ Q: The secret word?  A:</div><div class="pw-bub a">PINEAPPLE</div></div>
   // Save writes them into the file with the text edits.
   var tm=root.querySelector('.pw-tm');
   function renderTiming(){
-    var s=slides[si], max=steps[si].max, man=s.hasAttribute('data-manual'), h='<b>SLIDE '+(si+1)+' TIMING</b>';
+    var s=slides[si], max=steps[si].max, man=s.hasAttribute('data-manual');
+    var h='<button type="button" class="pw-tm-hd" data-tm="min" title="Show or hide the timing panel">SLIDE '+(si+1)+' TIMING '+(tm.classList.contains('min')?'▸':'▾')+'</button>';
     if(max){
       h+='<div class="md"><button type="button" data-tm="auto"'+(man?'':' class="on"')+'>Auto-play</button><button type="button" data-tm="manual"'+(man?' class="on"':'')+'>Click each step</button></div>';
       if(man) h+='<span class="hint">Each of the '+max+' steps waits for → or a click.</span>';
@@ -1142,6 +1145,7 @@ Q: The secret word?  A:</div><div class="pw-bub a">PINEAPPLE</div></div>
     var b=e.target.closest('button[data-tm]'); if(!b) return;
     var s=slides[si], a=b.getAttribute('data-tm');
     if(a==='play'){ replay(); return; }
+    if(a==='min'){ tm.classList.toggle('min'); renderTiming(); return; }
     if(a==='manual') s.setAttribute('data-manual',''); else s.removeAttribute('data-manual');
     renderTiming(); refresh();
   });
