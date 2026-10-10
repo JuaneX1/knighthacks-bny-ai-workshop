@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useScoreboard } from '../hooks/useScoreboard.js';
 import RoundHistoryList from '../components/RoundHistoryList.jsx';
 import Bracket from '../components/Bracket.jsx';
@@ -16,6 +17,9 @@ export default function ScoreboardPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-8 py-10">
+      <Link to="/" className="mb-4 inline-block text-sm text-brand-blue/60 hover:text-brand-blue">
+        &lsaquo; Back to home
+      </Link>
       <div className="mb-2 flex items-center gap-4">
         <BrandEmblem className="h-16 w-16" />
         <div>

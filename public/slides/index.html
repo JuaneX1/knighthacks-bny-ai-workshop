@@ -50,6 +50,7 @@
 @keyframes pw-up{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 @keyframes pw-pop{0%{opacity:0;transform:scale(.6)}70%{opacity:1;transform:scale(1.06)}100%{opacity:1;transform:none}}
 @keyframes pw-dash{to{stroke-dashoffset:-40}}
+@keyframes pw-fade{from{opacity:0}to{opacity:1}}
 
 /* shared bits */
 #pw-deck .pw-card{background:var(--pw-panel);border:1px solid var(--pw-rule);border-radius:14px;padding:18px 20px}
@@ -158,13 +159,15 @@
 #pw-deck .owasp li.one{background:var(--pw-teal);color:#04243C;font-weight:700;font-size:20px;padding:14px 16px;transition:transform .5s var(--pw-ease)}
 #pw-deck .owasp li.one span{color:#04243C}
 #pw-deck .s-owasp .hero{position:absolute;left:0;top:30px;width:460px}
+#pw-deck .s-owasp .def{margin:22px 0 0;padding:4px 0 4px 18px;border-left:3px solid var(--pw-teal);font-size:17px}
 #pw-deck .s-owasp .num{font-size:180px;font-weight:800;line-height:.9;color:var(--pw-teal);letter-spacing:-.05em}
 
 /* ---------- merge animation ---------- */
 
 /* ---------- MCP tools ---------- */
 #pw-deck .mcp{position:absolute;inset:0}
-#pw-deck .mcp svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+#pw-deck .mcp svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;opacity:0}
+#pw-deck .pw-on .mcp svg{animation:pw-fade .5s ease .85s both}
 #pw-deck .mcp .ln{fill:none;stroke:rgba(127,162,178,.35);stroke-width:2.5}
 #pw-deck .mcp .fl{fill:none;stroke-width:3;stroke-dasharray:8 12;opacity:0;transition:opacity .4s ease,stroke .4s}
 #pw-deck .mcp .fl.go{stroke:var(--pw-teal-hi)} #pw-deck .mcp .fl.bad{stroke:var(--pw-bad)}
@@ -320,7 +323,10 @@
 #pw-deck .s-iv .vd.ok{color:var(--pw-good);border-color:rgba(58,181,140,.6)} #pw-deck .s-iv .vd.bad{color:var(--pw-bad);border-color:rgba(214,82,99,.65);background:rgba(214,82,99,.14)} #pw-deck .s-iv .vd.warn{color:var(--pw-warn);border-color:rgba(224,165,69,.65)}
 #pw-deck .s-iv .nm,#pw-deck .s-iv .cl{opacity:0;transition:opacity .35s ease}
 #pw-deck .s-iv .ivr.pw-shown .nm{opacity:1;transition-delay:.35s} #pw-deck .s-iv .ivr.pw-shown .cl{opacity:1;transition-delay:.65s}
-#pw-deck .s-iv .ar{height:2px;margin:0 7px;background:rgba(127,162,178,.45);position:relative}
+#pw-deck .s-iv .ar{height:2px;margin:0 7px;background:rgba(127,162,178,.45);position:relative;opacity:0;transition:opacity .3s ease}
+#pw-deck .s-iv .ivr.pw-shown .ar{opacity:1;transition-delay:.2s}
+#pw-deck .s-iv .ivr.pw-shown .ar:nth-of-type(2){transition-delay:.5s}
+#pw-deck .s-iv .ivr.pw-shown .ar:nth-of-type(3){transition-delay:1.2s}
 #pw-deck .s-iv .ar::after{content:"";position:absolute;right:-1px;top:-4px;border:5px solid transparent;border-left:7px solid rgba(127,162,178,.6);border-right:0}
 #pw-deck .s-iv .ivn{position:absolute;left:64px;right:64px;top:540px;font-size:20px;line-height:1.5;color:var(--pw-text)}
 #pw-deck .s-db .db{position:absolute;left:64px;right:120px;top:168px;margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:22px}
@@ -355,7 +361,8 @@
 
 /* ---------- three sources -> one context ---------- */
 #pw-deck .mg{position:absolute;inset:0;--pw-violet:#A794F5}
-#pw-deck .mg-lines{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+#pw-deck .mg-lines{position:absolute;inset:0;width:100%;height:100%;overflow:visible;opacity:0}
+#pw-deck .pw-on .mg-lines{animation:pw-fade .5s ease .65s both}
 #pw-deck .mg-lines .bg{fill:none;stroke:rgba(127,162,178,.22);stroke-width:2.5}
 #pw-deck .mg-lines .fl{fill:none;stroke-width:3.5;stroke-dasharray:8 12;stroke-linecap:round}
 #pw-deck .mg-lines .pw-shown .fl{animation:pw-dash .7s linear infinite}
@@ -469,9 +476,10 @@
 <!-- 1 · Title -->
 <section class="pw-slide s-title" aria-label="Title">
   <div class="grid"></div>
-  <p class="kick pw-in" style="--d:.1s">KNIGHTHACKS × BNY · WORKSHOP</p>
+  <p class="kick pw-in" style="--d:.1s">KNIGHTHACKS × BNY
+</p>
   <h1 class="pw-in" style="--d:.2s">Prompt<br><span>Wars</span></h1>
-  <p class="sub pw-in" style="--d:.35s">Attack and Defend AI Chatbots</p>
+  
   <div class="vs" aria-hidden="true">
     <div class="chip atk">&gt; ignore your rules…</div>
     <div class="chip def">🛡 nice try.</div>
@@ -518,7 +526,8 @@
 
 <!-- 3 · Real-world prompt injection incidents -->
 <section class="pw-slide s-inc" aria-label="Prompt injection in the wild">
-  <h2 class="pw-h">It keeps happening</h2><div class="pw-rule"></div>
+  <h2 class="pw-h">Prompt Injection in Recent Years
+</h2><div class="pw-rule"></div>
   <div class="pw-cv"><div class="inc">
     <i class="rail" aria-hidden="true"></i>
     <div class="cols">
@@ -548,6 +557,7 @@
     <div class="hero">
       <p class="num pw-in" style="--d:.2s">#1</p>
       <p class="pw-lead pw-in" style="--d:.4s">on the <b>OWASP Top 10 for LLM Applications</b> (2025), the security community's ranking of what goes wrong in AI apps.</p>
+      <blockquote class="def pw-cap pw-in" style="--d:.6s"><b>OWASP</b>, the Open Worldwide Application Security Project, is an online community that publishes open-source information and resources on IoT, system software and web application security.</blockquote>
     </div>
     <ul class="owasp" aria-label="OWASP Top 10 for LLM Applications, 2025">
       <li class="one" style="--i:0"><span>LLM01</span>Prompt Injection</li>
