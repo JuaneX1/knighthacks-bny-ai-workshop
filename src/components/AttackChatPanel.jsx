@@ -4,7 +4,7 @@ import ChatLog from './ChatLog.jsx';
 import ChatInput from './ChatInput.jsx';
 
 // Chat for one try. The parent remounts this (via key) when a new try starts, which clears it.
-export default function AttackChatPanel({ attack, disabled, onAttackChange }) {
+export default function AttackChatPanel({ attack, onAttackChange }) {
   const [message, setMessage] = useState('');
   const [log, setLog] = useState([]);
   const [sending, setSending] = useState(false);
@@ -29,7 +29,7 @@ export default function AttackChatPanel({ attack, disabled, onAttackChange }) {
 
   async function send(e) {
     e.preventDefault();
-    if (!message.trim() || disabled || outOfMessages || sending) return;
+    if (!message.trim() || outOfMessages || sending) return;
     setSending(true);
     setError(null);
     const userMessage = message;
@@ -66,7 +66,7 @@ export default function AttackChatPanel({ attack, disabled, onAttackChange }) {
         value={message}
         onChange={setMessage}
         onSubmit={send}
-        disabled={disabled || outOfMessages}
+        disabled={outOfMessages}
         sending={sending}
         placeholder={outOfMessages ? 'Out of messages. Take your shot below' : 'Make your move...'}
         buttonClassName="bg-brand-blue/90 text-btn-ink hover:bg-brand-blue hover:shadow-[0_0_14px_rgb(var(--color-blue)/0.55)]"

@@ -56,7 +56,7 @@ Then fill in `.env`:
 | `SESSION_SECRET` | Any long random string. It signs the team session cookies. |
 | `ADMIN_TOKEN` | Any long random string. This is the admin login. |
 
-If you'd rather keep env vars in the Vercel dashboard, run `vercel link` and then `vercel env pull .env`. Either way works as long as `.env` ends up filled in.
+If you'd rather keep env vars in the Vercel dashboard, install the Vercel CLI (`npm i -g vercel`), run `vercel link` and then `vercel env pull .env`. Either way works as long as `.env` ends up filled in.
 
 Seed the demo teams:
 

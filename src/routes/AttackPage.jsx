@@ -115,12 +115,11 @@ export default function AttackPage() {
         {!cracked && (
           <>
             <AttackHintsPanel />
-            <AttackChatPanel key={attack.attempt} attack={attack} disabled={cracked} onAttackChange={setLocalAttack} />
+            <AttackChatPanel key={attack.attempt} attack={attack} onAttackChange={setLocalAttack} />
           </>
         )}
         <GuessBox
           attack={attack}
-          disabled={cracked}
           cracked={cracked}
           onGuessResult={(result) => {
             setLocalAttack(result.attack);

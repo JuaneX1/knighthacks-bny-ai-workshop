@@ -15,9 +15,6 @@ export default function TeamReveal({ teamId, teamName }) {
       <h2 className="text-5xl font-black uppercase tracking-wide motion-safe:animate-slam-in [animation-delay:1200ms] [animation-duration:800ms] sm:text-6xl">
         <ScrambleText text={teamName} delayMs={1200} durationMs={1200} />
       </h2>
-      <p className="text-sm font-semibold opacity-80 motion-safe:animate-fade-in-up [animation-delay:2600ms] [animation-duration:600ms]">
-        Nobody gets your password.
-      </p>
     </div>
   );
 }

@@ -5,5 +5,3 @@ dist
 .vercel
 *.log
 .playwright-mcp
-
-.vercel

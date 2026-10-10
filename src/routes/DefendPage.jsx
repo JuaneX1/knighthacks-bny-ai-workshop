@@ -130,7 +130,7 @@ export default function DefendPage() {
         </div>
       )}
 
-      <VaultEditorForm vault={vault} onChange={setVault} onSave={handleSave} saving={saving} disabled={false} />
+      <VaultEditorForm vault={vault} onChange={setVault} onSave={handleSave} saving={saving} />
 
       <div className="mt-4 space-y-2">
         {saveMsg && (
@@ -142,7 +142,7 @@ export default function DefendPage() {
       </div>
 
       <div className="mt-6">
-        <TestChatPanel vault={vault} disabled={false} />
+        <TestChatPanel vault={vault} />
       </div>
     </div>
   );

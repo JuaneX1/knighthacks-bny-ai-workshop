@@ -178,10 +178,6 @@ body::after {
     @apply ui-btn bg-brand-blue/90 text-btn-ink hover:bg-brand-blue hover:shadow-[0_0_18px_rgb(var(--color-blue)/0.6)];
   }
 
-  .btn-success {
-    @apply ui-btn bg-brand-success/90 text-btn-ink hover:bg-brand-success hover:shadow-[0_0_18px_rgb(var(--color-success)/0.6)];
-  }
-
   .btn-danger {
     @apply ui-btn bg-brand-error/80 text-btn-ink hover:bg-brand-error hover:shadow-[0_0_18px_rgb(var(--color-error)/0.6)];
   }

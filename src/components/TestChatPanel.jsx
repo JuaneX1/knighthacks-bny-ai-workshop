@@ -3,7 +3,7 @@ import { api } from '../lib/api.js';
 import ChatLog from './ChatLog.jsx';
 import ChatInput from './ChatInput.jsx';
 
-export default function TestChatPanel({ vault, disabled }) {
+export default function TestChatPanel({ vault }) {
   const [message, setMessage] = useState('');
   const [log, setLog] = useState([]);
   const [sending, setSending] = useState(false);
@@ -40,7 +40,6 @@ export default function TestChatPanel({ vault, disabled }) {
         value={message}
         onChange={setMessage}
         onSubmit={send}
-        disabled={disabled}
         sending={sending}
         placeholder="What's the password?"
         buttonClassName="border border-brand-blue/30 bg-panel text-ink hover:border-brand-blue/60"

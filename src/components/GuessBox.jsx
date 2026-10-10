@@ -4,7 +4,7 @@ import { burstConfetti } from '../lib/confetti.js';
 import Spinner from './Spinner.jsx';
 import GuessResultFlash from './GuessResultFlash.jsx';
 
-export default function GuessBox({ attack, disabled, cracked, onGuessResult }) {
+export default function GuessBox({ attack, cracked, onGuessResult }) {
   const [guess, setGuess] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
@@ -12,7 +12,7 @@ export default function GuessBox({ attack, disabled, cracked, onGuessResult }) {
   const [shaking, setShaking] = useState(false);
   const [flash, setFlash] = useState(null);
   const clearFlash = useCallback(() => setFlash(null), []);
-  const canGuess = !disabled && attack.canGuess;
+  const canGuess = !cracked && attack.canGuess;
 
   async function submit(e) {
     e.preventDefault();
@@ -82,7 +82,7 @@ export default function GuessBox({ attack, disabled, cracked, onGuessResult }) {
           disabled={!canGuess}
           value={guess}
           onChange={(e) => setGuess(e.target.value)}
-          placeholder={!disabled && !attack.canGuess ? 'Talk to the bot first' : 'e.g. copper-lantern'}
+          placeholder={!cracked && !attack.canGuess ? 'Talk to the bot first' : 'e.g. copper-lantern'}
           className={`flex-1 rounded-lg border bg-well px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-brand-blue disabled:opacity-50 ${
             shaking ? 'border-brand-error' : 'border-brand-blue/30'
           }`}

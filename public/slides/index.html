@@ -37,7 +37,7 @@
 #pw-deck .pw-cap{font-size:18px;line-height:1.45;color:var(--pw-muted)}
 #pw-deck .pw-big{font-size:30px;line-height:1.3;font-weight:600;color:var(--pw-ink)}
 #pw-deck b{color:var(--pw-ink);font-weight:650}
-#pw-deck .pw-t{color:var(--pw-teal-hi)} #pw-deck .pw-r{color:var(--pw-bad)} #pw-deck .pw-g{color:var(--pw-good)} #pw-deck .pw-w{color:var(--pw-warn)}
+#pw-deck .pw-t{color:var(--pw-teal-hi)} #pw-deck .pw-r{color:var(--pw-bad)} #pw-deck .pw-g{color:var(--pw-good)}
 #pw-deck .pw-mono{font-family:var(--pw-mono)}
 #pw-deck a{color:var(--pw-teal-hi);text-underline-offset:4px;text-decoration-thickness:1px}
 #pw-deck a:focus-visible,#pw-deck button:focus-visible{outline:2px solid var(--pw-teal-hi);outline-offset:3px}
@@ -69,7 +69,6 @@
 #pw-deck .s-title .kick{position:absolute;left:96px;top:150px;font-size:15px;font-weight:700;letter-spacing:.3em;color:var(--pw-teal-hi)}
 #pw-deck .s-title h1{position:absolute;left:92px;top:190px;font-size:110px;line-height:.95;font-weight:800;letter-spacing:-.035em;color:var(--pw-ink)}
 #pw-deck .s-title h1 span{color:var(--pw-teal)}
-#pw-deck .s-title .sub{position:absolute;left:96px;top:420px;font-size:30px;color:var(--pw-text)}
 #pw-deck .s-title .vs{position:absolute;right:120px;top:120px;width:380px;height:300px}
 #pw-deck .vs .chip{position:absolute;display:flex;align-items:center;gap:10px;box-shadow:var(--pw-shadow);padding:12px 16px;border-radius:14px;font-size:22px;font-family:var(--pw-mono);white-space:nowrap}
 #pw-deck .vs .atk{left:0;top:30px;background:rgba(194,58,80,.15);border:1px solid rgba(194,58,80,.55);color:#8E2B3B}
@@ -164,8 +163,6 @@
 #pw-deck .s-owasp .def{margin:22px 0 0;padding:4px 0 4px 18px;border-left:3px solid var(--pw-teal);font-size:17px}
 #pw-deck .s-owasp .num{font-size:180px;font-weight:800;line-height:.9;color:var(--pw-teal);letter-spacing:-.05em}
 
-/* ---------- merge animation ---------- */
-
 /* ---------- MCP tools ---------- */
 #pw-deck .mcp{position:absolute;inset:0}
 #pw-deck .mcp svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;opacity:0}
@@ -207,18 +204,10 @@
 #pw-deck .tq-ex .pw-bub.u{align-self:flex-end;max-width:560px;font-family:var(--pw-mono);font-size:17px;white-space:pre-line}
 #pw-deck .tq-ex .pw-bub.a{align-self:flex-start;max-width:560px;font-family:var(--pw-mono);font-size:17px;white-space:pre-line}
 #pw-deck .tq-ex.cur .pw-bub.a{animation:pw-up .5s var(--pw-ease) .55s both}
-#pw-deck .tq-ex .why{margin-top:auto;font-size:22px;color:var(--pw-ink);font-weight:600}
-#pw-deck .tq-ex.cur .why{animation:pw-up .5s var(--pw-ease) .9s both}
 #pw-deck .tq-ex .who{font-size:13px;letter-spacing:.14em;font-weight:700;color:var(--pw-muted);text-transform:uppercase}
 #pw-deck .tq-ex .ac b{color:#c23a50;font-weight:800;display:inline-block}
 #pw-deck .tq-ex.cur .ac b{animation:pw-pop .45s var(--pw-ease) both;animation-delay:calc(var(--i)*.25s + 1.1s)}
-#pw-deck .tq-ex .spell{font-family:var(--pw-mono);font-size:22px;letter-spacing:.3em;color:var(--pw-bad)}
 
-/* ---------- prompting foundations ---------- */
-#pw-deck .ex{display:flex;flex-direction:column;gap:10px;padding:16px 18px;border-radius:12px;background:var(--pw-navy-2);border:1px solid var(--pw-rule)}
-#pw-deck .ex .q{font-family:var(--pw-mono);font-size:16px;color:var(--pw-text)}
-#pw-deck .ex .q em{font-style:normal;color:var(--pw-muted)}
-#pw-deck .ex.tgt{border-color:var(--pw-teal)}
 
 /* overprompting */
 #pw-deck .op{position:absolute;left:0;top:0;width:560px;height:470px;padding:20px;overflow:hidden}
@@ -232,21 +221,6 @@
 #pw-deck .op2{position:absolute;right:0;top:0;width:520px;display:flex;flex-direction:column;gap:22px}
 #pw-deck .calm p{font-family:var(--pw-mono);font-size:16px;line-height:1.55;color:var(--pw-ink)}
 
-/* plan review */
-#pw-deck .plan{position:absolute;left:0;top:0;width:640px;display:flex;flex-direction:column;gap:12px}
-#pw-deck .plan .st{display:flex;gap:16px;align-items:center;padding:16px 20px;border-radius:12px;background:var(--pw-panel);border:1px solid var(--pw-rule);font-size:20px;color:var(--pw-ink);transition:border-color .4s,background .4s}
-#pw-deck .plan .st .n{font-family:var(--pw-mono);color:var(--pw-teal-hi);font-size:16px}
-#pw-deck .plan .st .ck{margin-left:auto;font-size:20px;opacity:0;transition:opacity .4s}
-#pw-deck .s-plan.k4 .plan .st .ck{opacity:1}
-#pw-deck .s-plan.k4 .plan .st.bad{border-color:var(--pw-bad);background:rgba(194,58,80,.14)}
-#pw-deck .s-plan .rev{position:absolute;right:0;top:20px;width:430px;display:flex;flex-direction:column;gap:20px;align-items:flex-start}
-#pw-deck .s-plan .pw-stamp{color:var(--pw-bad);font-size:22px}
-#pw-deck .s-plan.k4 .pw-stamp{animation:pw-pop .45s var(--pw-ease) both}
-
-/* ---------- guardrail rings ---------- */
-
-
-/* input gate */
 
 /* self-check */
 #pw-deck .sc{position:absolute;inset:0;display:flex;flex-direction:column;gap:20px;padding-right:160px}
@@ -254,8 +228,6 @@
 #pw-deck .sc .row.r{justify-content:flex-end}
 #pw-deck .thought{border:2px dashed rgba(43,156,174,.6);border-radius:22px;padding:16px 22px;font-size:22px;color:#145F6D;background:rgba(43,156,174,.08);font-style:italic;max-width:760px}
 #pw-deck .thought .ans{font-style:normal;font-weight:800;color:var(--pw-bad);margin-left:10px}
-
-/* game */
 
 /* advanced attacks */
 #pw-deck .page{position:absolute;left:0;top:0;width:470px;height:430px;border-radius:12px;background:#fff;border:1px solid var(--pw-rule);box-shadow:var(--pw-shadow);padding:24px 26px;color:#33444f;overflow:hidden}
@@ -324,7 +296,7 @@
 #pw-deck .s-iv .ivr.pw-shown .bar i{transform:none}
 #pw-deck .s-iv .vd{align-items:center;font-size:15px;font-weight:800;letter-spacing:.1em;opacity:0;transform:scale(.7);transition:opacity .3s ease 1.35s,transform .4s var(--pw-ease) 1.35s}
 #pw-deck .s-iv .ivr.pw-shown .vd{opacity:1;transform:none}
-#pw-deck .s-iv .vd.ok{color:var(--pw-good);border-color:rgba(31,143,99,.6)} #pw-deck .s-iv .vd.bad{color:var(--pw-bad);border-color:rgba(194,58,80,.65);background:rgba(194,58,80,.14)} #pw-deck .s-iv .vd.warn{color:var(--pw-warn);border-color:rgba(196,134,30,.65)}
+#pw-deck .s-iv .vd.ok{color:var(--pw-good);border-color:rgba(31,143,99,.6)} #pw-deck .s-iv .vd.bad{color:var(--pw-bad);border-color:rgba(194,58,80,.65);background:rgba(194,58,80,.14)}
 #pw-deck .s-iv .nm,#pw-deck .s-iv .cl{opacity:0;transition:opacity .35s ease}
 #pw-deck .s-iv .ivr.pw-shown .nm{opacity:1;transition-delay:.35s} #pw-deck .s-iv .ivr.pw-shown .cl{opacity:1;transition-delay:.65s}
 #pw-deck .s-iv .ar{height:2px;margin:0 7px;background:rgba(4,36,60,.45);position:relative;opacity:0;transition:opacity .3s ease}
@@ -427,7 +399,6 @@
 #pw-deck .s-game .no{font-family:var(--pw-mono);font-size:13px;font-weight:700;letter-spacing:.1em;color:var(--pw-muted)}
 #pw-deck .s-game .ph h3{margin:8px 0 12px;font-size:36px;font-weight:800;letter-spacing:-.02em;color:var(--c)}
 #pw-deck .s-game .ph p{font-size:18px;line-height:1.5;color:var(--pw-ink)}
-#pw-deck .s-game .sw{position:absolute;left:0;right:0;top:620px;text-align:center;font-size:17px;font-weight:600;color:var(--pw-teal-hi)}
 
 /* ---------- connect (last slide) ---------- */
 #pw-deck .s-cn .pw-brand{right:64px;top:40px;bottom:auto;height:44px}
