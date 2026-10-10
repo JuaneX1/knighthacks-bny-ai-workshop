@@ -460,6 +460,19 @@
 #pw-deck.pw-edit [contenteditable]:hover{outline-color:rgba(95,208,223,.85)}
 #pw-deck.pw-edit [contenteditable]:focus{outline:2px solid var(--pw-teal-hi);background:rgba(43,156,174,.1)}
 #pw-deck.pw-edit [contenteditable].pw-gone{outline:2px dashed var(--pw-bad);background:rgba(214,82,99,.12);min-width:60px;min-height:1.2em;opacity:1}
+/* timing panel (edit mode): per-slide build waits, click vs auto, animation speed */
+#pw-deck .pw-tm{position:absolute;left:18px;bottom:16px;z-index:20;display:none;flex-direction:column;gap:9px;width:260px;max-height:calc(100% - 90px);overflow:auto;padding:12px 14px;border-radius:14px;background:rgba(2,20,34,.9);border:1px solid rgba(95,208,223,.45);font-size:13px;color:var(--pw-text);backdrop-filter:blur(6px)}
+#pw-deck.pw-edit .pw-tm{display:flex}
+#pw-deck .pw-tm b{color:var(--pw-teal-hi);letter-spacing:.14em;font-size:11px}
+#pw-deck .pw-tm .hint{color:var(--pw-muted);font-size:12px;line-height:1.4}
+#pw-deck .pw-tm .md{display:flex;gap:4px}
+#pw-deck .pw-tm button{all:unset;cursor:pointer;padding:5px 10px;border-radius:999px;background:rgba(234,246,248,.08);color:var(--pw-ink);font-size:12px;transition:background .15s}
+#pw-deck .pw-tm button:hover{background:rgba(43,156,174,.4)}
+#pw-deck .pw-tm button.on{background:var(--pw-teal);color:#04243C;font-weight:700}
+#pw-deck .pw-tm label{display:flex;align-items:center;gap:6px}
+#pw-deck .pw-tm label span{flex:1}
+#pw-deck .pw-tm input{width:64px;padding:3px 6px;border-radius:6px;border:1px solid rgba(234,246,248,.2);background:rgba(234,246,248,.06);color:var(--pw-ink);font:inherit;font-family:var(--pw-mono);text-align:right}
+#pw-deck .pw-tm input:focus{outline:1px solid var(--pw-teal-hi)}
 </style>
 </head>
 <body style="margin:0">
@@ -897,6 +910,7 @@ Q: The secret word?  A:</div><div class="pw-bub a">PINEAPPLE</div></div>
   <button type="button" data-go="1" aria-label="Next"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"></path></svg></button>
 </nav>
 <div class="pw-bar" role="toolbar" aria-label="Edit mode"><b>EDIT</b><span class="st"></span><button type="button" class="pri" data-act="save">Save to file</button><button type="button" data-act="download">Download</button><button type="button" data-act="discard">Discard</button><button type="button" data-act="exit">Exit</button></div>
+<div class="pw-tm" role="group" aria-label="Slide timing"></div>
 </div>
 
 <script>
@@ -908,7 +922,7 @@ Q: The secret word?  A:</div><div class="pw-bub a">PINEAPPLE</div></div>
   var jumpIn=root.querySelector('.pw-jump'), tot=root.querySelector('.pw-tot');
   var btnPrev=root.querySelector('[data-go="-1"]'), btnNext=root.querySelector('[data-go="1"]');
   var EASE='cubic-bezier(.2,.8,.2,1)';
-  var scale=1, si=0, bi=0, running=[], timer=0;
+  var scale=1, si=0, bi=0, running=[], timer=0, previewing=false;
 
   // Build steps per slide, from [data-b] attributes.
   var steps=slides.map(function(s){
@@ -965,13 +979,33 @@ Q: The secret word?  A:</div><div class="pw-bub a">PINEAPPLE</div></div>
     tot.textContent=' / '+slides.length;
     btnPrev.disabled=si===0&&bi===0;
     btnNext.disabled=si===slides.length-1&&bi===st.max;
+    applySpeed(s);
+    if(editing&&prev!==si) renderTiming();
   }
 
-  // Play the current slide's builds on their own, one per data-step ms (900 by default).
+  // Per-slide timing, set from the timing panel in edit mode:
+  //   data-step  the wait in ms before each build, counted from the build before it (from the
+  //              slide opening for the first). The last value repeats; 900 when unset.
+  //   data-speed the slide's animations play at this percent of normal speed (100 when unset).
+  //   data-manual (further down) makes every build wait for a key press instead.
+  var DEF_WAIT=900, TATTR=['data-step','data-manual','data-speed'];
+  function waits(s){ return (s.getAttribute('data-step')||'').trim().split(/\s+/).filter(Boolean).map(Number).filter(function(n){ return n>=0; }); }
+  function waitBefore(s,n){ var w=waits(s); return w.length?w[Math.min(n-1,w.length-1)]:DEF_WAIT; }
+  function setWaits(s,w){
+    while(w.length>1&&w[w.length-1]===w[w.length-2]) w.pop();
+    if(w.length===1&&w[0]===DEF_WAIT) s.removeAttribute('data-step'); else s.setAttribute('data-step',w.join(' '));
+  }
+  // Slow or speed up every CSS animation and transition on the slide (not the slide-to-slide move).
+  function applySpeed(s){
+    var r=(+s.getAttribute('data-speed')||100)/100;
+    s.getAnimations({subtree:true}).forEach(function(a){ if(running.indexOf(a)<0&&a.playbackRate!==r) a.playbackRate=r; });
+  }
+
+  // Play the current slide's builds on their own (also while editing, for the panel's replay).
   function autoplay(){
     clearTimeout(timer);
-    if(editing||manual()||bi>=steps[si].max) return;
-    timer=setTimeout(function(){ bi++; paint(si,1); autoplay(); },+slides[si].getAttribute('data-step')||900);
+    if((editing&&!previewing)||manual()||bi>=steps[si].max){ previewing=false; return; }
+    timer=setTimeout(function(){ bi++; paint(si,1); autoplay(); },waitBefore(slides[si],bi+1));
   }
 
   // Slides marked data-manual step through their builds one press at a time.
@@ -1046,8 +1080,11 @@ Q: The secret word?  A:</div><div class="pw-bub a">PINEAPPLE</div></div>
   // units: the editable elements, found once per snapshot and then tracked by
   // reference. Re-finding them by their text would lose any box you empty, and
   // shift every box after it on that slide.
-  var units=null;
-  function resnap(){ units=slides.map(editables); snap=units.map(function(us){ return us.map(html); }); }
+  var units=null, tsnap=null;
+  function resnap(){ units=slides.map(editables); snap=units.map(function(us){ return us.map(html); }); tsnap=slides.map(timing); }
+  // a slide's timing attributes, compared against the snapshot to find unsaved timing changes
+  function timing(s){ return JSON.stringify(TATTR.map(function(a){ return s.getAttribute(a); })); }
+  function timingChanges(){ var out=[]; slides.forEach(function(s,i){ if(timing(s)!==tsnap[i]) out.push(i); }); return out; }
   // a box emptied of all text is removed from the file on save
   function isGone(el){ return !el.textContent.replace(/\u00a0/g,' ').trim()&&!el.querySelector('img,svg'); }
   function changes(){
@@ -1060,20 +1097,66 @@ Q: The secret word?  A:</div><div class="pw-bub a">PINEAPPLE</div></div>
     return list;
   }
   function say(msg){ status.textContent=msg; }
-  function count(list){
+  function count(list,tl){
     var rm=list.filter(function(c){ return c.remove; }).length, ed=list.length-rm, out=[];
     if(ed) out.push(ed+' edit'+(ed>1?'s':''));
     if(rm) out.push(rm+' removal'+(rm>1?'s':''));
+    if(tl&&tl.length) out.push(tl.length+' timing change'+(tl.length>1?'s':''));
     return out.join(', ');
   }
-  function refresh(){ var c=count(changes()); say(c?c+' unsaved':'Click any text to edit. Empty a box to remove it.'); }
+  function refresh(){ var c=count(changes(),timingChanges()); say(c?c+' unsaved':'Click any text to edit. Empty a box to remove it.'); }
   function setEdit(on){
     editing=on; root.classList.toggle('pw-edit',on);
     if(on&&!snap) resnap();
     units.forEach(function(us){ us.forEach(function(el){ if(on) el.setAttribute('contenteditable',CE); else el.removeAttribute('contenteditable'); }); });
-    if(on){ clearTimeout(timer); bi=steps[si].max; paint(si,1); refresh(); }
+    previewing=false;
+    if(on){ clearTimeout(timer); bi=steps[si].max; paint(si,1); renderTiming(); refresh(); }
   }
-  function buildFile(list){
+
+  // Timing panel: edits the current slide's data-step / data-manual / data-speed live;
+  // Save writes them into the file with the text edits.
+  var tm=root.querySelector('.pw-tm');
+  function renderTiming(){
+    var s=slides[si], max=steps[si].max, man=s.hasAttribute('data-manual'), h='<b>SLIDE '+(si+1)+' TIMING</b>';
+    if(max){
+      h+='<div class="md"><button type="button" data-tm="auto"'+(man?'':' class="on"')+'>Auto-play</button><button type="button" data-tm="manual"'+(man?' class="on"':'')+'>Click each step</button></div>';
+      if(man) h+='<span class="hint">Each of the '+max+' steps waits for → or a click.</span>';
+      else{
+        h+='<span class="hint">Wait before each step, from the step before it (step 1: from when the slide opens).</span>';
+        for(var n=1;n<=max;n++) h+='<label><span>Step '+n+'</span><input type="number" min="0" step="100" data-n="'+n+'" value="'+waitBefore(s,n)+'"> ms</label>';
+      }
+    }else h+='<span class="hint">No build steps on this slide.</span>';
+    h+='<label><span>Animation speed</span><input type="number" min="10" max="300" step="10" data-speed value="'+(+s.getAttribute('data-speed')||100)+'"> %</label>';
+    h+='<button type="button" data-tm="play">▶ Replay slide</button>';
+    tm.innerHTML=h;
+  }
+  // Play the slide again from the top with the current timing: entry animations and every build.
+  function replay(){
+    var s=slides[si]; clearTimeout(timer);
+    bi=0; s.classList.remove('pw-on'); paint(si,1);
+    s.getAnimations({subtree:true}).forEach(function(a){ if(a instanceof CSSTransition) a.finish(); });
+    void s.offsetWidth; s.classList.add('pw-on'); applySpeed(s);
+    previewing=true; autoplay();
+  }
+  tm.addEventListener('click',function(e){
+    var b=e.target.closest('button[data-tm]'); if(!b) return;
+    var s=slides[si], a=b.getAttribute('data-tm');
+    if(a==='play'){ replay(); return; }
+    if(a==='manual') s.setAttribute('data-manual',''); else s.removeAttribute('data-manual');
+    renderTiming(); refresh();
+  });
+  tm.addEventListener('input',function(e){
+    var t=e.target, s=slides[si];
+    if(t.hasAttribute('data-speed')){
+      var v=Math.round(+t.value);
+      if(v>=10&&v!==100) s.setAttribute('data-speed',v); else s.removeAttribute('data-speed');
+      applySpeed(s);
+    }else if(t.hasAttribute('data-n')){
+      setWaits(s,[].map.call(tm.querySelectorAll('input[data-n]'),function(i){ return Math.max(0,Math.round(+i.value)||0); }));
+    }
+    refresh();
+  });
+  function buildFile(list,tl){
     return fetch('./index.html',{cache:'no-store'}).then(function(r){ if(!r.ok) throw new Error('could not read the source ('+r.status+')'); return r.text(); }).then(function(src){
       var doc=new DOMParser().parseFromString(src,'text/html');
       var ps=doc.querySelectorAll('#pw-deck .pw-stage > .pw-slide');
@@ -1083,37 +1166,43 @@ Q: The secret word?  A:</div><div class="pw-bub a">PINEAPPLE</div></div>
         var el=fileUnits[c.i][c.j];
         if(!el||el.innerHTML!==snap[c.i][c.j]) throw new Error('slide '+(c.i+1)+' differs from the file on disk, reload first');
       });
+      (tl||[]).forEach(function(i){ if(timing(ps[i])!==tsnap[i]) throw new Error('slide '+(i+1)+' timing differs from the file on disk, reload first'); });
       list.forEach(function(c){ var el=fileUnits[c.i][c.j]; if(c.remove) el.remove(); else el.innerHTML=c.html; });
+      (tl||[]).forEach(function(i){ TATTR.forEach(function(a){ var v=slides[i].getAttribute(a); if(v===null) ps[i].removeAttribute(a); else ps[i].setAttribute(a,v); }); });
       // the parser keeps trailing blank text nodes in <body>; drop them so saves don't grow the file
       for(var n=doc.body.lastChild;n&&n.nodeType===3&&!/\S/.test(n.nodeValue);n=doc.body.lastChild) doc.body.removeChild(n);
       return '<!doctype html>\n'+doc.documentElement.outerHTML.replace(/<\/script><\/body>/,'<\/script>\n<\/body>')+'\n';
     });
   }
   function save(){
-    var list=changes(); if(!list.length){ say('Nothing to save'); return; }
+    var list=changes(), tl=timingChanges(); if(!list.length&&!tl.length){ say('Nothing to save'); return; }
     say('Saving…');
-    buildFile(list).then(function(src){
+    buildFile(list,tl).then(function(src){
       return fetch('/__slides/save',{method:'POST',headers:{'Content-Type':'text/html; charset=utf-8'},body:src}).then(function(r){ if(!r.ok) throw new Error('save endpoint answered '+r.status); });
     }).then(function(){
       list.forEach(function(c){ if(c.remove) c.el.remove(); });
-      resnap(); say('Saved '+count(list)+' to public/slides/index.html');
+      resnap(); say('Saved '+count(list,tl)+' to public/slides/index.html');
     })
     .catch(function(e){ say('Not saved: '+e.message+'. Run npm run dev:web, or use Download.'); });
   }
   function download(){
-    buildFile(changes()).then(function(src){
+    buildFile(changes(),timingChanges()).then(function(src){
       var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([src],{type:'text/html'})); a.download='index.html'; a.click();
       setTimeout(function(){ URL.revokeObjectURL(a.href); },2000);
       say('Downloaded. Replace public/slides/index.html with it.');
     }).catch(function(e){ say('Download failed: '+e.message+' (a file:// page cannot read its own source; serve it with npm run dev:web)'); });
   }
-  function discard(){ changes().forEach(function(c){ c.el.innerHTML=snap[c.i][c.j]; }); refresh(); }
+  function discard(){
+    changes().forEach(function(c){ c.el.innerHTML=snap[c.i][c.j]; });
+    timingChanges().forEach(function(i){ var v=JSON.parse(tsnap[i]); TATTR.forEach(function(a,k){ if(v[k]===null) slides[i].removeAttribute(a); else slides[i].setAttribute(a,v[k]); }); });
+    renderTiming(); applySpeed(slides[si]); refresh();
+  }
   bar.addEventListener('click',function(e){
     var b=e.target.closest('button[data-act]'); if(!b) return;
     ({save:save,download:download,discard:discard,exit:function(){ setEdit(false); }})[b.getAttribute('data-act')]();
   });
   root.addEventListener('input',function(e){ if(editing&&e.target.isContentEditable) refresh(); });
-  window.addEventListener('beforeunload',function(e){ if(snap&&changes().length){ e.preventDefault(); e.returnValue=''; } });
+  window.addEventListener('beforeunload',function(e){ if(snap&&(changes().length||timingChanges().length)){ e.preventDefault(); e.returnValue=''; } });
 
   // Keys: only while the deck is on screen, never while typing, never with modifiers.
   document.addEventListener('keydown',function(e){
