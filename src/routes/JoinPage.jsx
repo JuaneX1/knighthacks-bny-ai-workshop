@@ -134,7 +134,7 @@ export default function JoinPage() {
           <MenuItem
             icon={<TrophyIcon className="h-6 w-6" />}
             title="Scoreboard"
-            subtitle="Who's cracking who, live"
+            subtitle="Live leaderboard"
             href="/scoreboard"
           />
           <MenuItem
