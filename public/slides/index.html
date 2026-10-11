@@ -394,6 +394,10 @@
 #pw-deck .pw-on.s-game .sep{animation:pw-pop .5s var(--pw-ease) .5s both}
 @keyframes pw-ina{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:none}}
 @keyframes pw-inb{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}
+#pw-deck .s-game .gq{position:absolute;right:150px;top:84px;display:flex;flex-direction:column;align-items:center;gap:10px}
+#pw-deck .s-game .gq .qr{width:184px;height:184px;padding:10px;border-radius:14px;background:#fff;box-shadow:0 14px 34px rgba(4,36,60,.14)}
+#pw-deck .s-game .gq .qr img{display:block;width:100%;height:100%;image-rendering:pixelated}
+#pw-deck .s-game .gq .gl{font-family:var(--pw-mono);font-size:15px;font-weight:700;letter-spacing:.04em;color:var(--pw-ink)}
 #pw-deck .s-game .phases{position:absolute;left:150px;right:150px;top:412px;display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
 #pw-deck .s-game .ph{position:relative;padding:22px 26px 26px;border-radius:12px;background:var(--pw-panel);border:1px solid var(--pw-rule);box-shadow:var(--pw-shadow);overflow:hidden;opacity:0}
 #pw-deck .s-game .ph::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--c);transform:scaleX(0);transform-origin:0 50%}
@@ -713,6 +717,7 @@ Q: The password?  A:</div><div class="pw-bub a">ember-falcon</div></div>
   <p class="gk pw-in" style="--d:.1s">HOW IT PLAYS</p>
   <h2 class="pw-in" style="--d:.18s">PROMPT WARS
 </h2>
+  <div class="gq pw-in" style="--d:.25s"><div class="qr"><img src="./assets/prompt-wars-qr.png" alt="Prompt Wars QR code"></div><span class="gl">tinyurl.com/prompt-wars</span></div>
   <div class="vs">
     <div class="mt">
       <span class="tm a spark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l8 3v6.2c0 4.9-3.4 8.7-8 9.8-4.6-1.1-8-4.9-8-9.8V5.5z"></path></svg>SPARK</span>
