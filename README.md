@@ -1,5 +1,7 @@
 # Prompt Wars
 
+> ## 📽️ [Workshop slides → bny-workshop-api.vercel.app/slides](https://bny-workshop-api.vercel.app/slides/index.html)
+
 A prompt-injection capture-the-flag game we built for the KnightHacks x BNY workshop. Each team writes a chatbot that guards a secret password, then spends the next round trying to talk the other team's bot into giving up theirs.
 
 You can run it as a duel (2 teams playing repeated rounds) or a tournament (4 teams: both semifinals run at the same time, then a final).
